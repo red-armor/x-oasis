@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "description": "noop function",
   "main": "index.ts",
+  "files": [
+    "dist",
+    "index.ts",
+    "src"
+  ],
   "scripts": {
     "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./dist",

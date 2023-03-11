@@ -1,1 +1,1 @@
-export { default as capitalize } from './src'
+export { default as noop } from './src'
