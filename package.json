@@ -17,6 +17,7 @@
     "version": "bump",
     "alpha": "bump --branch",
     "lint": "eslint --ext js,ts,tsx .",
+    "prepublish": "npm run build",
     "publish": "pnpm publish -r --access public"
   },
   "husky": {
@@ -24,6 +25,7 @@
       "pre-commit": "lint-staged"
     }
   },
+  "private": true,
   "bump": {
     "changelog": {
       "enable": true,
