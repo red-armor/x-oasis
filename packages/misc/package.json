@@ -1,8 +1,0 @@
-{
-  "name": "@x-oasis/misc",
-  "version": "0.0.2",
-  "dependencies": {
-    "@x-oasis/noop": "workspace:*",
-    "@x-oasis/capitalize": "workspace:*"
-  }
-}
