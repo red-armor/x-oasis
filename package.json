@@ -79,7 +79,7 @@
   "author": "youchao liu",
   "license": "ISC",
   "devDependencies": {
-    "@innei/bump-version": "1.4.0",
+    "@innei/bump-version": "1.5.9",
     "@testing-library/jest-dom": "^5.11.10",
     "@types/node": "^16",
     "@vitest/coverage-istanbul": "^0.29.2",
