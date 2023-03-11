@@ -12,8 +12,7 @@
     "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./dist",
     "test": "vitest",
-    "compile": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "pnpm run build"
+    "compile": "tsc -p tsconfig.build.json"
   },
   "author": "",
   "license": "ISC"

@@ -17,7 +17,6 @@
     "version": "bump",
     "alpha": "bump --branch",
     "lint": "eslint --ext js,ts,tsx .",
-    "prepublish": "pnpm version",
     "publish": "pnpm publish -r --access public"
   },
   "husky": {
