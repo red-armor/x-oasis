@@ -6,7 +6,7 @@
   "scripts": {
     "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./dist",
-    "test": "jest --verbose",
+    "test": "vitest",
     "compile": "tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"
   },
