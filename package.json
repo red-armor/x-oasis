@@ -69,7 +69,6 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "private": true,
   "author": "youchao liu",
   "license": "ISC",
   "devDependencies": {
