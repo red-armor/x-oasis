@@ -31,7 +31,12 @@
       "enable": true,
       "skipUnstable": true
     },
-    "publish": false,
+    "before": [
+      "git pull --rebase",
+      "pnpm i",
+      "npm run build"
+    ],
+    "publish": true,
     "allowed_branches": [
       {
         "name": ".*?-alpha",
