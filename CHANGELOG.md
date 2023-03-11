@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.0.3](https://github.com/ryuever/x-oasis/compare/v0.0.2...v0.0.3) (2023-03-11)
+
+
+### Features
+
+* update ([b4c1272](https://github.com/ryuever/x-oasis/commit/b4c1272a54581c0e152c7aabfa9c11186d65acd0))
+* update ([def11bc](https://github.com/ryuever/x-oasis/commit/def11bcbcc910b1206d5bdff9c920dd779300f5b))
+* update ([4dbd394](https://github.com/ryuever/x-oasis/commit/4dbd3944d8611cdf224af8d42d7410978bd06dd2))
+* update ([1c6591f](https://github.com/ryuever/x-oasis/commit/1c6591f0c467bad0226c21b005ca2c89e027fe9b))
+* update script ([4b8938b](https://github.com/ryuever/x-oasis/commit/4b8938b46bbaea263b08437f68e868acf34ffa42))
+
+
+
 ## [0.0.2](https://github.com/ryuever/x-oasis/compare/ca2be40a06e3e12bb087cf3bfffb6638398618da...v0.0.2) (2023-03-11)
 
 

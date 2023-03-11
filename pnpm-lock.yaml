@@ -28,13 +28,14 @@ importers:
       vite: 4.1.4_@types+node@16.18.14
       vitest: 0.29.2
 
-  packages/misc:
-    specifiers:
-      '@x-oasis/capitalize': workspace:*
-      '@x-oasis/noop': workspace:*
-    dependencies:
-      '@x-oasis/capitalize': link:capitalize
-      '@x-oasis/noop': link:noop
+  packages/batch/batchinator:
+    specifiers: {}
+
+  packages/comparison/resolve-changed:
+    specifiers: {}
+
+  packages/comparison/shallow-array-equal:
+    specifiers: {}
 
   packages/misc/capitalize:
     specifiers: {}

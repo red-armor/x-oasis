@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/resolve-changed",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "resolve changed function",
   "main": "index.ts",
   "scripts": {
