@@ -1,7 +1,7 @@
 {
-  "name": "@x-oasis/noop",
+  "name": "@x-oasis/capitalize",
   "version": "0.0.1",
-  "description": "noop function",
+  "description": "capitalize function",
   "main": "index.ts",
   "scripts": {
     "build": "pnpm run clean && pnpm run compile",
