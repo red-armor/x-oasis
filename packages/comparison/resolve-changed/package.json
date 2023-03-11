@@ -1,0 +1,15 @@
+{
+  "name": "@x-oasis/resolve-changed",
+  "version": "0.0.1",
+  "description": "resolve changed function",
+  "main": "index.ts",
+  "scripts": {
+    "build": "pnpm run clean && pnpm run compile",
+    "clean": "rimraf ./dist",
+    "test": "jest --verbose",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "author": "",
+  "license": "ISC"
+}

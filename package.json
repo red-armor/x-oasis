@@ -24,6 +24,7 @@
       "pre-commit": "lint-staged"
     }
   },
+  "private": true,
   "bump": {
     "changelog": {
       "enable": true,
