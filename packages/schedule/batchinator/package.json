@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/batchinator",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "batchinator function",
   "main": "index.ts",
   "scripts": {

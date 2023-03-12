@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/select-value",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "select value function",
   "main": "index.ts",
   "scripts": {
