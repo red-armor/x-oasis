@@ -16,8 +16,7 @@
     "test": "CI=true pnpm run -r test",
     "version": "bump",
     "alpha": "bump --branch",
-    "lint": "eslint --ext js,ts,tsx .",
-    "publish": "pnpm publish -r --access public"
+    "lint": "eslint --ext js,ts,tsx ."
   },
   "husky": {
     "hooks": {
