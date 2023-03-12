@@ -1,0 +1,14 @@
+{
+  "name": "@x-oasis/shallow-equal",
+  "version": "0.0.3",
+  "description": "shallow equal function",
+  "main": "index.ts",
+  "scripts": {
+    "build": "pnpm run clean && pnpm run compile",
+    "clean": "rimraf ./dist",
+    "test": "vitest",
+    "compile": "tsc -p tsconfig.build.json"
+  },
+  "author": "",
+  "license": "ISC"
+}
