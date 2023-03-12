@@ -1,1 +1,2 @@
-export { default as noop } from './src'
+import noop from './src'
+export default noop

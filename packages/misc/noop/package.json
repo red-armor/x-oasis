@@ -2,14 +2,16 @@
   "name": "@x-oasis/noop",
   "version": "0.0.5",
   "description": "noop function",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/oyster.esm.js",
   "files": [
     "dist",
     "index.ts",
     "src"
   ],
   "scripts": {
-    "build": "pnpm run clean && pnpm run compile",
+    "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
     "test": "vitest",
     "compile": "tsc -p tsconfig.build.json"

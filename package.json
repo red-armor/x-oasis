@@ -93,5 +93,8 @@
   "bugs": {
     "url": "https://github.com/ryuever/x-oasis/issues"
   },
-  "homepage": "https://github.com/ryuever/x-oasis#readme"
+  "homepage": "https://github.com/ryuever/x-oasis#readme",
+  "dependencies": {
+    "tsdx": "^0.14.1"
+  }
 }
