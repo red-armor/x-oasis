@@ -1,7 +1,7 @@
 {
-  "name": "@x-oasis/shallow-equal",
+  "name": "@x-oasis/select-value",
   "version": "0.0.4",
-  "description": "shallow equal function",
+  "description": "select value function",
   "main": "index.ts",
   "scripts": {
     "build": "pnpm run clean && pnpm run compile",
