@@ -28,19 +28,25 @@ importers:
       vite: 4.1.4_@types+node@16.18.14
       vitest: 0.29.2
 
-  packages/batch/batchinator:
-    specifiers: {}
-
   packages/comparison/resolve-changed:
     specifiers: {}
 
   packages/comparison/shallow-array-equal:
     specifiers: {}
 
+  packages/comparison/shallow-equal:
+    specifiers: {}
+
+  packages/dimension/select-value:
+    specifiers: {}
+
   packages/misc/capitalize:
     specifiers: {}
 
   packages/misc/noop:
+    specifiers: {}
+
+  packages/schedule/batchinator:
     specifiers: {}
 
 packages:

@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.0.4](https://github.com/ryuever/x-oasis/compare/v0.0.3...v0.0.4) (2023-03-12)
+
+
+### Bug Fixes
+
+* remove `prepublishOnly` ([159d116](https://github.com/ryuever/x-oasis/commit/159d116a67bb34e8a1c44e8a197d579e461edf46))
+* update deps ([8ee1a7f](https://github.com/ryuever/x-oasis/commit/8ee1a7f6acc90c8b4c36bfbbdfc936c3064e50ad))
+
+
+### Features
+
+* update ([cf88a2d](https://github.com/ryuever/x-oasis/commit/cf88a2ddd1cd377d86379552375c9daac3a09d8c))
+
+
+
 ## [0.0.3](https://github.com/ryuever/x-oasis/compare/v0.0.2...v0.0.3) (2023-03-11)
 
 

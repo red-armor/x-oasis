@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/shallow-equal",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "shallow equal function",
   "main": "index.ts",
   "scripts": {
