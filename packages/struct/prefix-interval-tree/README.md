@@ -1,13 +1,13 @@
-# @x-oasis/omit
+# @x-oasis/prefix-interval-tree
 
 ## Installation
 
 ```bash
-$ npm i @x-oasis/omit
+$ npm i @x-oasis/prefix-interval-tree
 ```
 
 ## How to use
 
 ```typescript
-import omit from '@x-oasis/omit'
+import PrefixIntervalTree from '@x-oasis/prefix-interval-tree'
 ```
