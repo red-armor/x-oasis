@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/noop",
+  "name": "@x-oasis/omit",
   "version": "0.0.7",
-  "description": "noop function",
+  "description": "omit function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/noop.esm.js",
+  "module": "dist/omit.esm.js",
   "files": [
     "dist",
     "index.ts",
