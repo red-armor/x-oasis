@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.0.12](https://github.com/ryuever/x-oasis/compare/v0.0.11...v0.0.12) (2023-03-13)
+
+
+### Features
+
+* add groupBy ([#3](https://github.com/ryuever/x-oasis/issues/3)) ([656791c](https://github.com/ryuever/x-oasis/commit/656791c900bb9de738f8a3fe95e87a78b32ac2ca))
+
+
+
 ## [0.0.11](https://github.com/ryuever/x-oasis/compare/v0.0.10...v0.0.11) (2023-03-13)
 
 
