@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.0.10](https://github.com/ryuever/x-oasis/compare/v0.0.9...v0.0.10) (2023-03-13)
+
+
+### Features
+
+* update ([ea9d877](https://github.com/ryuever/x-oasis/commit/ea9d87786ca5fff4d2b339c757be7ff302a1c53a))
+
+
+
 ## [0.0.9](https://github.com/ryuever/x-oasis/compare/v0.0.8...v0.0.9) (2023-03-13)
 
 
