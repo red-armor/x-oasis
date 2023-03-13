@@ -30,6 +30,12 @@ importers:
       vite: 4.1.4_@types+node@16.18.14
       vitest: 0.29.2
 
+  packages/comparison/is-clamped:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/comparison/resolve-changed:
     specifiers:
       tsdx: ^0.14.1
@@ -48,6 +54,12 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/dimension/layout-equal:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/dimension/select-value:
     specifiers:
       tsdx: ^0.14.1
@@ -61,6 +73,12 @@ importers:
       tsdx: 0.14.1
 
   packages/misc/noop:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/misc/omit:
     specifiers:
       tsdx: ^0.14.1
     devDependencies:
