@@ -11,3 +11,9 @@ $ npm i @x-oasis/omit
 ```typescript
 import omit from '@x-oasis/omit'
 ```
+
+## How to run test
+
+```bash
+$ pnpm test
+```

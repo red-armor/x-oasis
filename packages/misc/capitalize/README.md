@@ -11,3 +11,9 @@ $ npm i @x-oasis/capitalize
 ```typescript
 import capitalize from '@x-oasis/capitalize'
 ```
+
+## How to run test
+
+```bash
+$ pnpm test
+```

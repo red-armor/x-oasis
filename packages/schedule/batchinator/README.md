@@ -11,3 +11,9 @@ $ npm i @x-oasis/batchinator
 ```typescript
 import Batchinator from '@x-oasis/batchinator'
 ```
+
+## How to run test
+
+```bash
+$ pnpm test
+```

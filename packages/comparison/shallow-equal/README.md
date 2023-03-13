@@ -11,3 +11,9 @@ $ npm i @x-oasis/shallow-equal
 ```typescript
 import shallowEqual from '@x-oasis/shallow-equal'
 ```
+
+## How to run test
+
+```bash
+$ pnpm test
+```

@@ -11,3 +11,9 @@ $ npm i @x-oasis/noop
 ```typescript
 import noop from '@x-oasis/noop'
 ```
+
+## How to run test
+
+```bash
+$ pnpm test
+```

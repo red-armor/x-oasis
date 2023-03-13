@@ -11,3 +11,9 @@ $ npm i @x-oasis/select-value
 ```typescript
 import selectValue from '@x-oasis/select-value'
 ```
+
+## How to run test
+
+```bash
+$ pnpm test
+```

@@ -11,3 +11,9 @@ $ npm i @x-oasis/layout-equal
 ```typescript
 import layoutEqual from '@x-oasis/layout-equal'
 ```
+
+## How to run test
+
+```bash
+$ pnpm test
+```
