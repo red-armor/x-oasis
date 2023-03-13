@@ -1,6 +1,9 @@
-import { ItemLayout } from "./types";
+import { ItemLayout } from './types';
 
-export default function layoutEqual(oldLayout: ItemLayout, newLayout: ItemLayout) {
+export default function layoutEqual(
+  oldLayout: ItemLayout,
+  newLayout: ItemLayout
+) {
   const oldLayoutType = Object.prototype.toString.call(oldLayout);
   const newLayoutType = Object.prototype.toString.call(newLayout);
 

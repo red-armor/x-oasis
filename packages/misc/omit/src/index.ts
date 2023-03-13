@@ -1,4 +1,4 @@
-export default function omit (
+export default function omit(
   obj: {
     [key: string]: any;
   },
@@ -13,4 +13,4 @@ export default function omit (
   }
 
   return obj;
-};
+}

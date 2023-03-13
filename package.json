@@ -72,7 +72,7 @@
   },
   "prettier": {
     "printWidth": 80,
-    "semi": false,
+    "semi": true,
     "singleQuote": true,
     "trailingComma": "es5"
   },
@@ -80,6 +80,7 @@
   "license": "ISC",
   "devDependencies": {
     "@innei/bump-version": "1.5.9",
+    "@innei/eslint-config-ts": "^0.9.8",
     "@testing-library/jest-dom": "^5.11.10",
     "@types/node": "^16",
     "@vitest/coverage-istanbul": "^0.29.2",

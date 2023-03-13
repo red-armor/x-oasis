@@ -1,4 +1,4 @@
-const hasOwnProperty = Object.prototype.hasOwnProperty
+const hasOwnProperty = Object.prototype.hasOwnProperty;
 /**
  * @param list the collection that the method iterates over.
  * @param fn the function that is invoked for every element in the array.
@@ -6,11 +6,11 @@ const hasOwnProperty = Object.prototype.hasOwnProperty
  */
 function groupBy(list: any[], fn: Function) {
   return list.reduce((acc, val) => {
-    const key = fn(val)
-    acc[key] = acc[key] || []
-    acc[key].push(val)
-    return acc
-  }, {})
+    const key = fn(val);
+    acc[key] = acc[key] || [];
+    acc[key].push(val);
+    return acc;
+  }, {});
 }
 
-export default groupBy
+export default groupBy;
