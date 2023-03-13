@@ -4,7 +4,7 @@
   "description": "noop function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/oyster.esm.js",
+  "module": "dist/noop.esm.js",
   "files": [
     "dist",
     "index.ts",
@@ -17,5 +17,8 @@
     "compile": "tsc -p tsconfig.build.json"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "tsdx": "^0.14.1"
+  }
 }
