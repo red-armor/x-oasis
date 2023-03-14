@@ -30,11 +30,6 @@
       "enable": true,
       "skipUnstable": true
     },
-    "before": [
-      "git pull --rebase",
-      "pnpm i",
-      "npm run build"
-    ],
     "publish": true,
     "allowed_branches": [
       {
