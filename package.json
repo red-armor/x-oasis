@@ -79,7 +79,7 @@
   "author": "youchao liu",
   "license": "ISC",
   "devDependencies": {
-    "@innei/bump-version": "1.5.9",
+    "@innei/bump-version": "1.5.10",
     "@innei/eslint-config-ts": "^0.9.8",
     "@testing-library/jest-dom": "^5.11.10",
     "@types/node": "^16",
