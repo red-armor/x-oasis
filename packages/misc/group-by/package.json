@@ -4,7 +4,7 @@
   "description": "groupBy function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/groupBy.esm.js",
+  "module": "dist/group-by.esm.js",
   "files": [
     "dist",
     "index.ts",
