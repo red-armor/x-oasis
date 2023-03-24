@@ -110,9 +110,6 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
-  packages/utils:
-    specifiers: {}
-
 packages:
 
   /@adobe/css-tools/4.2.0:

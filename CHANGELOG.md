@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## [0.0.13](https://github.com/ryuever/x-oasis/compare/v0.0.12...v0.0.13) (2023-03-24)
+
+
+### Bug Fixes
+
+* groupby module name ([#5](https://github.com/ryuever/x-oasis/issues/5)) ([e9b49de](https://github.com/ryuever/x-oasis/commit/e9b49de82d784471bc62d265c087369dd6d9dfd2))
+* last element not compared in this function ([#7](https://github.com/ryuever/x-oasis/issues/7)) ([0ca1184](https://github.com/ryuever/x-oasis/commit/0ca1184ecd4e5599208df9ddeaf0ef10453a25e4))
+* update deps ([a7a7a30](https://github.com/ryuever/x-oasis/commit/a7a7a3020fe0eecbe924627ca27efb2f5e9077b6))
+
+
+### Features
+
+* add plugin ([#4](https://github.com/ryuever/x-oasis/issues/4)) ([7952e69](https://github.com/ryuever/x-oasis/commit/7952e69f1c3d286e75baeaad79d45bbaa333e017))
+* boolean-with-default ([67b1ca1](https://github.com/ryuever/x-oasis/commit/67b1ca184cccca13fd68918ad8e814ed856e7ed0))
+* remove utils ([ebc24d2](https://github.com/ryuever/x-oasis/commit/ebc24d21855587db67bb11f204b2e49f6a7e417f))
+* update ([01a0bb4](https://github.com/ryuever/x-oasis/commit/01a0bb4d4cb66b182087efb222063b3f95cda4b5))
+* update ([949105d](https://github.com/ryuever/x-oasis/commit/949105d677ca4be46431a16cb823080b4cd6fb0d))
+* update config ([0661690](https://github.com/ryuever/x-oasis/commit/0661690f955083d9a657d1d153b6df6c3d5406f0))
+
+
+
 ## [0.0.12](https://github.com/ryuever/x-oasis/compare/v0.0.11...v0.0.12) (2023-03-13)
 
 
