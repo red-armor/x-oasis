@@ -19,7 +19,7 @@ importers:
       vitest: ^0.29.2
     devDependencies:
       '@innei/bump-version': 1.5.10
-      '@innei/eslint-config-ts': 0.9.8_typescript@4.8.3
+      '@innei/eslint-config-ts': 0.9.8
       '@testing-library/jest-dom': 5.16.5
       '@types/node': 16.18.14
       '@vitest/coverage-istanbul': 0.29.2_vitest@0.29.2
@@ -68,6 +68,12 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/misc/boolean-with-default:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/misc/capitalize:
     specifiers:
       tsdx: ^0.14.1
@@ -103,6 +109,9 @@ importers:
       tsdx: ^0.14.1
     devDependencies:
       tsdx: 0.14.1
+
+  packages/utils:
+    specifiers: {}
 
 packages:
 
@@ -1581,10 +1590,8 @@ packages:
       slugify: 1.6.5
     dev: true
 
-  /@innei/eslint-config-ts/0.9.8_typescript@4.8.3:
+  /@innei/eslint-config-ts/0.9.8:
     resolution: {integrity: sha512-q2QHigFXgea4M4c6J5pAV4OioobE7EuJ/XRkI9645woj86rwWqjxJqYBR7HIOMFXoQd0aLZ2wtmepCofsPIjHQ==}
-    peerDependencies:
-      typescript: '>=4'
     dependencies:
       '@typescript-eslint/eslint-plugin': 5.54.1_4nze5ffgk44facegjqgt6hfpla
       '@typescript-eslint/parser': 5.54.1_gtwhxxwdajerixwgo55s62heyu
@@ -3434,8 +3441,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
-      JSONStream: 1.3.5
       is-text-path: 1.0.1
+      JSONStream: 1.3.5
       lodash: 4.17.21
       meow: 8.1.2
       split2: 3.2.2
