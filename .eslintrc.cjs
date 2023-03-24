@@ -24,6 +24,7 @@ module.exports = {
       },
     ],
     'import/no-default-export': 'off',
+    'prefer-spread': 'off',
   },
   overrides: [
     {

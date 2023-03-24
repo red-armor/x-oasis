@@ -39,6 +39,15 @@ class Batchinator {
     return !!this._taskHandle;
   }
 
+  flush(...args) {
+    if (args.length) this._args = args;
+    if (this._taskHandle) {
+      this._taskHandle.cancel();
+      this._taskHandle = null;
+    }
+    this._callback.apply(this, this._args);
+  }
+
   schedule(...args) {
     this._args = args;
 
