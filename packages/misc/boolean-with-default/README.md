@@ -1,15 +1,15 @@
-# @x-oasis/omit
+# @x-oasis/boolean-with-default
 
 ## Installation
 
 ```bash
-$ npm i @x-oasis/omit
+$ npm i @x-oasis/boolean-with-default
 ```
 
 ## How to use
 
 ```typescript
-import omit from '@x-oasis/omit'
+import booleanWithDefault from '@x-oasis/boolean-with-default'
 ```
 
 ## How to run test
