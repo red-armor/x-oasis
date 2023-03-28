@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/prefix-interval-tree",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "prefix interval tree function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

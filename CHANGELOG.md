@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.0.14](https://github.com/ryuever/x-oasis/compare/v0.0.13...v0.0.14) (2023-03-28)
+
+
+### Features
+
+* add throttle ([f536620](https://github.com/ryuever/x-oasis/commit/f536620d11f8552c302eb6e0fc31a30e42523a39))
+* update boolean-with-default README.md ([a3528ce](https://github.com/ryuever/x-oasis/commit/a3528ced4d7a1bb8e226dac0d23e046c83a3f26a))
+
+
+
 ## [0.0.13](https://github.com/ryuever/x-oasis/compare/v0.0.12...v0.0.13) (2023-03-24)
 
 
