@@ -116,6 +116,30 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/misc/to-string:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/predication/is-object:
+    specifiers:
+      '@x-oasis/to-string': workspace:^0.0.15
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/to-string': link:../../misc/to-string
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/predication/is-ref:
+    specifiers:
+      '@x-oasis/is-object': workspace:^0.0.15
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/is-object': link:../is-object
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/schedule/batchinator:
     specifiers:
       tsdx: ^0.14.1
