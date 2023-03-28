@@ -17,6 +17,6 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
-    "@x-oasis/is-object": "workspace:^0.0.15"
+    "@x-oasis/is-object": "workspace:*"
   }
 }
