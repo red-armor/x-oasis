@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/batchinator",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "batchinator function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

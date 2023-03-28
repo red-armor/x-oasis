@@ -32,6 +32,12 @@ importers:
       vite: 4.1.4_@types+node@16.18.14
       vitest: 0.29.2
 
+  packages/comparison/clamp:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/comparison/is-clamped:
     specifiers:
       tsdx: ^0.14.1
@@ -56,6 +62,12 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/css/color:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/dimension/layout-equal:
     specifiers:
       tsdx: ^0.14.1
@@ -75,6 +87,12 @@ importers:
       tsdx: 0.14.1
 
   packages/misc/capitalize:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/misc/emitter:
     specifiers:
       tsdx: ^0.14.1
     devDependencies:
