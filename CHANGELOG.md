@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.0.17](https://github.com/ryuever/x-oasis/compare/v0.0.16...v0.0.17) (2023-03-28)
+
+
+### Features
+
+* workspace to * ([f6e8f6d](https://github.com/ryuever/x-oasis/commit/f6e8f6d2b96034dc7a7f670219413d96655696a1))
+
+
+
 ## [0.0.16](https://github.com/ryuever/x-oasis/compare/v0.0.15...v0.0.16) (2023-03-28)
 
 

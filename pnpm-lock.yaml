@@ -124,7 +124,7 @@ importers:
 
   packages/predication/is-object:
     specifiers:
-      '@x-oasis/to-string': workspace:^0.0.15
+      '@x-oasis/to-string': workspace:*
       tsdx: ^0.14.1
     dependencies:
       '@x-oasis/to-string': link:../../misc/to-string
@@ -133,7 +133,7 @@ importers:
 
   packages/predication/is-ref:
     specifiers:
-      '@x-oasis/is-object': workspace:^0.0.16
+      '@x-oasis/is-object': workspace:*
       tsdx: ^0.14.1
     dependencies:
       '@x-oasis/is-object': link:../is-object
