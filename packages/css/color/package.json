@@ -1,10 +1,15 @@
 {
-  "name": "@x-oasis/is-clamped",
+  "name": "@x-oasis/color",
   "version": "0.0.14",
-  "description": "is clamped function",
+  "description": "color function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/is-clamped.esm.js",
+  "module": "dist/color.esm.js",
+  "files": [
+    "dist",
+    "index.ts",
+    "src"
+  ],
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",

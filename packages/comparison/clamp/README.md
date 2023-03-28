@@ -1,15 +1,15 @@
-# @x-oasis/is-clamped
+# @x-oasis/clamp
 
 ## Installation
 
 ```bash
-$ npm i @x-oasis/is-clamped
+$ npm i @x-oasis/clamp
 ```
 
 ## How to use
 
 ```typescript
-import isClamped from '@x-oasis/is-clamped'
+import clamp from '@x-oasis/clamp'
 ```
 
 ## How to run test

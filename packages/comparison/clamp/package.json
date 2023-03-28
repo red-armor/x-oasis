@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/is-clamped",
+  "name": "@x-oasis/clamp",
   "version": "0.0.14",
-  "description": "is clamped function",
+  "description": "clamp function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/is-clamped.esm.js",
+  "module": "dist/clamp.esm.js",
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
