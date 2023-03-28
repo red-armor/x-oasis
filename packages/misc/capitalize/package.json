@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/capitalize",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "capitalize function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

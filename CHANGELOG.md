@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.0.16](https://github.com/ryuever/x-oasis/compare/v0.0.15...v0.0.16) (2023-03-28)
+
+
+### Features
+
+* add predication ([683bf85](https://github.com/ryuever/x-oasis/commit/683bf85c259e256e3993f622ae52518bb8c19207))
+
+
+
 ## [0.0.15](https://github.com/ryuever/x-oasis/compare/v0.0.14...v0.0.15) (2023-03-28)
 
 
