@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.0.18](https://github.com/ryuever/x-oasis/compare/v0.0.17...v0.0.18) (2023-04-08)
+
+
+### Features
+
+* add Heap and IntegerBufferSet ([59f4ef1](https://github.com/ryuever/x-oasis/commit/59f4ef1d18740b0a9b4a035d6eb905e70e5917df))
+
+
+
 ## [0.0.17](https://github.com/ryuever/x-oasis/compare/v0.0.16...v0.0.17) (2023-03-28)
 
 
