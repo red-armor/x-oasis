@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.0.20](https://github.com/ryuever/x-oasis/compare/v0.0.19...v0.0.20) (2023-04-12)
+
+
+### Features
+
+* replace hasOwnProperty with Object.prototype.call ([3245dff](https://github.com/ryuever/x-oasis/commit/3245dff35d0f8ef3432a2ba891cb68d168b791fb))
+
+
+
 ## [0.0.19](https://github.com/ryuever/x-oasis/compare/v0.0.18...v0.0.19) (2023-04-08)
 
 

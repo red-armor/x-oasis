@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/omit",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "omit function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
