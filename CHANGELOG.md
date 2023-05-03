@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.1](https://github.com/ryuever/x-oasis/compare/v0.1.0...v0.1.1) (2023-05-03)
+
+
+### Features
+
+* add unique-array-object ([b318709](https://github.com/ryuever/x-oasis/commit/b318709fda3b6669a35cd501229e9d144e1a28a9))
+
+
+
 # [0.1.0](https://github.com/ryuever/x-oasis/compare/v0.0.20...v0.1.0) (2023-04-12)
 
 
