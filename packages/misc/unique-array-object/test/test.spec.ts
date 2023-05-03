@@ -20,8 +20,47 @@ describe('basic', () => {
 
     expect(uniqueArrayObject(state, (item) => item.name)).toEqual([
       {
+        name: 'imageViewable',
+        value: 9,
+      },
+      {
         name: 'viewable',
         value: 8,
+      },
+    ]);
+
+    expect(uniqueArrayObject(state, 'name')).toEqual([
+      {
+        name: 'imageViewable',
+        value: 9,
+      },
+      {
+        name: 'viewable',
+        value: 8,
+      },
+    ]);
+  });
+
+  it('basic - keepLast', () => {
+    const state = [
+      {
+        name: 'viewable',
+        value: 7,
+      },
+      {
+        name: 'imageViewable',
+        value: 9,
+      },
+      {
+        name: 'viewable',
+        value: 8,
+      },
+    ];
+
+    expect(uniqueArrayObject(state, (item) => item.name, true)).toEqual([
+      {
+        name: 'viewable',
+        value: 7,
       },
       {
         name: 'imageViewable',
@@ -29,10 +68,10 @@ describe('basic', () => {
       },
     ]);
 
-    expect(uniqueArrayObject(state, 'name')).toEqual([
+    expect(uniqueArrayObject(state, 'name', true)).toEqual([
       {
         name: 'viewable',
-        value: 8,
+        value: 7,
       },
       {
         name: 'imageViewable',

@@ -1,6 +1,6 @@
 # @x-oasis/unique-array-object
 
-keep the last occurrence
+keep the last on default
 
 ## Installation
 
@@ -18,12 +18,12 @@ const state = [
   { name: 'viewable', value: 8 }
 ]
 
-uniqueArrayObject(state)
+uniqueArrayObject(state, 'name')
 
 // output
 // [
-//   { name: 'viewable', value: 8 },
 //   { name: 'imageViewable', value: 9 }, 
+//   { name: 'viewable', value: 8 },
 // ]
 ```
 
