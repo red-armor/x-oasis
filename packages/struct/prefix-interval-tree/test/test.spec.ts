@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest'
+import { expect, describe, it } from 'vitest';
 
 import PrefixIntervalTree from '../src';
 
@@ -82,5 +82,46 @@ describe('leastStrictUpperBound', () => {
       endIndex: 9,
     });
   });
-});
 
+  it('sumUntil', () => {
+    const intervalTree = new PrefixIntervalTree(4);
+    intervalTree.set(0, 100);
+    intervalTree.set(1, 100);
+    intervalTree.set(2, 100);
+    intervalTree.set(3, 100);
+    intervalTree.set(4, 100);
+    intervalTree.set(5, 100);
+    intervalTree.set(6, 100);
+    intervalTree.set(7, 100);
+    intervalTree.set(8, 100);
+    intervalTree.set(9, 100);
+
+    expect(intervalTree.sumUntil(0)).toBe(0);
+    expect(intervalTree.sumUntil(-1)).toBe(0);
+    expect(intervalTree.sumUntil(-2)).toBe(0);
+    expect(intervalTree.sumUntil(1)).toBe(100);
+    expect(intervalTree.sumUntil(9)).toBe(900);
+    expect(intervalTree.sumUntil(10)).toBe(1000);
+  });
+
+  it('sumTo', () => {
+    const intervalTree = new PrefixIntervalTree(4);
+    intervalTree.set(0, 100);
+    intervalTree.set(1, 100);
+    intervalTree.set(2, 100);
+    intervalTree.set(3, 100);
+    intervalTree.set(4, 100);
+    intervalTree.set(5, 100);
+    intervalTree.set(6, 100);
+    intervalTree.set(7, 100);
+    intervalTree.set(8, 100);
+    intervalTree.set(9, 100);
+
+    expect(intervalTree.sumTo(0)).toBe(100);
+    expect(intervalTree.sumTo(-1)).toBe(0);
+    expect(intervalTree.sumTo(-2)).toBe(0);
+    expect(intervalTree.sumTo(1)).toBe(200);
+    expect(intervalTree.sumTo(9)).toBe(1000);
+    expect(intervalTree.sumTo(10)).toBe(1000);
+  });
+});

@@ -205,11 +205,12 @@ class PrefixIntervalTree {
 
   /**
    * Returns the sum get(0) + get(1) + ... + get(end - 1).
+   * End is not included. if end less than 0, then return 0
    */
   sumUntil(end: number) {
     // invariant(end >= 0 && end < this._size + 1, 'Index out of range %s', end);
 
-    if (end === 0) {
+    if (end <= 0) {
       return 0;
     }
 
