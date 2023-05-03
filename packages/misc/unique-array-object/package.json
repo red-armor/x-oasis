@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/unique-array-object",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "unique-array-object function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

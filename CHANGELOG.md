@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.2](https://github.com/ryuever/x-oasis/compare/v0.1.1...v0.1.2) (2023-05-03)
+
+
+### Features
+
+* uniqueArrayObject support keepFirst ([e87cecd](https://github.com/ryuever/x-oasis/commit/e87cecd42a4def196277e93fd9e2d74b4dcf27ba))
+
+
+
 ## [0.1.1](https://github.com/ryuever/x-oasis/compare/v0.1.0...v0.1.1) (2023-05-03)
 
 
