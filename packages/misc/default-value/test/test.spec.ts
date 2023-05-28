@@ -1,12 +1,15 @@
 import { expect, test } from 'vitest';
-import booleanWithDefault from '../src';
+import defaultValue from '../src';
 
 test('boolean with default', async () => {
-  expect(booleanWithDefault(undefined, false)).toBe(false);
-  expect(booleanWithDefault(undefined, true)).toBe(true);
-  expect(booleanWithDefault(false, true)).toBe(false);
-  expect(booleanWithDefault(true, false)).toBe(true);
-  expect(booleanWithDefault(true)).toBe(true);
-  expect(booleanWithDefault(false)).toBe(false);
-  expect(booleanWithDefault(undefined)).toBe(false);
+  expect(defaultValue(undefined, false)).toBe(false);
+  expect(defaultValue(undefined, true)).toBe(true);
+  expect(defaultValue(NaN, false)).toBe(false);
+  expect(defaultValue(NaN, true)).toBe(true);
+  expect(defaultValue(null, false)).toBe(false);
+  expect(defaultValue(null, true)).toBe(true);
+  expect(defaultValue(false, false)).toBe(false);
+  expect(defaultValue(true, true)).toBe(true);
+  expect(defaultValue(3, true)).toBe(3);
+  expect(defaultValue(0, true)).toBe(0);
 });

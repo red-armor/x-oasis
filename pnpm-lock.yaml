@@ -80,15 +80,18 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
-  packages/misc/boolean-with-default:
+  packages/misc/capitalize:
     specifiers:
       tsdx: ^0.14.1
     devDependencies:
       tsdx: 0.14.1
 
-  packages/misc/capitalize:
+  packages/misc/default-boolean-value:
     specifiers:
+      '@x-oasis/default-value': workspace:*
       tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/default-value': link:../default-value
     devDependencies:
       tsdx: 0.14.1
 
