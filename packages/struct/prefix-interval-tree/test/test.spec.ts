@@ -73,10 +73,13 @@ describe('leastStrictUpperBound', () => {
       startIndex: 0,
       endIndex: 3,
     });
+
     expect(intervalTree.computeRange(400, 500)).toEqual({
       startIndex: 3,
       endIndex: 4,
     });
+
+    expect(intervalTree.sumUntil(3)).toBe(300);
     expect(intervalTree.computeRange(400, 901)).toEqual({
       startIndex: 3,
       endIndex: 9,

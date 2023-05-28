@@ -305,6 +305,17 @@ class PrefixIntervalTree {
     return Math.min(node - this._half, this._maxUsefulLength - 1);
   }
 
+  /**
+   *
+   * @param minOffset
+   * @param maxOffset
+   * @returns
+   *
+   * pending issue:
+   * when item with length list [100, 100, 100, 100, 100].
+   * this.leastStrictUpperBound(330) = 3
+   * this.leastStrictUpperBound(400) = 3 (should be 4....)
+   */
   computeRange(minOffset: number, maxOffset: number) {
     if (this.getHeap()[1] < minOffset) {
       return {
@@ -313,9 +324,10 @@ class PrefixIntervalTree {
       };
     }
     const startIndex = this.leastStrictUpperBound(minOffset);
+
     // end的话，需要把index + 1，这样才能够把自个也加进去
     const endIndex = Math.min(
-      this.greatestStrictLowerBound(maxOffset),
+      this.leastStrictUpperBound(maxOffset),
       Math.max(this._maxUsefulLength - 1, 0)
     );
 
