@@ -1,5 +1,6 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vitest';
+import shallowArrayEqual from '../src';
 
-test('vitest', async () => {
-  expect('vitest').toBe('vitest')
-})
+test('vitest', () => {
+  expect(shallowArrayEqual([], [])).toBe(true);
+});

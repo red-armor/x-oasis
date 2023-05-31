@@ -17,3 +17,9 @@ import shallowArrayEqual from '@x-oasis/shallow-array-equal'
 ```bash
 $ pnpm test
 ```
+
+## Simple Example
+
+```ts
+
+```
