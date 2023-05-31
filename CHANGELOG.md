@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.1.5](https://github.com/ryuever/x-oasis/compare/v0.1.4...v0.1.5) (2023-05-31)
+
+
+### Features
+
+* shallowArrayEqual ([e0c13ea](https://github.com/ryuever/x-oasis/commit/e0c13eaecf4763c3e566f5d01ad376038c49c58d))
+* update ([cf77ee0](https://github.com/ryuever/x-oasis/commit/cf77ee0056bd7f4c0cfff383c8a64ef6579cd217))
+
+
+
 ## [0.1.4](https://github.com/ryuever/x-oasis/compare/v0.1.3...v0.1.4) (2023-05-28)
 
 
