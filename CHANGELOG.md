@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.8](https://github.com/ryuever/x-oasis/compare/v0.1.7...v0.1.8) (2023-06-02)
+
+
+### Features
+
+* batchinateLast ([9b9fafa](https://github.com/ryuever/x-oasis/commit/9b9fafa0b971c0b9c2d11386e2883ee5c1aa357a))
+
+
+
 ## [0.1.7](https://github.com/ryuever/x-oasis/compare/v0.1.6...v0.1.7) (2023-05-31)
 
 
