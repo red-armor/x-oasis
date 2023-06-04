@@ -28,4 +28,6 @@ The main difference between this and debouncing is that debounce guarantees the 
 ## Further Reading
 
 - [lodash - debounce](https://lodash.com/docs/4.17.15#debounce)
-- 
+- [Debouncing and Throttling Explained Through Examples](https://css-tricks.com/debouncing-throttling-explained-examples/)
+- [Debouncing Javascript Methods](http://unscriptable.com/2009/03/20/debouncing-javascript-methods/)
+- [Difference Between throttling and debouncing a function](https://stackoverflow.com/questions/25991367/difference-between-throttling-and-debouncing-a-function)
