@@ -95,6 +95,15 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/misc/default-number-value:
+    specifiers:
+      '@x-oasis/default-value': workspace:*
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/default-value': link:../default-value
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/misc/default-value:
     specifiers:
       tsdx: ^0.14.1
@@ -164,6 +173,17 @@ importers:
   packages/schedule/batchinator:
     specifiers:
       tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/schedule/debounce:
+    specifiers:
+      '@x-oasis/default-boolean-value': workspace:*
+      '@x-oasis/default-number-value': workspace:*
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/default-boolean-value': link:../../misc/default-boolean-value
+      '@x-oasis/default-number-value': link:../../misc/default-number-value
     devDependencies:
       tsdx: 0.14.1
 

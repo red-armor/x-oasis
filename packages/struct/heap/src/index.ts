@@ -10,7 +10,7 @@ class Heap<T extends HeapBasicItem = HeapBasicItem> {
   private _size: number;
   private _comparator: Comparator;
 
-  constructor(items: Array<T>, comparator: Comparator) {
+  constructor(items: Array<T>, comparator?: Comparator) {
     this._items = items || [];
     this._size = this._items.length;
     this._comparator = comparator || defaultComparator;

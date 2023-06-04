@@ -1,10 +1,15 @@
 {
-  "name": "@x-oasis/debounce",
+  "name": "@x-oasis/default-number-value",
   "version": "0.1.8",
-  "description": "debounce function",
+  "description": "default-number-value function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/debounce.esm.js",
+  "module": "dist/default-number-value.esm.js",
+  "files": [
+    "dist",
+    "index.ts",
+    "src"
+  ],
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
@@ -13,11 +18,10 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@x-oasis/default-boolean-value": "workspace:*",
-    "@x-oasis/default-number-value": "workspace:*"
-  },
   "devDependencies": {
     "tsdx": "^0.14.1"
+  },
+  "dependencies": {
+    "@x-oasis/default-value": "workspace:*"
   }
 }
