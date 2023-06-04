@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.9](https://github.com/ryuever/x-oasis/compare/v0.1.8...v0.1.9) (2023-06-04)
+
+
+### Features
+
+* throttle ([20f8059](https://github.com/ryuever/x-oasis/commit/20f80591784439b82444ac3dd5c85ec52a6a8f1a))
+
+
+
 ## [0.1.8](https://github.com/ryuever/x-oasis/compare/v0.1.7...v0.1.8) (2023-06-02)
 
 
