@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.10](https://github.com/ryuever/x-oasis/compare/v0.1.9...v0.1.10) (2023-06-10)
+
+
+### Features
+
+* batchinator support leading ([36ab732](https://github.com/ryuever/x-oasis/commit/36ab7325d6b94a3d0709c0e6c7559fc94d10a95d))
+
+
+
 ## [0.1.9](https://github.com/ryuever/x-oasis/compare/v0.1.8...v0.1.9) (2023-06-04)
 
 
