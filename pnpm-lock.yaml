@@ -163,7 +163,10 @@ importers:
 
   packages/schedule/batchinator:
     specifiers:
+      '@x-oasis/default-boolean-value': workspace:*
       tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/default-boolean-value': link:../../misc/default-boolean-value
     devDependencies:
       tsdx: 0.14.1
 
