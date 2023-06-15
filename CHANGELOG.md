@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.11](https://github.com/ryuever/x-oasis/compare/v0.1.10...v0.1.11) (2023-06-15)
+
+
+### Features
+
+* add functional ([2779fc6](https://github.com/ryuever/x-oasis/commit/2779fc669ec4c40a0a799f764a03872b082405ce))
+
+
+
 ## [0.1.10](https://github.com/ryuever/x-oasis/compare/v0.1.9...v0.1.10) (2023-06-10)
 
 
