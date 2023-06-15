@@ -80,6 +80,33 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/functional/each:
+    specifiers:
+      '@x-oasis/is-object': workspace:*
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/is-object': link:../../predication/is-object
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/functional/group-by:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/functional/omit:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/functional/unique-array-object:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/misc/capitalize:
     specifiers:
       tsdx: ^0.14.1
@@ -107,31 +134,7 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
-  packages/misc/group-by:
-    specifiers:
-      tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
   packages/misc/noop:
-    specifiers:
-      tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/misc/omit:
-    specifiers:
-      tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/misc/to-string:
-    specifiers:
-      tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/misc/unique-array-object:
     specifiers:
       tsdx: ^0.14.1
     devDependencies:
@@ -142,7 +145,7 @@ importers:
       '@x-oasis/to-string': workspace:*
       tsdx: ^0.14.1
     dependencies:
-      '@x-oasis/to-string': link:../../misc/to-string
+      '@x-oasis/to-string': link:../../proto/to-string
     devDependencies:
       tsdx: 0.14.1
 
@@ -152,6 +155,42 @@ importers:
       tsdx: ^0.14.1
     dependencies:
       '@x-oasis/is-object': link:../is-object
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/proto/can-I-use-proxy:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/proto/create-hidden-property:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/proto/hide-property:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/proto/inherit:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/proto/own-keys:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/proto/to-string:
+    specifiers:
+      tsdx: ^0.14.1
     devDependencies:
       tsdx: 0.14.1
 

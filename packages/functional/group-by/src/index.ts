@@ -1,4 +1,3 @@
-const hasOwnProperty = Object.prototype.hasOwnProperty;
 /**
  * @param list the collection that the method iterates over.
  * @param fn the function that is invoked for every element in the array.

@@ -1,6 +1,6 @@
 // import path from 'path';
 // import tsPath from 'vite-tsconfig-paths';
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
 
 // const __dirname = import.meta.url.slice(7, import.meta.url.lastIndexOf('/'));
 
@@ -23,4 +23,4 @@ export default defineConfig({
   define: {
     __DEV__: false,
   },
-})
+});
