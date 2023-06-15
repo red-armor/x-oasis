@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.1.12](https://github.com/ryuever/x-oasis/compare/v0.1.11...v0.1.12) (2023-06-15)
+
+
+### Features
+
+* add nullThrow ([bae6426](https://github.com/ryuever/x-oasis/commit/bae6426173307ac8e693338bd0bb98b9d4b9fe26))
+* update ([1161bf6](https://github.com/ryuever/x-oasis/commit/1161bf69093de8fd085687644306c387130d0d85))
+
+
+
 ## [0.1.11](https://github.com/ryuever/x-oasis/compare/v0.1.10...v0.1.11) (2023-06-15)
 
 

@@ -236,6 +236,12 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/throw/null-throw:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
 packages:
 
   /@adobe/css-tools/4.2.0:
