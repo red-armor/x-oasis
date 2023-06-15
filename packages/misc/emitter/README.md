@@ -17,3 +17,6 @@ import Emitter from '@x-oasis/emitter'
 ```bash
 $ pnpm test
 ```
+
+## Further Reading
+- [events](https://github.com/parcel-bundler/parcel/tree/v2/packages/utils/events)
