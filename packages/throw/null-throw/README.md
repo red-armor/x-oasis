@@ -17,3 +17,7 @@ import nullThrow from '@x-oasis/null-throw'
 ```bash
 $ pnpm test
 ```
+
+## Reading More
+
+- [Invariant Violation - framesToPop 1 #179](https://github.com/jaredpalmer/after.js/issues/179)
