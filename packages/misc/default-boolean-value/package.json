@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/default-boolean-value",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "default-boolean-value function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.1.13](https://github.com/ryuever/x-oasis/compare/v0.1.12...v0.1.13) (2023-06-24)
+
+
+### Features
+
+* integer-buffer-set provider customize fn ([5e95e1e](https://github.com/ryuever/x-oasis/commit/5e95e1e9ca3c04889abcfc390ea5138ea71674df))
+* update docs ([c23508e](https://github.com/ryuever/x-oasis/commit/c23508e76d1e40dcbcc0efcf09e4c58aa263e6a2))
+
+
+
 ## [0.1.12](https://github.com/ryuever/x-oasis/compare/v0.1.11...v0.1.12) (2023-06-15)
 
 
