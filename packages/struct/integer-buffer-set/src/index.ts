@@ -6,6 +6,23 @@ type HeapItem = {
   value: number;
 };
 
+const defaultUseMinValueFn = (options: {
+  safeRange: {
+    lowValue: number;
+    highValue: number;
+  };
+  bufferSetRange: {
+    maxValue: number;
+    minValue: number;
+  };
+  currentIndex: number;
+}) => {
+  const { safeRange, bufferSetRange } = options;
+  const { lowValue, highValue } = safeRange;
+  const { maxValue, minValue } = bufferSetRange;
+  return lowValue - minValue > maxValue - highValue;
+};
+
 // Data structure that allows to store values and assign positions to them
 // in a way to minimize changing positions of stored values when new ones are
 // added or when some values are replaced. Stored elements are alwasy assigned
@@ -86,7 +103,18 @@ class IntegerBufferSet {
   replaceFurthestValuePosition(
     lowValue: number,
     highValue: number,
-    newValue: number
+    newValue: number,
+    useMinValueFn: (options: {
+      safeRange: {
+        lowValue: number;
+        highValue: number;
+      };
+      bufferSetRange: {
+        maxValue: number;
+        minValue: number;
+      };
+      currentIndex: number;
+    }) => boolean = defaultUseMinValueFn
   ): null | number {
     if (this._valueToPositionMap[newValue] !== undefined) {
       console.warn(
@@ -115,7 +143,20 @@ class IntegerBufferSet {
     }
 
     let valueToReplace;
-    if (lowValue - minValue > maxValue - highValue) {
+    if (
+      useMinValueFn({
+        safeRange: {
+          lowValue,
+          highValue,
+        },
+        bufferSetRange: {
+          minValue,
+          maxValue,
+        },
+        currentIndex: newValue,
+      })
+    ) {
+      // if (lowValue - minValue > maxValue - highValue) {
       // minValue is further from provided range. We will reuse it's position.
       valueToReplace = minValue;
       this._smallValues.pop();
