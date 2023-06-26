@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.14](https://github.com/ryuever/x-oasis/compare/v0.1.13...v0.1.14) (2023-06-26)
+
+
+### Bug Fixes
+
+* layout eqaul not correct ([1ba5506](https://github.com/ryuever/x-oasis/commit/1ba5506e8d89fbe60305a8b5cfa56a104e9814ff))
+
+
+
 ## [0.1.13](https://github.com/ryuever/x-oasis/compare/v0.1.12...v0.1.13) (2023-06-24)
 
 

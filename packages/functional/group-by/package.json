@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/group-by",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "groupBy function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
