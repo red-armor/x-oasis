@@ -12,9 +12,8 @@ export default function layoutEqual(
   const newLayoutType = Object.prototype.toString.call(newLayout);
 
   if (oldLayoutType === newLayoutType && newLayoutType === '[object Object]') {
-    for (let index = 0; index < KEY_TO_CHECK.length; index++) {
-      const key = KEY_TO_CHECK[index];
-      if (!(key in keysToCheck)) continue;
+    for (let index = 0; index < keysToCheck.length; index++) {
+      const key = keysToCheck[index];
       if (oldLayout[key] !== newLayout[key]) {
         return false;
       }
