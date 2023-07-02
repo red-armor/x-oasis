@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.16](https://github.com/ryuever/x-oasis/compare/v0.1.15...v0.1.16) (2023-07-02)
+
+
+### Bug Fixes
+
+* layout-equal issue ([c584150](https://github.com/ryuever/x-oasis/commit/c5841507e37aa1b843716190c57c9be823dda781))
+
+
+
 ## [0.1.15](https://github.com/ryuever/x-oasis/compare/v0.1.14...v0.1.15) (2023-07-02)
 
 

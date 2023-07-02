@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/batchinate-last",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "batchinate-last function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

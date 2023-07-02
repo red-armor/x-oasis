@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/heap",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "heap function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
