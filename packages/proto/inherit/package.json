@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/inherit",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "inherit function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

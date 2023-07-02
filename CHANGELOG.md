@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.15](https://github.com/ryuever/x-oasis/compare/v0.1.14...v0.1.15) (2023-07-02)
+
+
+### Features
+
+* layout-equal add correctionValue ([9630ade](https://github.com/ryuever/x-oasis/commit/9630ade0389e8e349a319d5c5c96a30075e05881))
+
+
+
 ## [0.1.14](https://github.com/ryuever/x-oasis/compare/v0.1.13...v0.1.14) (2023-06-26)
 
 
