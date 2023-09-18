@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/layout-equal",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "select value function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

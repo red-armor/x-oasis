@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.18](https://github.com/ryuever/x-oasis/compare/v0.1.17...v0.1.18) (2023-09-18)
+
+
+### Bug Fixes
+
+* remove ([41c6f8d](https://github.com/ryuever/x-oasis/commit/41c6f8df438f47fba9229a35dfa3104160ff29af))
+
+
+
 ## [0.1.17](https://github.com/ryuever/x-oasis/compare/v0.1.16...v0.1.17) (2023-09-18)
 
 
