@@ -41,6 +41,7 @@ class IntegerBufferSet {
   };
   private _smallValues: Heap<HeapItem>;
   private _largeValues: Heap<HeapItem>;
+  private _vacantPositions: Array<number>;
 
   constructor() {
     this._valueToPositionMap = {};
@@ -53,6 +54,8 @@ class IntegerBufferSet {
     this.getSize = this.getSize.bind(this);
     this.replaceFurthestValuePosition =
       this.replaceFurthestValuePosition.bind(this);
+
+    this._vacantPositions = [];
   }
 
   getSize() {
@@ -100,6 +103,18 @@ class IntegerBufferSet {
     return this._largeValues.peek()?.value;
   }
 
+  setPositionValue(position: number, value: number) {
+    const originalPosition = this._valueToPositionMap[value];
+    if (originalPosition !== undefined) {
+      const index = this._vacantPositions.findIndex(
+        (v) => v === originalPosition
+      );
+      if (index === -1) this._vacantPositions.push(originalPosition);
+      delete this._valueToPositionMap[value];
+      this._valueToPositionMap[value] = position;
+    }
+  }
+
   replaceFurthestValuePosition(
     lowValue: number,
     highValue: number,
@@ -135,6 +150,13 @@ class IntegerBufferSet {
       return null;
     }
 
+    if (this._vacantPositions.length) {
+      const position = this._vacantPositions.pop();
+      this._valueToPositionMap[newValue] = position;
+      this._pushToHeaps(position, newValue);
+      return position;
+    }
+
     const minValue = this._smallValues.peek()!.value;
     const maxValue = this._largeValues.peek()!.value;
     if (minValue >= lowValue && maxValue <= highValue) {
@@ -168,6 +190,9 @@ class IntegerBufferSet {
     delete this._valueToPositionMap[valueToReplace];
     this._valueToPositionMap[newValue] = position;
     this._pushToHeaps(position, newValue);
+
+    const _i = this._vacantPositions.findIndex((v) => v === position);
+    if (_i !== -1) this._vacantPositions.splice(_i, 1);
 
     return position;
   }
