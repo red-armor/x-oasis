@@ -120,28 +120,51 @@ class PrefixIntervalTree {
   }
 
   remove(index: number) {
-    if (index > this._size) return false;
+    // if typeof index === 'undefined', then it will go into looooooooop
+    if (typeof index !== 'number' || index >= this._maxUsefulLength) return;
+    if (isNaN(index)) {
+      console.warn('Passing a NaN value as interval tree index');
+      return;
+    }
+
     const nextHeap = createArray(this._half * 2);
-
-    for (let i = 0; i < this._size; i++) {
-      let step = 0;
-      if (index === i) {
-        step = 1;
-        continue;
-      }
-      nextHeap[this._half + i - step] = this._heap[this._half + i] || 0;
+    const copy = this._heap.slice(this._half);
+    copy.splice(index, 1);
+    for (let index = this._half; index < this._half * 2; index++) {
+      nextHeap[index] = copy[index - this._half];
+    }
+    for (let index = this._half - 1; index >= 0; index--) {
+      nextHeap[index] =
+        (nextHeap[2 * index] || 0) + (nextHeap[2 * index + 1] || 0);
     }
 
-    for (let i = this._half - 1; i > 0; i--) {
-      nextHeap[i] = nextHeap[2 * i] + nextHeap[2 * i + 1];
-    }
-
+    this._maxUsefulLength = this._maxUsefulLength - 1;
     this._heap = nextHeap;
-
-    this._maxUsefulLength = Math.max(0, this._maxUsefulLength - 1);
-
-    return true;
   }
+
+  // remove(index: number) {
+  //   if (index > this._size) return false;
+  //   const nextHeap = createArray(this._half * 2);
+
+  //   for (let i = 0; i < this._size; i++) {
+  //     let step = 0;
+  //     if (index === i) {
+  //       step = 1;
+  //       continue;
+  //     }
+  //     nextHeap[this._half + i - step] = this._heap[this._half + i] || 0;
+  //   }
+
+  //   for (let i = this._half - 1; i > 0; i--) {
+  //     nextHeap[i] = nextHeap[2 * i] + nextHeap[2 * i + 1];
+  //   }
+
+  //   this._heap = nextHeap;
+
+  //   this._maxUsefulLength = Math.max(0, this._maxUsefulLength - 1);
+
+  //   return true;
+  // }
 
   set(index: number, value: number) {
     // if typeof index === 'undefined', then it will go into looooooooop
