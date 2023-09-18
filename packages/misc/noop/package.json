@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/noop",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "noop function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

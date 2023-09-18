@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.17](https://github.com/ryuever/x-oasis/compare/v0.1.16...v0.1.17) (2023-09-18)
+
+
+### Bug Fixes
+
+* PrefixIntervalTree remove function ([759385f](https://github.com/ryuever/x-oasis/commit/759385ff95541209fa896d31a445e641f2a77d86))
+
+
+
 ## [0.1.16](https://github.com/ryuever/x-oasis/compare/v0.1.15...v0.1.16) (2023-07-02)
 
 
