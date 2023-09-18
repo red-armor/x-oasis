@@ -131,11 +131,11 @@ class PrefixIntervalTree {
     const copy = this._heap.slice(this._half);
     copy.splice(index, 1);
     for (let index = this._half; index < this._half * 2; index++) {
-      nextHeap[index] = copy[index - this._half];
+      nextHeap[index] = copy[index - this._half] || 0;
     }
-    for (let index = this._half - 1; index >= 0; index--) {
-      nextHeap[index] =
-        (nextHeap[2 * index] || 0) + (nextHeap[2 * index + 1] || 0);
+
+    for (let index = this._half - 1; index > 0; index--) {
+      nextHeap[index] = nextHeap[2 * index] + nextHeap[2 * index + 1];
     }
 
     this._maxUsefulLength = this._maxUsefulLength - 1;
