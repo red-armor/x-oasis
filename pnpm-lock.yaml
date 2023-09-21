@@ -236,6 +236,15 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/struct/recycler:
+    specifiers:
+      '@x-oasis/integer-buffer-set': workspace:*
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/integer-buffer-set': link:../integer-buffer-set
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/throw/null-throw:
     specifiers:
       tsdx: ^0.14.1

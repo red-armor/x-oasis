@@ -1,0 +1,31 @@
+export type RecyclerProps = {
+  recyclerTypes: Array<string>;
+  recyclerBufferSize: number;
+  thresholdIndexValue: number;
+  recyclerReservedBufferPerBatch: number;
+  owner: any;
+};
+
+export type SafeRange = {
+  startIndex: number;
+  endIndex: number;
+};
+
+export type FixedBufferProps = {
+  /**
+   * index which start to replace
+   */
+  thresholdIndexValue: number;
+  /**
+   * max size
+   */
+  size: number;
+
+  recyclerReservedBufferSize: number;
+
+  recyclerType: string;
+
+  startIndex: number;
+  endIndex: number;
+  owner: any;
+};
