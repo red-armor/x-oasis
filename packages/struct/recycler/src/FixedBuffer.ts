@@ -1,6 +1,6 @@
 import IntegerBufferSet from '@x-oasis/integer-buffer-set';
-import { SafeRange, FixedBufferProps } from './types';
-type ItemMeta = any;
+import { SafeRange, FixedBufferProps, ItemMeta } from './types';
+import { DEFAULT_RECYCLER_TYPE } from './common';
 
 class FixedBuffer {
   private _bufferSet = new IntegerBufferSet();
@@ -16,22 +16,20 @@ class FixedBuffer {
   private _owner: any;
 
   private _startIndex: number;
-  private _endIndex: number;
   private _recyclerType: string;
   private _indices: Array<number> = [];
   private _recyclerReservedBufferSize: number;
 
   private _indicesCopy = [];
-  private _newIndices = [];
   private _itemMetaIndices = [];
   private _newItemMetaIndices = [];
 
-  constructor(props: FixedBufferProps) {
+  constructor(props?: FixedBufferProps) {
     const {
       size,
-      thresholdIndexValue,
+      thresholdIndexValue = 0,
       recyclerReservedBufferSize,
-      recyclerType,
+      recyclerType = DEFAULT_RECYCLER_TYPE,
       owner,
       startIndex,
     } = props;

@@ -15,17 +15,18 @@ export type FixedBufferProps = {
   /**
    * index which start to replace
    */
-  thresholdIndexValue: number;
+  thresholdIndexValue?: number;
   /**
    * max size
    */
-  size: number;
+  size?: number;
 
-  recyclerReservedBufferSize: number;
+  recyclerReservedBufferSize?: number;
 
-  recyclerType: string;
+  recyclerType?: string;
 
-  startIndex: number;
-  endIndex: number;
-  owner: any;
+  startIndex?: number;
+  owner?: any;
 };
+
+export type ItemMeta = any;
