@@ -1,14 +1,14 @@
 import FixedBuffer from './FixedBuffer';
 import { RecyclerProps } from './types';
-
-export const RECYCLER_THRESHOLD_INDEX_VALUE = 0;
-export const RECYCLER_RESERVED_BUFFER_PER_BATCH = 4;
-export const RECYCLER_BUFFER_SIZE = 12;
-export const RECYCLER_RESERVED_BUFFER_SIZE_RATIO = 1.5;
+import {
+  DEFAULT_RECYCLER_TYPE,
+  RECYCLER_BUFFER_SIZE,
+  RECYCLER_RESERVED_BUFFER_PER_BATCH,
+  RECYCLER_RESERVED_BUFFER_SIZE_RATIO,
+  RECYCLER_THRESHOLD_INDEX_VALUE,
+} from './common';
 
 class Recycler {
-  private _owner: any;
-
   private _queue: Array<FixedBuffer> = [];
 
   /**
@@ -21,17 +21,24 @@ class Recycler {
    */
   private _recyclerBufferSize: number;
   private _recyclerReservedBufferSize: number;
+  private _metaExtractor: (index: number) => any;
+  private _indexExtractor: (meta: any) => number;
+  private _getType: (index: number) => string;
 
-  constructor(props: RecyclerProps) {
+  constructor(props?: RecyclerProps) {
     const {
-      owner,
+      getType,
+      metaExtractor,
+      indexExtractor,
       recyclerTypes = [],
-      thresholdIndexValue = RECYCLER_THRESHOLD_INDEX_VALUE,
       recyclerBufferSize = RECYCLER_BUFFER_SIZE,
+      thresholdIndexValue = RECYCLER_THRESHOLD_INDEX_VALUE,
       recyclerReservedBufferPerBatch = RECYCLER_RESERVED_BUFFER_PER_BATCH,
-    } = props;
+    } = props || {};
 
-    this._owner = owner;
+    this._metaExtractor = metaExtractor;
+    this._indexExtractor = indexExtractor;
+    this._getType = getType;
     this._recyclerBufferSize = recyclerBufferSize;
     this._thresholdIndexValue = thresholdIndexValue;
     this._recyclerReservedBufferSize = Math.floor(
@@ -39,6 +46,10 @@ class Recycler {
     );
     this._recyclerReservedBufferPerBatch = recyclerReservedBufferPerBatch;
     recyclerTypes.forEach((type) => this.addBuffer(type));
+  }
+
+  get queue() {
+    return this._queue;
   }
 
   get thresholdIndexValue() {
@@ -54,23 +65,24 @@ class Recycler {
   }
 
   addBuffer(type: string) {
-    if (!type) return false;
+    if (!type) return null;
     const index = this._queue.findIndex(
       (buffer) => buffer.recyclerType === type
     );
-    if (index !== -1) return false;
-    const startIndex = this._queue.length * this._recyclerReservedBufferSize;
+    if (index !== -1) return this._queue[index];
     const buffer = new FixedBuffer({
-      startIndex,
-      owner: this._owner,
       recyclerType: type,
-      size: this._recyclerBufferSize,
+      metaExtractor: this._metaExtractor,
+      indexExtractor: this._indexExtractor,
+      bufferSize: this._recyclerBufferSize,
       thresholdIndexValue: this._thresholdIndexValue,
-      recyclerReservedBufferSize: this._recyclerReservedBufferSize,
-      endIndex: startIndex + this._recyclerReservedBufferSize,
     });
     this._queue.push(buffer);
-    return true;
+    return buffer;
+  }
+
+  ensureBuffer(type: string) {
+    return this.addBuffer(type || DEFAULT_RECYCLER_TYPE);
   }
 
   updateIndices(props: {
@@ -85,10 +97,10 @@ class Recycler {
     maxCount: number;
     step: number;
 
-    /** the max index value, always be the length of data */
+    // /** the max index value, always be the length of data */
     maxIndex: number;
   }) {
-    this._queue.forEach((buffer) => buffer.start());
+    // this._queue.forEach((buffer) => buffer.start());
     const {
       startIndex: _startIndex,
       safeRange,
@@ -97,7 +109,6 @@ class Recycler {
       maxIndex,
     } = props;
     const startIndex = Math.max(_startIndex, 0);
-    // let finalIndex = startIndex;
     let count = 0;
     if (maxCount < 0) return null;
     for (
@@ -106,24 +117,17 @@ class Recycler {
       index += step
     ) {
       if (index < this._thresholdIndexValue) continue;
-      const itemMeta = this._owner.getFinalIndexItemMeta(index);
+      const recyclerType = this._getType(index);
 
       // itemLayout should not be a condition, may cause too many unLayout item
       if (count < maxCount) {
-        if (itemMeta) {
-          const recyclerType = itemMeta.recyclerType;
-          const buffer = this._queue.find(
-            (_buffer) => _buffer.recyclerType === recyclerType
-          );
-          if (buffer) buffer.place(index, itemMeta, safeRange);
-        }
+        const buffer = this.ensureBuffer(recyclerType);
+        buffer.place(index, safeRange);
       } else {
         break;
       }
 
       if (index >= this._thresholdIndexValue) count++;
-
-      // if (itemMeta && !itemMeta.ignoredToPerBatch) count++;
     }
   }
 

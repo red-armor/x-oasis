@@ -45,6 +45,14 @@ class Heap<T extends HeapBasicItem = HeapBasicItem> {
     return elt;
   }
 
+  // https://stackoverflow.com/questions/8705099/how-to-delete-in-a-heap-data-structure
+  remove(item: T) {
+    // @ts-ignore
+    const index = this._items.findIndex((_item) => _item.value === item.value);
+    this._items.splice(index, 1);
+    this._sinkDown(index);
+  }
+
   /*
    * @param {*} item
    */

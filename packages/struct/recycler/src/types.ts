@@ -1,9 +1,11 @@
 export type RecyclerProps = {
-  recyclerTypes: Array<string>;
-  recyclerBufferSize: number;
-  thresholdIndexValue: number;
-  recyclerReservedBufferPerBatch: number;
-  owner: any;
+  recyclerTypes?: Array<string>;
+  recyclerBufferSize?: number;
+  thresholdIndexValue?: number;
+  recyclerReservedBufferPerBatch?: number;
+  metaExtractor?: (index: number) => any;
+  indexExtractor?: (meta: any) => number;
+  getType?: (index: number) => string;
 };
 
 export type SafeRange = {
@@ -15,17 +17,24 @@ export type FixedBufferProps = {
   /**
    * index which start to replace
    */
-  thresholdIndexValue: number;
+  thresholdIndexValue?: number;
   /**
    * max size
    */
-  size: number;
+  bufferSize?: number;
 
-  recyclerReservedBufferSize: number;
+  recyclerType?: string;
 
-  recyclerType: string;
-
-  startIndex: number;
-  endIndex: number;
-  owner: any;
+  metaExtractor?: (index: number) => any;
+  indexExtractor?: (meta: any) => number;
 };
+
+export type ItemMeta = any;
+
+export type FixedBufferStateItem = {
+  targetIndex: number;
+  recyclerKey: string;
+  itemMeta: any;
+};
+
+export type FixedBufferState = Array<FixedBufferStateItem>;
