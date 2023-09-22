@@ -30,3 +30,11 @@ export type FixedBufferProps = {
 };
 
 export type ItemMeta = any;
+
+export type FixedBufferStateItem = {
+  targetIndex: number;
+  recyclerKey: string;
+  itemMeta: any;
+};
+
+export type FixedBufferState = Array<FixedBufferStateItem>;

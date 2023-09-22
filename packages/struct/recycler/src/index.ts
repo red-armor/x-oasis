@@ -68,7 +68,6 @@ class Recycler {
       size: this._recyclerBufferSize,
       thresholdIndexValue: this._thresholdIndexValue,
       recyclerReservedBufferSize: this._recyclerReservedBufferSize,
-      endIndex: startIndex + this._recyclerReservedBufferSize,
     });
     this._queue.push(buffer);
     return true;
@@ -98,7 +97,6 @@ class Recycler {
       maxIndex,
     } = props;
     const startIndex = Math.max(_startIndex, 0);
-    // let finalIndex = startIndex;
     let count = 0;
     if (maxCount < 0) return null;
     for (

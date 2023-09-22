@@ -1,6 +1,13 @@
 import IntegerBufferSet from '@x-oasis/integer-buffer-set';
-import { SafeRange, FixedBufferProps, ItemMeta } from './types';
-import { DEFAULT_RECYCLER_TYPE } from './common';
+import {
+  SafeRange,
+  FixedBufferProps,
+  ItemMeta,
+  FixedBufferState,
+} from './types';
+import { DEFAULT_RECYCLER_TYPE, RECYCLER_BUFFER_SIZE } from './common';
+
+const isValidPosition = (val: any) => typeof val === 'number';
 
 class FixedBuffer {
   private _bufferSet = new IntegerBufferSet();
@@ -22,13 +29,13 @@ class FixedBuffer {
 
   private _indicesCopy = [];
   private _itemMetaIndices = [];
-  private _newItemMetaIndices = [];
+  private _positionToItemMetaMap = [];
 
   constructor(props?: FixedBufferProps) {
     const {
       size,
       thresholdIndexValue = 0,
-      recyclerReservedBufferSize,
+      recyclerReservedBufferSize = RECYCLER_BUFFER_SIZE,
       recyclerType = DEFAULT_RECYCLER_TYPE,
       owner,
       startIndex,
@@ -66,7 +73,7 @@ class FixedBuffer {
 
     // 当通过rowIndex找到了对应的position以后不能够直接用。这个时候还要做一次
     // itemMeta验证；因为item才是第一等级。确保的是item不变的情况下，能够复用。
-    if (position === position) {
+    if (isValidPosition(position)) {
       const originalItemMeta = this._itemMetaIndices[position];
       if (originalItemMeta && originalItemMeta !== itemMeta) position = null;
     }
@@ -92,17 +99,11 @@ class FixedBuffer {
     return position;
   }
 
-  start() {
-    this._indicesCopy = this._bufferSet.indices.map((i) => parseInt(i));
-    this._newItemMetaIndices = new Array(this._recyclerReservedBufferSize);
-    this._indices = new Array(this._recyclerReservedBufferSize);
-  }
-
   place(index: number, itemMeta: ItemMeta, safeRange: SafeRange) {
     const idx = this._itemMetaIndices.findIndex((meta) => meta === itemMeta);
     if (idx !== -1) {
       const position = idx;
-      this._newItemMetaIndices[position] = itemMeta;
+      this._positionToItemMetaMap[position] = itemMeta;
       this._indices[position] = index;
 
       const _index = this._indicesCopy.findIndex((d) => d === index);
@@ -120,7 +121,7 @@ class FixedBuffer {
     );
     if (position === position) {
       this._indices[position] = index;
-      this._newItemMetaIndices[position] = itemMeta;
+      this._positionToItemMetaMap[position] = itemMeta;
     }
     return position;
   }
@@ -134,18 +135,24 @@ class FixedBuffer {
   }
 
   getIndices() {
+    return this._bufferSet.indices;
+  }
+
+  getState(): FixedBufferState {
     const arr = [];
     const nextItemMetaIndices = new Array(this._recyclerReservedBufferSize);
+
     for (let idx = 0; idx < this._recyclerReservedBufferSize; idx++) {
-      if (this._newItemMetaIndices[idx]) {
+      if (this._positionToItemMetaMap[idx]) {
         const targetIndex = this._indices[idx];
-        const itemMeta = this._newItemMetaIndices[idx];
+        const itemMeta = this._positionToItemMetaMap[idx];
         arr.push({
           itemMeta,
           targetIndex,
           recycleKey: `recycle_${this._startIndex + idx}`,
         });
         nextItemMetaIndices[idx] = itemMeta;
+        console.log('x');
         continue;
       } else if ((this._owner.getData() || [])[this._indicesCopy[idx]]) {
         const targetIndex = this._indicesCopy[idx];
@@ -167,25 +174,6 @@ class FixedBuffer {
 
       this._itemMetaIndices = nextItemMetaIndices;
       arr.push(null);
-
-      // const targetIndex = parseInt(this._bufferSet.indices[idx])
-      // if (targetIndex === targetIndex) {
-      //   const data = this._owner.getData() || []
-      //   const item = data[targetIndex]
-      //   if (item) {
-      //     const itemMeta = this._owner.getFinalItemMeta(item);
-      //     if (itemMeta && (itemMeta.recyclerType === this.recyclerType)) {
-      //       arr.push({
-      //         itemMeta,
-      //         targetIndex,
-      //       })
-
-      //       continue
-      //     }
-      //   }
-      //   // remove target index from position idx
-      //   // this._bufferSet.remove(idx)
-      // }
     }
 
     return arr;
