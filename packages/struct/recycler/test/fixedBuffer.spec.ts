@@ -24,7 +24,8 @@ describe('basic', () => {
     const data = buildData(100);
 
     // @ts-ignore
-    data.getFinalItemMeta = () => ({ recyclerType: 'default' });
+    data.getFinalItemMeta = (item) => item;
+    // data.getFinalItemMeta = () => ({ recyclerType: DEFAULT_RECYCLER_TYPE });
     // @ts-ignore
     data.getData = () => data;
 
@@ -61,7 +62,27 @@ describe('basic', () => {
     buffer.place(11, data[11], safeRange);
 
     expect(finalizeState(buffer.getState())).toEqual([
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+    ]);
+
+    data.splice(3, 1);
+
+    console.log('data ', buffer._itemMetaIndices);
+
+    buffer.place(4, data[4], safeRange);
+    expect(finalizeState(buffer.getState())).toEqual([
+      0,
+      1,
+      2,
+      undefined,
+      3,
+      4,
+      undefined,
+      6,
+      7,
+      8,
+      9,
+      10,
     ]);
   });
 });

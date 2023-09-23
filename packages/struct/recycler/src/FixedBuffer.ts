@@ -100,26 +100,26 @@ class FixedBuffer {
   }
 
   place(index: number, itemMeta: ItemMeta, safeRange: SafeRange) {
-    const idx = this._itemMetaIndices.findIndex((meta) => meta === itemMeta);
-    if (idx !== -1) {
-      const position = idx;
+    let position = this._itemMetaIndices.findIndex((meta) => meta === itemMeta);
+    if (position !== -1) {
       this._positionToItemMetaMap[position] = itemMeta;
       this._indices[position] = index;
 
       const _index = this._indicesCopy.findIndex((d) => d === index);
-      if (_index !== -1 && _index !== idx) {
-        this._bufferSet.setPositionValue(idx, index);
+      console.log('_index ', _index, index, this._indicesCopy.slice());
+      if (_index !== -1 && _index !== position) {
+        this._bufferSet.setPositionValue(position, index);
         this._indicesCopy.splice(_index, 1, undefined);
       }
       return position;
     }
-    const position = this.getPosition(
+    position = this.getPosition(
       index,
       safeRange.startIndex,
       safeRange.endIndex,
       itemMeta
     );
-    if (position === position) {
+    if (typeof position === 'number') {
       this._indices[position] = index;
       this._positionToItemMetaMap[position] = itemMeta;
     }
@@ -139,42 +139,72 @@ class FixedBuffer {
   }
 
   getState(): FixedBufferState {
-    const arr = [];
+    const arr = new Array(this._recyclerReservedBufferSize);
     const nextItemMetaIndices = new Array(this._recyclerReservedBufferSize);
+
+    console.log('position ', this._positionToItemMetaMap.slice());
+    console.log('_indicesCopy ', this._indicesCopy.slice());
 
     for (let idx = 0; idx < this._recyclerReservedBufferSize; idx++) {
       if (this._positionToItemMetaMap[idx]) {
         const targetIndex = this._indices[idx];
         const itemMeta = this._positionToItemMetaMap[idx];
-        arr.push({
+        arr[idx] = {
           itemMeta,
           targetIndex,
           recycleKey: `recycle_${this._startIndex + idx}`,
-        });
+        };
         nextItemMetaIndices[idx] = itemMeta;
         console.log('x');
-        continue;
-      } else if ((this._owner.getData() || [])[this._indicesCopy[idx]]) {
+      } else if (typeof this._indicesCopy[idx] === 'number') {
+        // const meta = this._itemMetaIndices[idx]
+        // console.log('meta ' ,meta)
+        // const index = this._owner.getData().findIndex(item => item.key === meta.key)
+
+        // if (index !== -1) {
+        //   arr.push({
+        //     itemMeta: meta,
+        //     targetIndex: index,
+        //     recycleKey: `recycle_${this._startIndex + idx}`,
+        //   });
+        //   nextItemMetaIndices[idx] = meta;
+        //   continue
+        // }
+
         const targetIndex = this._indicesCopy[idx];
         const data = this._owner.getData() || [];
         const item = data[targetIndex];
+        console.log('xxxx=======', item);
         if (item) {
           const itemMeta = this._owner.getFinalItemMeta(item);
-          if (itemMeta && itemMeta.recyclerType === this.recyclerType) {
-            arr.push({
+
+          const position = this._itemMetaIndices.findIndex(
+            (meta) => meta === itemMeta
+          );
+
+          console.log(
+            'itemm meta ',
+            position,
+            targetIndex,
+            itemMeta,
+            this.recyclerType
+          );
+          if (position !== -1) {
+            // if ((position !== -1) && itemMeta.recyclerType === this.recyclerType) {
+            arr[position] = {
               itemMeta,
               targetIndex,
               recycleKey: `recycle_${this._startIndex + idx}`,
-            });
-            nextItemMetaIndices[idx] = itemMeta;
-            continue;
+            };
+            nextItemMetaIndices[position] = itemMeta;
           }
         }
       }
-
-      this._itemMetaIndices = nextItemMetaIndices;
-      arr.push(null);
     }
+
+    this._itemMetaIndices = nextItemMetaIndices;
+    this._positionToItemMetaMap = [];
+    this._indicesCopy = this._bufferSet.indices.map((i) => parseInt(i));
 
     return arr;
   }
