@@ -133,12 +133,19 @@ class IntegerBufferSet<Meta = any> {
   setPositionValue(position: number, value: number) {
     const originalPosition = this._valueToPositionObject[value];
     if (originalPosition !== undefined) {
-      const index = this._vacantPositions.findIndex(
-        (v) => v === originalPosition
+      console.log(
+        'before ===== ',
+        position,
+        value,
+        this._valueToPositionObject[value]
       );
-      if (index === -1) this._vacantPositions.push(originalPosition);
       delete this._valueToPositionObject[value];
       this._valueToPositionObject[value] = position;
+
+      console.log('set ======= ', position, value, {
+        ...this._valueToPositionObject,
+      });
+      this._pushToHeaps(position, value);
     }
   }
 

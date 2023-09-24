@@ -68,8 +68,6 @@ describe('basic', () => {
 
     data.splice(3, 1);
 
-    // console.log('data ', buffer._itemMetaIndices);
-
     expect(finalizeState(buffer.getState())).toEqual([
       0,
       1,
@@ -100,7 +98,10 @@ describe('basic', () => {
       9,
       10,
     ]);
+
+    console.log('start ====');
     buffer.place(11, data[11], safeRange);
+
     expect(finalizeState(buffer.getState())).toEqual([
       0,
       1,
