@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
+    "watch": "tsdx watch --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
     "test": "vitest",
     "compile": "tsc -p tsconfig.build.json"
@@ -22,6 +23,7 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
-    "@x-oasis/heap": "workspace:*"
+    "@x-oasis/heap": "workspace:*",
+    "@x-oasis/is-clamped": "workspace:^0.1.19"
   }
 }

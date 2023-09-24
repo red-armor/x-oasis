@@ -31,6 +31,7 @@ describe('basic', () => {
 
     const buffer = new FixedBuffer({
       owner: data,
+      size: 12,
     });
 
     const safeRange = { startIndex: 0, endIndex: 9 };
@@ -67,9 +68,8 @@ describe('basic', () => {
 
     data.splice(3, 1);
 
-    console.log('data ', buffer._itemMetaIndices);
+    // console.log('data ', buffer._itemMetaIndices);
 
-    buffer.place(4, data[4], safeRange);
     expect(finalizeState(buffer.getState())).toEqual([
       0,
       1,
@@ -77,7 +77,38 @@ describe('basic', () => {
       undefined,
       3,
       4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+    ]);
+
+    buffer.place(5, data[5], safeRange);
+    expect(finalizeState(buffer.getState())).toEqual([
+      0,
+      1,
+      2,
       undefined,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+    ]);
+    buffer.place(11, data[11], safeRange);
+    expect(finalizeState(buffer.getState())).toEqual([
+      0,
+      1,
+      2,
+      undefined,
+      3,
+      4,
+      5,
       6,
       7,
       8,

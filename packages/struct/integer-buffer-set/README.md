@@ -17,3 +17,9 @@ import IntegerBufferSet from '@x-oasis/integer-buffer-set'
 ```bash
 $ pnpm test
 ```
+
+## Usage
+
+## Philosophy
+
+Basically, we only compare index value, such as 
