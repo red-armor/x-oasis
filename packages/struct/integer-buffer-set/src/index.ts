@@ -133,18 +133,18 @@ class IntegerBufferSet<Meta = any> {
   setPositionValue(position: number, value: number) {
     const originalPosition = this._valueToPositionObject[value];
     if (originalPosition !== undefined) {
-      console.log(
-        'before ===== ',
-        position,
-        value,
-        this._valueToPositionObject[value]
-      );
+      // console.log(
+      //   'before ===== ',
+      //   position,
+      //   value,
+      //   this._valueToPositionObject[value]
+      // );
       delete this._valueToPositionObject[value];
       this._valueToPositionObject[value] = position;
 
-      console.log('set ======= ', position, value, {
-        ...this._valueToPositionObject,
-      });
+      // console.log('set ======= ', position, value, {
+      //   ...this._valueToPositionObject,
+      // });
       this._pushToHeaps(position, value);
     }
   }
@@ -407,6 +407,39 @@ class IntegerBufferSet<Meta = any> {
     }
   }
 
+  rebuildHeapsWithValues(
+    arr: Array<{
+      position: number;
+      value: number;
+    }>
+  ) {
+    const valueToPositionObject = {};
+    const newSmallValues = new Heap<HeapItem>(
+      [], // Initial data in the heap
+      this._smallerComparator
+    );
+    const newLargeValues = new Heap<HeapItem>(
+      [], // Initial datat in the heap
+      this._greaterComparator
+    );
+
+    arr.forEach((element) => {
+      const { position, value } = element;
+      if (value !== undefined) {
+        const element = {
+          position,
+          value,
+        };
+        newSmallValues.push(element);
+        newLargeValues.push(element);
+        valueToPositionObject[value] = position;
+      }
+    });
+    this._smallValues = newSmallValues;
+    this._largeValues = newLargeValues;
+    this._valueToPositionObject = valueToPositionObject;
+  }
+
   rebuildHeaps() {
     const newSmallValues = new Heap<HeapItem>(
       [], // Initial data in the heap
@@ -416,6 +449,8 @@ class IntegerBufferSet<Meta = any> {
       [], // Initial datat in the heap
       this._greaterComparator
     );
+    const valueToPositionObject = {};
+
     const keys = Object.keys(this._positionToValueObject);
     for (let position = 0; position < keys.length; position++) {
       const value = this._positionToValueObject[position];
@@ -424,6 +459,7 @@ class IntegerBufferSet<Meta = any> {
           position,
           value,
         };
+        valueToPositionObject[value] = position;
         newSmallValues.push(element);
         newLargeValues.push(element);
       }
@@ -431,6 +467,7 @@ class IntegerBufferSet<Meta = any> {
 
     this._smallValues = newSmallValues;
     this._largeValues = newLargeValues;
+    this._valueToPositionObject = valueToPositionObject;
   }
 
   _recreateHeaps() {

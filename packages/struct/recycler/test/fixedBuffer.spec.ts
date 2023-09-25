@@ -82,6 +82,9 @@ describe('basic', () => {
       9,
       10,
     ]);
+    console.log('buffer ', buffer.getIndices());
+
+    console.log('start place 5');
 
     buffer.place(5, data[5], safeRange);
     expect(finalizeState(buffer.getState())).toEqual([
@@ -99,7 +102,9 @@ describe('basic', () => {
       10,
     ]);
 
-    console.log('start ====');
+    console.log('buffer ', buffer.getIndices());
+
+    console.log('start place 11 ====');
     buffer.place(11, data[11], safeRange);
 
     expect(finalizeState(buffer.getState())).toEqual([
