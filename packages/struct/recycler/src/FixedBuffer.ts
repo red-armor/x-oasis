@@ -173,27 +173,16 @@ class FixedBuffer {
           position: idx,
           value: targetIndex,
         });
-        console.log('x');
       } else if (typeof this._indicesCopy[idx] === 'number') {
         const targetIndex = this._indicesCopy[idx];
         const data = this._owner.getData() || [];
         const item = data[targetIndex];
-        console.log('xxxx=======', idx, item);
         if (item) {
           const itemMeta = this._owner.getFinalItemMeta(item);
 
           const position = this._itemMetaIndices.findIndex(
             (meta) => meta === itemMeta
           );
-
-          // console.log(
-          //   'itemm meta ',
-          //   idx,
-          //   position,
-          //   targetIndex,
-          //   itemMeta,
-          //   this.recyclerType
-          // );
           if (position !== -1) {
             arr[position] = {
               itemMeta,
