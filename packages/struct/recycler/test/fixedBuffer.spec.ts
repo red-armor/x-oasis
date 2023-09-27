@@ -105,21 +105,15 @@ describe('basic', () => {
     console.log('buffer ', buffer.getIndices());
 
     console.log('start place 11 ====');
+    console.log(
+      'buffer position xxxx',
+      buffer._bufferSet._valueToPositionObject
+    );
+
     buffer.place(11, data[11], safeRange);
 
     expect(finalizeState(buffer.getState())).toEqual([
-      0,
-      1,
-      2,
-      undefined,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
+      0, 1, 2, 11, 3, 4, 5, 6, 7, 8, 9, 10,
     ]);
   });
 });

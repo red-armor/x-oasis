@@ -292,7 +292,11 @@ class IntegerBufferSet<Meta = any> {
     }
 
     let valueToReplace;
-    if (
+
+    if (maxValue > Number.MAX_SAFE_INTEGER - 100000) {
+      valueToReplace = maxValue;
+      this._largeValues.pop();
+    } else if (
       useMinValueFn({
         safeRange: {
           lowValue,
@@ -435,6 +439,25 @@ class IntegerBufferSet<Meta = any> {
         valueToPositionObject[value] = position;
       }
     });
+    const _arr = new Array(this._bufferSize).fill(2);
+    Object.keys(valueToPositionObject).map(
+      (key) => (_arr[valueToPositionObject[key]] = 1)
+    );
+    console.log('_arr ======= ', _arr);
+    _arr.forEach((_i, position) => {
+      console.log('_id ', _i, position);
+      if (_i === 2) {
+        const value = Number.MAX_SAFE_INTEGER - position;
+        const element = {
+          position,
+          value,
+        };
+        console.log('xxx =========', _i);
+        newSmallValues.push(element);
+        newLargeValues.push(element);
+        valueToPositionObject[value] = position;
+      }
+    });
     this._smallValues = newSmallValues;
     this._largeValues = newLargeValues;
     this._valueToPositionObject = valueToPositionObject;
@@ -467,6 +490,7 @@ class IntegerBufferSet<Meta = any> {
 
     this._smallValues = newSmallValues;
     this._largeValues = newLargeValues;
+
     this._valueToPositionObject = valueToPositionObject;
   }
 

@@ -195,7 +195,6 @@ class FixedBuffer {
           //   this.recyclerType
           // );
           if (position !== -1) {
-            // if ((position !== -1) && itemMeta.recyclerType === this.recyclerType) {
             arr[position] = {
               itemMeta,
               targetIndex,
