@@ -52,7 +52,6 @@ class IntegerBufferSet<Meta = any> {
   private _metaToValueMap: MetaToValueMap<Meta>;
   private _smallValues: Heap<HeapItem>;
   private _largeValues: Heap<HeapItem>;
-  private _vacantPositions: Array<number>;
   private _metaExtractor: MetaExtractor;
 
   constructor(props?: IntegerBufferSetProps) {
@@ -70,6 +69,7 @@ class IntegerBufferSet<Meta = any> {
 
     this._size = 0;
     this._bufferSize = bufferSize;
+
     this._smallValues = new Heap([], this._smallerComparator);
     this._largeValues = new Heap([], this._greaterComparator);
 
@@ -82,6 +82,14 @@ class IntegerBufferSet<Meta = any> {
 
   getSize() {
     return this._size;
+  }
+
+  initialize() {
+    return {
+      smallValues: new Heap([], this._smallerComparator),
+      largeValues: new Heap([], this._greaterComparator),
+      valueToPositionObject: {},
+    };
   }
 
   get indices() {
@@ -164,7 +172,6 @@ class IntegerBufferSet<Meta = any> {
   ) {
     const _start = Math.max(startIndex, safeRange.startIndex);
     const _end = Math.min(endIndex, safeRange.endIndex);
-    const metaList = [];
     const primaryMetaList = [];
     const secondaryMetaList = [];
     const locationStartIndex = startIndex;
@@ -418,14 +425,8 @@ class IntegerBufferSet<Meta = any> {
     }>
   ) {
     const valueToPositionObject = {};
-    const newSmallValues = new Heap<HeapItem>(
-      [], // Initial data in the heap
-      this._smallerComparator
-    );
-    const newLargeValues = new Heap<HeapItem>(
-      [], // Initial datat in the heap
-      this._greaterComparator
-    );
+    const newSmallValues = new Heap<HeapItem>([], this._smallerComparator);
+    const newLargeValues = new Heap<HeapItem>([], this._greaterComparator);
 
     arr.forEach((element) => {
       const { position, value } = element;
@@ -462,15 +463,9 @@ class IntegerBufferSet<Meta = any> {
   }
 
   rebuildHeaps() {
-    const newSmallValues = new Heap<HeapItem>(
-      [], // Initial data in the heap
-      this._smallerComparator
-    );
-    const newLargeValues = new Heap<HeapItem>(
-      [], // Initial datat in the heap
-      this._greaterComparator
-    );
     const valueToPositionObject = {};
+    const newSmallValues = new Heap<HeapItem>([], this._smallerComparator);
+    const newLargeValues = new Heap<HeapItem>([], this._greaterComparator);
 
     const keys = Object.keys(this._positionToValueObject);
     for (let position = 0; position < keys.length; position++) {
