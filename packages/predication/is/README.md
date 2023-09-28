@@ -9,7 +9,7 @@ $ npm i @x-oasis/is
 ## How to use
 
 ```typescript
-import isNaN from '@x-oasis/is'
+import is from '@x-oasis/is'
 ```
 
 ## How to run test
