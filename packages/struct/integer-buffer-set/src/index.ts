@@ -137,18 +137,8 @@ class IntegerBufferSet<Meta = any> {
   setPositionValue(position: number, value: number) {
     const originalPosition = this._valueToPositionObject[value];
     if (originalPosition !== undefined) {
-      // console.log(
-      //   'before ===== ',
-      //   position,
-      //   value,
-      //   this._valueToPositionObject[value]
-      // );
       delete this._valueToPositionObject[value];
       this._valueToPositionObject[value] = position;
-
-      // console.log('set ======= ', position, value, {
-      //   ...this._valueToPositionObject,
-      // });
       this._pushToHeaps(position, value);
     }
   }
