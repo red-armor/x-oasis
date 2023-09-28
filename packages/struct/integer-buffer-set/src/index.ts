@@ -32,6 +32,7 @@ const defaultMetaExtractor = (value) => value;
 const defaultBufferSize = 10;
 const isNumber = (v) => typeof v === 'number';
 
+// !!!!! should do meta validation...meta should has an index...
 // value: original data `index` value
 // value(index) => meta => position
 
@@ -55,6 +56,7 @@ class IntegerBufferSet<Meta = any> {
 
   private _indexToMetaMap: IndexToMetaMap<Meta>;
   private _metaToPositionMap: MetaToPositionMap<Meta>;
+  private _positionToMetaList: Array<Meta>;
   private _metaToIndexMap: MetaToValueMap<Meta>;
 
   private _smallValues: Heap<HeapItem>;
@@ -76,6 +78,7 @@ class IntegerBufferSet<Meta = any> {
      */
     this._indexToMetaMap = new Map();
     this._metaToPositionMap = new Map();
+    this._positionToMetaList = new Array(bufferSize);
     this._metaToIndexMap = new Map();
 
     this._size = 0;
@@ -110,12 +113,56 @@ class IntegerBufferSet<Meta = any> {
 
   get indices() {
     const indices = [];
-
-    for (const [key, value] of this._metaToPositionMap) {
-      const index = this._metaToIndexMap.get(key);
-      indices[value] = index;
+    for (let idx = 0; idx < this._positionToMetaList.length; idx++) {
+      const meta = this._positionToMetaList[idx];
+      const index = this._metaToIndexMap.get(meta);
+      if (index !== undefined) indices[idx] = index;
     }
     return indices;
+  }
+
+  /**
+   * placed meta should has a index value
+   */
+  postGetIndices() {
+    let isDirty = false;
+    const positionToMetaList = [];
+    for (let idx = 0; idx < this._positionToMetaList.length; idx++) {
+      const meta = this._positionToMetaList[idx];
+      if (this._metaToIndexMap.get(meta) === undefined) {
+        this._metaToIndexMap.delete(meta);
+        positionToMetaList.push(undefined);
+        isDirty = true;
+      } else {
+        positionToMetaList.push(meta);
+      }
+    }
+
+    let counter = 0;
+
+    if (isDirty) {
+      const { smallValues, largeValues } = this.initialize();
+      for (
+        let position = 0;
+        position < this._positionToMetaList.length;
+        position++
+      ) {
+        const meta = positionToMetaList[position];
+        const token = { position, value: null };
+        if (this._metaToIndexMap.get(meta) === undefined) {
+          token.value = Number.MAX_SAFE_INTEGER - counter++;
+          token.position = position;
+        } else {
+          token.value = this._metaToIndexMap.get(meta);
+        }
+        smallValues.push(token);
+        largeValues.push(token);
+      }
+
+      this._smallValues = smallValues;
+      this._largeValues = largeValues;
+      this._positionToMetaList = positionToMetaList;
+    }
   }
 
   getIndexPosition(index: number): undefined | number {
@@ -256,6 +303,13 @@ class IntegerBufferSet<Meta = any> {
     }
   }
 
+  /**
+   *
+   * @param newIndex
+   * @param safeRange
+   * @returns
+   *
+   */
   getPosition(
     newIndex: number,
     safeRange: {
@@ -264,7 +318,18 @@ class IntegerBufferSet<Meta = any> {
     }
   ) {
     const meta = this.getIndexMeta(newIndex);
+    const candidatePosition = this._metaToPositionMap.get(meta);
+    const currentOccupiedMeta = this.findPositionMeta(candidatePosition);
+    if (currentOccupiedMeta === meta) return candidatePosition;
+
+    this._metaToIndexMap.delete(currentOccupiedMeta);
+
+    if (candidatePosition !== undefined) return candidatePosition;
+
     const metaToReplace = this._indexToMetaMap.get(newIndex);
+    this._metaToIndexMap.delete(metaToReplace);
+    this._metaToIndexMap.set(meta, newIndex);
+
     let position = this._valueToPositionObject[newIndex];
 
     /**
@@ -280,8 +345,7 @@ class IntegerBufferSet<Meta = any> {
 
     // has position, but not matched.
     if (metaToReplace) {
-      const candidateValue = this._metaToIndexMap.get(meta);
-      const candidatePosition = this._valueToPositionObject[candidateValue];
+      const candidatePosition = this._metaToPositionMap.get(meta);
 
       // meta has a position
       if (candidatePosition !== undefined) {
@@ -290,7 +354,6 @@ class IntegerBufferSet<Meta = any> {
         delete this._valueToPositionObject[originalValue];
         this._valueToPositionObject[newIndex] = position;
         this._positionToValueObject[position] = newIndex;
-        // this._valueToMetaObject[newIndex] = meta;
         this._metaToIndexMap.set(meta, newIndex);
         this.rebuildHeaps();
         return position;
