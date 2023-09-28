@@ -272,10 +272,12 @@ importers:
   packages/struct/integer-buffer-set:
     specifiers:
       '@x-oasis/heap': workspace:*
+      '@x-oasis/invariant': workspace:^0.1.19
       '@x-oasis/is-clamped': workspace:^0.1.19
       tsdx: ^0.14.1
     dependencies:
       '@x-oasis/heap': link:../heap
+      '@x-oasis/invariant': link:../../error/invariant
       '@x-oasis/is-clamped': link:../../comparison/is-clamped
     devDependencies:
       tsdx: 0.14.1

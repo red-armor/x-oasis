@@ -1,6 +1,7 @@
 // import invariant from 'invariant';
 import Heap from '@x-oasis/heap';
 import isClamped from '@x-oasis/is-clamped';
+import invariant from '@x-oasis/invariant';
 import {
   HeapItem,
   MetaExtractor,
@@ -109,15 +110,10 @@ class IntegerBufferSet<Meta = any> {
   }
 
   getNewPositionForValue(value: number) {
-    if (this._valueToPositionObject[value] !== undefined) {
-      console.warn(
-        "Shouldn't try to find new position for value already stored in BufferSet"
-      );
-    }
-    // invariant(
-    //   this._valueToPositionObject[value] === undefined,
-    //   "Shouldn't try to find new position for value already stored in BufferSet"
-    // );
+    invariant(
+      this._valueToPositionObject[value] === undefined,
+      "Shouldn't try to find new position for value already stored in BufferSet"
+    );
     const newPosition = this._size;
     this._size++;
     this._pushToHeaps(newPosition, value);
