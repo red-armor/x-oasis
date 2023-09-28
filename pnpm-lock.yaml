@@ -83,6 +83,18 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/error/invariant:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/error/null-throw:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/functional/each:
     specifiers:
       '@x-oasis/is-object': workspace:*
@@ -280,12 +292,6 @@ importers:
       tsdx: ^0.14.1
     dependencies:
       '@x-oasis/integer-buffer-set': link:../integer-buffer-set
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/throw/null-throw:
-    specifiers:
-      tsdx: ^0.14.1
     devDependencies:
       tsdx: 0.14.1
 
