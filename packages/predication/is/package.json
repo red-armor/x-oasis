@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/shallow-equal",
+  "name": "@x-oasis/is",
   "version": "0.1.19",
-  "description": "shallow equal function",
+  "description": "is function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/shallow-equal.esm.js",
+  "module": "dist/is.esm.js",
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
@@ -16,7 +16,5 @@
   "devDependencies": {
     "tsdx": "^0.14.1"
   },
-  "dependencies": {
-    "@x-oasis/is": "workspace:^0.1.19"
-  }
+  "dependencies": {}
 }
