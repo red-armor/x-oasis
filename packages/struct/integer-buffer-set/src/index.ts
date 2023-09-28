@@ -443,16 +443,14 @@ class IntegerBufferSet<Meta = any> {
     Object.keys(valueToPositionObject).map(
       (key) => (_arr[valueToPositionObject[key]] = 1)
     );
-    console.log('_arr ======= ', _arr);
     _arr.forEach((_i, position) => {
-      console.log('_id ', _i, position);
       if (_i === 2) {
         const value = Number.MAX_SAFE_INTEGER - position;
         const element = {
           position,
           value,
         };
-        console.log('xxx =========', _i);
+
         newSmallValues.push(element);
         newLargeValues.push(element);
         valueToPositionObject[value] = position;

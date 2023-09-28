@@ -1,4 +1,4 @@
-// import path from 'path';
+import path from 'path';
 // import tsPath from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
@@ -18,7 +18,13 @@ export default defineConfig({
 
   // plugins: [tsPath()],
   resolve: {
-    alias: {},
+    alias: {
+      '@x-oasis/integer-buffer-set': path.resolve(
+        '..',
+        'integer-buffer-set',
+        'src'
+      ),
+    },
   },
   define: {
     __DEV__: false,

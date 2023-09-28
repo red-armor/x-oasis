@@ -1,4 +1,4 @@
-import IntegerBufferSet from '../../integer-buffer-set';
+import IntegerBufferSet from '@x-oasis/integer-buffer-set';
 import {
   SafeRange,
   FixedBufferProps,
