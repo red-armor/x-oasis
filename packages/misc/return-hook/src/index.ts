@@ -1,5 +1,9 @@
-export default (callback: Function) => (val: any) => {
-  if (typeof callback === 'function') callback();
+type Callback = {
+  (val?: any): void;
+};
+
+export default (callback: Callback) => (val: any) => {
+  if (typeof callback === 'function') callback(val);
   return val;
 };
 
