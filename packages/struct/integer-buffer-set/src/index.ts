@@ -430,53 +430,55 @@ class IntegerBufferSet<Meta = any> {
 
     this._onTheFlyIndices[positionToReplace] = meta;
 
-    const currentOccupiedMeta = this.findPositionMeta(prevMetaPosition);
-    if (currentOccupiedMeta === meta) return prevMetaPosition;
+    return positionToReplace;
 
-    this._metaToIndexMap.delete(currentOccupiedMeta);
+    // const currentOccupiedMeta = this.findPositionMeta(prevMetaPosition);
+    // if (currentOccupiedMeta === meta) return prevMetaPosition;
 
-    if (prevMetaPosition !== undefined) return prevMetaPosition;
+    // this._metaToIndexMap.delete(currentOccupiedMeta);
 
-    const metaToReplace = this._indexToMetaMap.get(newIndex);
-    this._metaToIndexMap.delete(metaToReplace);
-    this._metaToIndexMap.set(meta, newIndex);
+    // if (prevMetaPosition !== undefined) return prevMetaPosition;
 
-    let position = this._valueToPositionObject[newIndex];
+    // const metaToReplace = this._indexToMetaMap.get(newIndex);
+    // this._metaToIndexMap.delete(metaToReplace);
+    // this._metaToIndexMap.set(meta, newIndex);
 
-    /**
-     * has meta && meta matched
-     */
-    if (meta && meta === metaToReplace && isNumber(position)) {
-      console.warn(
-        "Shouldn't try to replace values with value already stored value in " +
-          'BufferSet'
-      );
-      return position;
-    }
+    // let position = this._valueToPositionObject[newIndex];
 
-    // has position, but not matched.
-    if (metaToReplace) {
-      const candidatePosition = this._metaToPositionMap.get(meta);
+    // /**
+    //  * has meta && meta matched
+    //  */
+    // if (meta && meta === metaToReplace && isNumber(position)) {
+    //   console.warn(
+    //     "Shouldn't try to replace values with value already stored value in " +
+    //       'BufferSet'
+    //   );
+    //   return position;
+    // }
 
-      // meta has a position
-      if (candidatePosition !== undefined) {
-        const originalValue = this._positionToValueObject[candidatePosition];
-        position = candidatePosition;
-        delete this._valueToPositionObject[originalValue];
-        this._valueToPositionObject[newIndex] = position;
-        this._positionToValueObject[position] = newIndex;
-        this._metaToIndexMap.set(meta, newIndex);
-        this.rebuildHeaps();
-        return position;
-      }
-    }
+    // // has position, but not matched.
+    // if (metaToReplace) {
+    //   const candidatePosition = this._metaToPositionMap.get(meta);
 
-    // newValue has no position..
-    return this.replaceFurthestValuePosition(
-      newIndex,
-      safeRange.endIndex,
-      safeRange.startIndex
-    );
+    //   // meta has a position
+    //   if (candidatePosition !== undefined) {
+    //     const originalValue = this._positionToValueObject[candidatePosition];
+    //     position = candidatePosition;
+    //     delete this._valueToPositionObject[originalValue];
+    //     this._valueToPositionObject[newIndex] = position;
+    //     this._positionToValueObject[position] = newIndex;
+    //     this._metaToIndexMap.set(meta, newIndex);
+    //     this.rebuildHeaps();
+    //     return position;
+    //   }
+    // }
+
+    // // newValue has no position..
+    // return this.replaceFurthestValuePosition(
+    //   newIndex,
+    //   safeRange.endIndex,
+    //   safeRange.startIndex
+    // );
   }
 
   resolvePosition(
