@@ -3,6 +3,7 @@ import isClamped from '@x-oasis/is-clamped';
 import invariant from '@x-oasis/invariant';
 import {
   HeapItem,
+  SafeRange,
   MetaExtractor,
   IntegerBufferSetProps,
   ValueToPositionObject,
@@ -66,6 +67,8 @@ class IntegerBufferSet<Meta = any> {
 
   private _onTheFlyIndices: Array<Meta>;
 
+  private _isFull: boolean;
+
   constructor(props?: IntegerBufferSetProps<Meta>) {
     const {
       bufferSize = defaultBufferSize,
@@ -99,6 +102,18 @@ class IntegerBufferSet<Meta = any> {
 
   getSize() {
     return this._size;
+  }
+
+  getOnTheFlyUncriticalPosition(safeRange: SafeRange) {
+    const { startIndex, endIndex } = safeRange;
+    for (let idx = 0; idx < this._onTheFlyIndices.length; idx++) {
+      const meta = this._onTheFlyIndices[idx];
+      const metaIndex = this._metaToIndexMap.get(meta);
+      if (!isClamped(startIndex, metaIndex, endIndex)) {
+        return idx;
+      }
+    }
+    return null;
   }
 
   initialize() {
@@ -344,31 +359,37 @@ class IntegerBufferSet<Meta = any> {
     const meta = this.getIndexMeta(newIndex);
     const prevMetaPosition = this._metaToPositionMap.get(meta);
 
-    if (!prevMetaPosition) {
+    if (prevMetaPosition !== undefined) {
+      const onTheFlyPositionMeta = this._onTheFlyIndices[prevMetaPosition];
       // the occupied meta should change position
-      if (this._onTheFlyIndices[prevMetaPosition]) {
-        const onTheFlyPositionMeta = this._onTheFlyIndices[prevMetaPosition];
+      if (onTheFlyPositionMeta) {
         let positionToReplace = this.getReplacedPosition(safeRange);
 
         while (this._onTheFlyIndices[positionToReplace]) {
           positionToReplace = this.getReplacedPosition(safeRange);
         }
+
+        const isFull =
+          this._onTheFlyIndices.filter((v) => v).length === this._bufferSize;
+
+        if (isFull) {
+        }
         this._onTheFlyIndices[positionToReplace] = onTheFlyPositionMeta;
       }
       this._onTheFlyIndices[prevMetaPosition] = meta;
+      return prevMetaPosition;
     }
+    const { startIndex, endIndex } = safeRange;
 
-    // meta has old position
-    if (prevMetaPosition !== undefined) {
-      const prevIndexMeta = this._indexToMetaMap.get(newIndex);
-
-      if (!isUndefined(prevIndexMeta) && prevIndexMeta !== meta) {
-        this._indexToMetaMap.delete(newIndex);
-        this._metaToIndexMap.delete(prevIndexMeta);
+    if (this._isFull) {
+      // newIndex is not critical index, do nothing
+      if (!isClamped(startIndex, newIndex, endIndex)) {
+        return null;
       }
-
-      this._setMetaIndex(meta, newIndex);
-      return prevIndexMeta;
+      const pos = this.getOnTheFlyUncriticalPosition(safeRange);
+      // not undefined / null
+      if (pos != null) {
+      }
     }
 
     // placed on new buffered position
@@ -435,8 +456,8 @@ class IntegerBufferSet<Meta = any> {
     // newValue has no position..
     return this.replaceFurthestValuePosition(
       newIndex,
-      safeRange.maxValue,
-      safeRange.minValue
+      safeRange.endIndex,
+      safeRange.startIndex
     );
   }
 

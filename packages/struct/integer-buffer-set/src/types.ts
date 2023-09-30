@@ -20,3 +20,8 @@ export type HeapItem = {
   position: number;
   value: number;
 };
+
+export type SafeRange = {
+  startIndex: number;
+  endIndex: number;
+};
