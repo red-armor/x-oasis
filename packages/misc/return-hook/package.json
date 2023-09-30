@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/integer-buffer-set",
+  "name": "@x-oasis/return-hook",
   "version": "0.1.19",
-  "description": "IntegerBufferSet function",
+  "description": "return-hook function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/integer-buffer-set.esm.js",
+  "module": "dist/return-hook.esm.js",
   "files": [
     "dist",
     "index.ts",
@@ -12,7 +12,6 @@
   ],
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
-    "watch": "tsdx watch --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
     "test": "vitest",
     "compile": "tsc -p tsconfig.build.json"
@@ -21,11 +20,5 @@
   "license": "ISC",
   "devDependencies": {
     "tsdx": "^0.14.1"
-  },
-  "dependencies": {
-    "@x-oasis/heap": "workspace:*",
-    "@x-oasis/invariant": "workspace:^0.1.19",
-    "@x-oasis/is-clamped": "workspace:^0.1.19",
-    "@x-oasis/return-hook": "workspace:^0.1.19"
   }
 }

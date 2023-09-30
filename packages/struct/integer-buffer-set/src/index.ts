@@ -1,6 +1,7 @@
 import Heap from '@x-oasis/heap';
 import isClamped from '@x-oasis/is-clamped';
 import invariant from '@x-oasis/invariant';
+import returnHook, { ReturnHook } from '@x-oasis/return-hook';
 import {
   HeapItem,
   SafeRange,
@@ -68,6 +69,7 @@ class IntegerBufferSet<Meta = any> {
   private _onTheFlyIndices: Array<Meta>;
 
   private _isFull: boolean;
+  private _isFullReturnHook: ReturnHook;
 
   constructor(props?: IntegerBufferSetProps<Meta>) {
     const {
@@ -98,10 +100,15 @@ class IntegerBufferSet<Meta = any> {
     this.getSize = this.getSize.bind(this);
     this.replaceFurthestValuePosition =
       this.replaceFurthestValuePosition.bind(this);
+    this._isFullReturnHook = returnHook(this.setIsOnTheFlyFull.bind(this));
   }
 
   getSize() {
     return this._size;
+  }
+
+  setIsOnTheFlyFull() {
+    return this._onTheFlyIndices.filter((v) => v).length === this._bufferSize;
   }
 
   getOnTheFlyUncriticalPosition(safeRange: SafeRange) {
@@ -342,6 +349,26 @@ class IntegerBufferSet<Meta = any> {
     }
   }
 
+  replacePositionInFliedIndices(newIndex: number, safeRange: SafeRange) {
+    const { startIndex, endIndex } = safeRange;
+
+    if (this._isFull) {
+      // newIndex is not critical index, do nothing
+      if (!isClamped(startIndex, newIndex, endIndex)) {
+        return null;
+      }
+      const pos = this.getOnTheFlyUncriticalPosition(safeRange);
+      // not undefined / null
+      if (pos != null) return pos;
+      // if (pos != null) {
+      // this._onTheFlyIndices[pos] = meta;
+      // this._setMetaIndex(meta, newIndex);
+      // return pos;
+      // }
+    }
+    return null;
+  }
+
   /**
    *
    * @param newIndex
@@ -364,35 +391,38 @@ class IntegerBufferSet<Meta = any> {
       // the occupied meta should change position
       if (onTheFlyPositionMeta) {
         let positionToReplace = this.getReplacedPosition(safeRange);
+        if (this._isFull) {
+          const pos = this.replacePositionInFliedIndices(newIndex, safeRange);
+          if (pos != null) {
+            this._onTheFlyIndices[pos] = meta;
+            this._setMetaIndex(meta, newIndex);
+            return this._isFullReturnHook(pos);
+          }
+          return null;
+        }
 
         while (this._onTheFlyIndices[positionToReplace]) {
           positionToReplace = this.getReplacedPosition(safeRange);
         }
 
-        const isFull =
-          this._onTheFlyIndices.filter((v) => v).length === this._bufferSize;
-
-        if (isFull) {
+        if (positionToReplace != null) {
+          this._setMetaIndex(meta, newIndex);
+          this._onTheFlyIndices[positionToReplace] = onTheFlyPositionMeta;
+          return this._isFullReturnHook(positionToReplace);
         }
-        this._onTheFlyIndices[positionToReplace] = onTheFlyPositionMeta;
       }
       this._onTheFlyIndices[prevMetaPosition] = meta;
       return prevMetaPosition;
     }
-    const { startIndex, endIndex } = safeRange;
 
     if (this._isFull) {
-      // newIndex is not critical index, do nothing
-      if (!isClamped(startIndex, newIndex, endIndex)) {
-        return null;
-      }
-      const pos = this.getOnTheFlyUncriticalPosition(safeRange);
-      // not undefined / null
+      const pos = this.replacePositionInFliedIndices(newIndex, safeRange);
       if (pos != null) {
         this._onTheFlyIndices[pos] = meta;
         this._setMetaIndex(meta, newIndex);
         return pos;
       }
+      return null;
     }
 
     // placed on new buffered position
