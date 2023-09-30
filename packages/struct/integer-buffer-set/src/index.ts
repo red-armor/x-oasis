@@ -389,6 +389,9 @@ class IntegerBufferSet<Meta = any> {
       const pos = this.getOnTheFlyUncriticalPosition(safeRange);
       // not undefined / null
       if (pos != null) {
+        this._onTheFlyIndices[pos] = meta;
+        this._setMetaIndex(meta, newIndex);
+        return pos;
       }
     }
 
