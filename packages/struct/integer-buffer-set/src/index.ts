@@ -77,7 +77,6 @@ class IntegerBufferSet<Meta = any> {
     } = props;
     this._metaExtractor = metaExtractor;
 
-    this._valueToPositionObject = {};
     this._positionToValueObject = {};
 
     /**
