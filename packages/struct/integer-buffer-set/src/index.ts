@@ -383,12 +383,23 @@ class IntegerBufferSet<Meta = any> {
     const meta = this.getIndexMeta(newIndex);
     const prevMetaPosition = this._metaToPositionMap.get(meta);
 
-    console.log('preve ', prevMetaPosition, this._bufferSize);
+    console.log(
+      'preve ',
+      prevMetaPosition,
+      meta,
+      this._metaToPositionMap,
+      this._bufferSize
+    );
 
     if (prevMetaPosition !== undefined) {
       const onTheFlyPositionMeta = this._onTheFlyIndices[prevMetaPosition];
+      console.log('on the fly ', onTheFlyPositionMeta);
       // the occupied meta should change position
       if (onTheFlyPositionMeta) {
+        // such as place item 11 twice...
+        if (onTheFlyPositionMeta === meta) {
+          return prevMetaPosition;
+        }
         let positionToReplace = this._replaceFurthestIndexPosition(
           newIndex,
           safeRange
@@ -439,6 +450,9 @@ class IntegerBufferSet<Meta = any> {
 
     this._onTheFlyIndices[positionToReplace] = meta;
     this._setMetaIndex(meta, newIndex);
+    this._setMetaPosition(meta, positionToReplace);
+    // should not push to heap, pop only
+    // this._pushToHeaps(positionToReplace, newIndex)
 
     return positionToReplace;
   }

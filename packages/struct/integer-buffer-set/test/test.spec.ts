@@ -121,7 +121,7 @@ describe('basic', () => {
     expect(bufferSet.getPosition(11)).toBe(1);
   });
 
-  it('with safeRange', () => {
+  it('place same item twice', () => {
     const bufferSet = new IntegerBufferSet();
     expect(bufferSet.getPosition(0)).toBe(0);
     expect(bufferSet.getPosition(1)).toBe(1);
@@ -145,5 +145,39 @@ describe('basic', () => {
         endIndex: 6,
       })
     ).toBe(9);
+    expect(
+      bufferSet.getPosition(1, {
+        startIndex: 1,
+        endIndex: 6,
+      })
+    ).toBe(1);
+  });
+
+  it('with safeRange', () => {
+    console.log('start =====');
+
+    const bufferSet = new IntegerBufferSet();
+    expect(bufferSet.getPosition(0)).toBe(0);
+    expect(bufferSet.getPosition(1)).toBe(1);
+    expect(bufferSet.getPosition(2)).toBe(2);
+    expect(bufferSet.getPosition(3)).toBe(3);
+    expect(bufferSet.getPosition(4)).toBe(4);
+    expect(bufferSet.getPosition(5)).toBe(5);
+    expect(bufferSet.getPosition(6)).toBe(6);
+    expect(bufferSet.getPosition(7)).toBe(7);
+    expect(bufferSet.getPosition(8)).toBe(8);
+    expect(bufferSet.getPosition(9)).toBe(9);
+    expect(
+      bufferSet.getPosition(10, {
+        startIndex: 1,
+        endIndex: 6,
+      })
+    ).toBe(9);
+    expect(
+      bufferSet.getPosition(11, {
+        startIndex: 1,
+        endIndex: 6,
+      })
+    ).toBe(8);
   });
 });
