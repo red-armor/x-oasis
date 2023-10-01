@@ -120,6 +120,10 @@ class IntegerBufferSet<Meta = any> {
     }
   }
 
+  get isBufferFull() {
+    return this._positionToMetaList.length >= this._bufferSize;
+  }
+
   getOnTheFlyUncriticalPosition(safeRange: SafeRange) {
     const { startIndex, endIndex } = safeRange;
     for (let idx = 0; idx < this._onTheFlyIndices.length; idx++) {
@@ -381,12 +385,18 @@ class IntegerBufferSet<Meta = any> {
       const onTheFlyPositionMeta = this._onTheFlyIndices[prevMetaPosition];
       // the occupied meta should change position
       if (onTheFlyPositionMeta) {
-        let positionToReplace = this.replaceFurthestIndexPosition(safeRange);
+        let positionToReplace = this._replaceFurthestIndexPosition(
+          newIndex,
+          safeRange
+        );
         if (this._isOnTheFlyFull)
           return this.getFliedPosition(newIndex, safeRange);
 
         while (this._onTheFlyIndices[positionToReplace]) {
-          positionToReplace = this.replaceFurthestIndexPosition(safeRange);
+          positionToReplace = this._replaceFurthestIndexPosition(
+            newIndex,
+            safeRange
+          );
         }
 
         if (positionToReplace != null) {
@@ -399,13 +409,15 @@ class IntegerBufferSet<Meta = any> {
       return this._isOnTheFlyFullReturnHook(prevMetaPosition);
     }
 
-    if (this._isOnTheFlyFull) return this.getFliedPosition(newIndex, safeRange);
-
     // placed on new buffered position
-    if (this._positionToMetaList.length < this._bufferSize)
-      return this._isOnTheFlyFullReturnHook(
-        this.getNewPositionForIndex(newIndex)
-      );
+    if (!this.isBufferFull) {
+      const position = this.getNewPositionForIndex(newIndex);
+      this._setMetaPosition(meta, position);
+      this._setMetaIndex(meta, newIndex);
+      return this._isOnTheFlyFullReturnHook(position);
+    }
+
+    if (this._isOnTheFlyFull) return this.getFliedPosition(newIndex, safeRange);
 
     let positionToReplace;
     const prevIndexMeta = this._indexToMetaMap.get(newIndex);
@@ -416,7 +428,10 @@ class IntegerBufferSet<Meta = any> {
     // 2: temp use index -> meta -> position, this issue should exist for follows...
     if (!prevIndexMeta) {
       this._cleanHeaps();
-      positionToReplace = this.replaceFurthestIndexPosition(safeRange);
+      positionToReplace = this._replaceFurthestIndexPosition(
+        newIndex,
+        safeRange
+      );
     } else {
       positionToReplace = this._metaToPositionMap.get(prevIndexMeta);
     }
@@ -518,15 +533,56 @@ class IntegerBufferSet<Meta = any> {
     return position;
   }
 
-  replaceFurthestIndexPosition(safeRange: {
-    startIndex: number;
-    endIndex: number;
-  }) {
-    const { startIndex: lowValue, endIndex: highValue } = safeRange;
+  replaceFurthestIndexPosition(
+    newIndex: number,
+    safeRange?: {
+      startIndex: number;
+      endIndex: number;
+    }
+  ) {
+    if (!this.isBufferFull) {
+      return this._isOnTheFlyFullReturnHook(
+        this.getNewPositionForIndex(newIndex)
+      );
+    }
+
+    return this._replaceFurthestIndexPosition(newIndex, safeRange);
+  }
+
+  _replaceFurthestIndexPosition(
+    newIndex: number,
+    safeRange?: {
+      startIndex: number;
+      endIndex: number;
+    }
+  ) {
+    if (this._largeValues.empty() || this._smallValues.empty()) {
+      return this._isOnTheFlyFullReturnHook(
+        this.getNewPositionForIndex(newIndex)
+      );
+    }
+
     const minValue = this._smallValues.peek()!.value;
     const maxValue = this._largeValues.peek()!.value;
-
     let indexToReplace;
+
+    if (!safeRange) {
+      // far from min
+      if (Math.abs(newIndex - minValue) > Math.abs(newIndex - maxValue)) {
+        indexToReplace = minValue;
+        this._smallValues.pop();
+      } else {
+        indexToReplace = maxValue;
+        this._largeValues.pop();
+      }
+      const replacedMeta = this._indexToMetaMap.get(indexToReplace);
+      const position = this._metaToPositionMap.get(replacedMeta);
+
+      return position;
+    }
+
+    const { startIndex: lowValue, endIndex: highValue } = safeRange;
+
     // All values currently stored are necessary, we can't reuse any of them.
     if (
       isClamped(lowValue, minValue, highValue) &&
