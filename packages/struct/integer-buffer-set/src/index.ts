@@ -68,10 +68,10 @@ class IntegerBufferSet<Meta = any> {
 
   private _onTheFlyIndices: Array<Meta>;
 
-  private _isFull: boolean;
-  private _isFullReturnHook: ReturnHook;
+  private _isOnTheFlyFull: boolean;
+  private _isOnTheFlyFullReturnHook: ReturnHook;
 
-  constructor(props?: IntegerBufferSetProps<Meta>) {
+  constructor(props: IntegerBufferSetProps<Meta> = {}) {
     const {
       bufferSize = defaultBufferSize,
       metaExtractor = defaultMetaExtractor,
@@ -86,8 +86,9 @@ class IntegerBufferSet<Meta = any> {
      */
     this._indexToMetaMap = new Map();
     this._metaToPositionMap = new Map();
-    this._positionToMetaList = new Array(bufferSize);
+    this._positionToMetaList = [];
     this._metaToIndexMap = new Map();
+    this._onTheFlyIndices = [];
 
     this._size = 0;
     this._bufferSize = bufferSize;
@@ -98,11 +99,13 @@ class IntegerBufferSet<Meta = any> {
     this.getNewPositionForIndex = this.getNewPositionForIndex.bind(this);
     this.getIndexPosition = this.getIndexPosition.bind(this);
     this.getSize = this.getSize.bind(this);
-    // this.replaceFurthestValuePosition =
-    //   this.replaceFurthestValuePosition.bind(this);
     this.replacePositionInFliedIndices =
       this.replacePositionInFliedIndices.bind(this);
-    this._isFullReturnHook = returnHook(this.setIsOnTheFlyFull.bind(this));
+    this.replaceFurthestIndexPosition =
+      this.replaceFurthestIndexPosition.bind(this);
+    this._isOnTheFlyFullReturnHook = returnHook(
+      this.setIsOnTheFlyFull.bind(this)
+    );
   }
 
   getSize() {
@@ -110,8 +113,9 @@ class IntegerBufferSet<Meta = any> {
   }
 
   setIsOnTheFlyFull(val: any) {
+    console.log('this ', this._onTheFlyIndices);
     if (val != null) {
-      this._isFull =
+      this._isOnTheFlyFull =
         this._onTheFlyIndices.filter((v) => v).length === this._bufferSize;
     }
   }
@@ -201,6 +205,7 @@ class IntegerBufferSet<Meta = any> {
   }
 
   getNewPositionForIndex(index: number) {
+    console.log('get new ----');
     const meta = this.getIndexMeta(index);
     invariant(
       this._metaToPositionMap.get(meta) === undefined,
@@ -335,7 +340,7 @@ class IntegerBufferSet<Meta = any> {
   replacePositionInFliedIndices(newIndex: number, safeRange: SafeRange) {
     const { startIndex, endIndex } = safeRange;
 
-    if (this._isFull) {
+    if (this._isOnTheFlyFull) {
       // newIndex is not critical index, do nothing
       if (!isClamped(startIndex, newIndex, endIndex)) {
         return null;
@@ -352,7 +357,7 @@ class IntegerBufferSet<Meta = any> {
       const meta = this.getIndexMeta(newIndex);
       this._onTheFlyIndices[pos] = meta;
       this._setMetaIndex(meta, newIndex);
-      return this._isFullReturnHook(pos);
+      return this._isOnTheFlyFullReturnHook(pos);
     }
     return null;
   }
@@ -363,17 +368,22 @@ class IntegerBufferSet<Meta = any> {
    * @param safeRange
    * @returns
    *
+   *
+   * _positionToMetaList maybe undefined on next loop
    */
   getPosition(newIndex: number, safeRange?: SafeRange) {
     const meta = this.getIndexMeta(newIndex);
     const prevMetaPosition = this._metaToPositionMap.get(meta);
+
+    console.log('preve ', prevMetaPosition, this._bufferSize);
 
     if (prevMetaPosition !== undefined) {
       const onTheFlyPositionMeta = this._onTheFlyIndices[prevMetaPosition];
       // the occupied meta should change position
       if (onTheFlyPositionMeta) {
         let positionToReplace = this.replaceFurthestIndexPosition(safeRange);
-        if (this._isFull) return this.getFliedPosition(newIndex, safeRange);
+        if (this._isOnTheFlyFull)
+          return this.getFliedPosition(newIndex, safeRange);
 
         while (this._onTheFlyIndices[positionToReplace]) {
           positionToReplace = this.replaceFurthestIndexPosition(safeRange);
@@ -382,18 +392,20 @@ class IntegerBufferSet<Meta = any> {
         if (positionToReplace != null) {
           this._setMetaIndex(meta, newIndex);
           this._onTheFlyIndices[positionToReplace] = onTheFlyPositionMeta;
-          return this._isFullReturnHook(positionToReplace);
+          return this._isOnTheFlyFullReturnHook(positionToReplace);
         }
       }
       this._onTheFlyIndices[prevMetaPosition] = meta;
-      return this._isFullReturnHook(prevMetaPosition);
+      return this._isOnTheFlyFullReturnHook(prevMetaPosition);
     }
 
-    if (this._isFull) return this.getFliedPosition(newIndex, safeRange);
+    if (this._isOnTheFlyFull) return this.getFliedPosition(newIndex, safeRange);
 
     // placed on new buffered position
     if (this._positionToMetaList.length < this._bufferSize)
-      return this._isFullReturnHook(this.getNewPositionForIndex(newIndex));
+      return this._isOnTheFlyFullReturnHook(
+        this.getNewPositionForIndex(newIndex)
+      );
 
     let positionToReplace;
     const prevIndexMeta = this._indexToMetaMap.get(newIndex);
