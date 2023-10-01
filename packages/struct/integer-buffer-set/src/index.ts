@@ -54,7 +54,6 @@ const isUndefined = (val: any) => val === undefined;
 class IntegerBufferSet<Meta = any> {
   private _size: number;
   private _bufferSize: number;
-  private _valueToPositionObject: ValueToPositionObject;
   private _positionToValueObject: ValueToPositionObject;
 
   private _indexToMetaMap: IndexToMetaMap<Meta>;
@@ -117,10 +116,9 @@ class IntegerBufferSet<Meta = any> {
   }
 
   setIsOnTheFlyFull(val: any) {
-    console.log('this ', this._onTheFlyIndices);
     if (val != null) {
-      this._isOnTheFlyFull =
-        this._onTheFlyIndices.filter((v) => v).length === this._bufferSize;
+      const data = this._onTheFlyIndices.filter((v) => v);
+      this._isOnTheFlyFull = data.length === this._bufferSize;
     }
   }
 
@@ -213,7 +211,7 @@ class IntegerBufferSet<Meta = any> {
   }
 
   getNewPositionForIndex(index: number) {
-    console.log('get new ----');
+    // console.log('get new ----');
     const meta = this.getIndexMeta(index);
     invariant(
       this._metaToPositionMap.get(meta) === undefined,
@@ -353,6 +351,8 @@ class IntegerBufferSet<Meta = any> {
       if (!isClamped(startIndex, newIndex, endIndex)) {
         return null;
       }
+      // if `newIndex` is critical index, replace an un-committed
+      // index value from _onTheFlyIndices.
       const pos = this.getOnTheFlyUncriticalPosition(safeRange);
       if (pos != null) return pos;
     }
@@ -383,17 +383,8 @@ class IntegerBufferSet<Meta = any> {
     const meta = this.getIndexMeta(newIndex);
     const prevMetaPosition = this._metaToPositionMap.get(meta);
 
-    console.log(
-      'preve ',
-      prevMetaPosition,
-      meta,
-      this._metaToPositionMap,
-      this._bufferSize
-    );
-
     if (prevMetaPosition !== undefined) {
       const onTheFlyPositionMeta = this._onTheFlyIndices[prevMetaPosition];
-      console.log('on the fly ', onTheFlyPositionMeta);
       // the occupied meta should change position
       if (onTheFlyPositionMeta) {
         // such as place item 11 twice...
@@ -429,6 +420,8 @@ class IntegerBufferSet<Meta = any> {
       return this._isOnTheFlyFullReturnHook(
         this.getNewPositionForIndex(newIndex)
       );
+
+    // console.log('this. fly ', this._isOnTheFlyFull)
     if (this._isOnTheFlyFull) return this.getFliedPosition(newIndex, safeRange);
 
     let positionToReplace;
@@ -444,6 +437,7 @@ class IntegerBufferSet<Meta = any> {
         newIndex,
         safeRange
       );
+      // console.log('position ', positionToReplace)
     } else {
       positionToReplace = this._metaToPositionMap.get(prevIndexMeta);
     }
@@ -454,7 +448,7 @@ class IntegerBufferSet<Meta = any> {
     // should not push to heap, pop only
     // this._pushToHeaps(positionToReplace, newIndex)
 
-    return positionToReplace;
+    return this._isOnTheFlyFullReturnHook(positionToReplace);
   }
 
   replaceFurthestIndexPosition(
@@ -541,7 +535,7 @@ class IntegerBufferSet<Meta = any> {
   }
 
   _pushToHeaps(position: number, value: number) {
-    console.log('posu ', position, value);
+    // console.log('posu ', position, value);
     const element = { position, value };
     // We can reuse the same object in both heaps, because we don't mutate them
     this._smallValues.push(element);

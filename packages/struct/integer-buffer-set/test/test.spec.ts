@@ -65,7 +65,7 @@ describe('basic', () => {
     expect(bufferSet.getPosition(1, safeRange)).toBe(1);
   });
 
-  it('with safeRange', () => {
+  it('safeRange - inner', () => {
     const bufferSet = new IntegerBufferSet();
     expect(bufferSet.getPosition(0)).toBe(0);
     expect(bufferSet.getPosition(1)).toBe(1);
@@ -87,6 +87,40 @@ describe('basic', () => {
     expect(bufferSet.getPosition(12, safeRange)).toBe(7);
     expect(bufferSet.getPosition(13, safeRange)).toBe(0);
     expect(bufferSet.getPosition(14, safeRange)).toBe(null);
+    expect(bufferSet.getPosition(15, safeRange)).toBe(null);
+    expect(bufferSet.getPosition(16, safeRange)).toBe(null);
+    expect(bufferSet.getPosition(17, safeRange)).toBe(null);
+    expect(bufferSet.getPosition(18, safeRange)).toBe(null);
+  });
+
+  it.only('safeRange - outside', () => {
+    const bufferSet = new IntegerBufferSet();
+    expect(bufferSet.getPosition(0)).toBe(0);
+    expect(bufferSet.getPosition(1)).toBe(1);
+    expect(bufferSet.getPosition(2)).toBe(2);
+    expect(bufferSet.getPosition(3)).toBe(3);
+    expect(bufferSet.getPosition(4)).toBe(4);
+    expect(bufferSet.getPosition(5)).toBe(5);
+    expect(bufferSet.getPosition(6)).toBe(6);
+    expect(bufferSet.getPosition(7)).toBe(7);
+    expect(bufferSet.getPosition(8)).toBe(8);
+    expect(bufferSet.getPosition(9)).toBe(9);
+
+    const safeRange = {
+      startIndex: 5,
+      endIndex: 14,
+    };
+    expect(bufferSet.getPosition(4)).toBe(4);
+    expect(bufferSet.getPosition(5)).toBe(5);
+    expect(bufferSet.getPosition(6)).toBe(6);
+    expect(bufferSet.getPosition(7)).toBe(7);
+    expect(bufferSet.getPosition(8)).toBe(8);
+    expect(bufferSet.getPosition(9)).toBe(9);
+    expect(bufferSet.getPosition(10, safeRange)).toBe(0);
+    expect(bufferSet.getPosition(11, safeRange)).toBe(1);
+    expect(bufferSet.getPosition(12, safeRange)).toBe(2);
+    expect(bufferSet.getPosition(13, safeRange)).toBe(3);
+    expect(bufferSet.getPosition(14, safeRange)).toBe(4);
     expect(bufferSet.getPosition(15, safeRange)).toBe(null);
     expect(bufferSet.getPosition(16, safeRange)).toBe(null);
     expect(bufferSet.getPosition(17, safeRange)).toBe(null);
