@@ -389,6 +389,7 @@ class IntegerBufferSet<Meta = any> {
    * _positionToMetaList maybe undefined on next loop
    */
   getPosition(newIndex: number, safeRange?: SafeRange) {
+    this.prepare();
     const meta = this.getIndexMeta(newIndex);
     const prevMetaPosition = this._metaToPositionMap.get(meta);
 
@@ -446,7 +447,6 @@ class IntegerBufferSet<Meta = any> {
         newIndex,
         safeRange
       );
-      // console.log('position ', positionToReplace)
     } else {
       positionToReplace = this._metaToPositionMap.get(prevIndexMeta);
     }
@@ -543,12 +543,71 @@ class IntegerBufferSet<Meta = any> {
     return position;
   }
 
+  shuffle() {
+    const indices = new Array(this.bufferSize);
+    for (let idx = 0; idx < indices.length; idx++) {
+      const meta = this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
+      const targetIndex = this._metaToIndexMap.get(meta);
+      indices[idx] = targetIndex;
+    }
+    const _arr = new Array(indices.length);
+    const _available = [];
+    const indexToMetaMap = new Map();
+    const metaToIndexMap = new Map();
+    for (let idx = 0; idx < indices.length; idx++) {
+      const currentIndex = indices[idx];
+      const currentMeta = this._metaExtractor(currentIndex);
+      if (currentMeta == null) continue;
+
+      indexToMetaMap.set(currentIndex, currentMeta);
+      metaToIndexMap.set(currentMeta, currentIndex);
+
+      if (currentMeta === this._positionToMetaList[idx]) {
+        _arr[idx] = currentMeta;
+        continue;
+      }
+      const _i = this._positionToMetaList.findIndex((v) => v === currentMeta);
+      if (_i !== -1) {
+        _arr[_i] = currentMeta;
+        continue;
+      }
+
+      _available.push(currentMeta);
+    }
+
+    const { smallValues, largeValues } = this.initialize();
+    const positionToMetaList = [];
+
+    for (let position = 0; position < indices.length; position++) {
+      const value = indices[position];
+      if (_arr[position]) {
+        positionToMetaList[position] = _arr[position];
+        const element = { position, value };
+        smallValues.push(element);
+        largeValues.push(element);
+      }
+      const meta = _available.shift();
+      if (meta) {
+        positionToMetaList[position] = meta;
+        const element = { position, value };
+        smallValues.push(element);
+        largeValues.push(element);
+      }
+    }
+  }
+
   getIndices() {
     try {
       const indices = new Array(this.bufferSize);
       for (let idx = 0; idx < indices.length; idx++) {
         const meta =
           this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
+        const targetIndex = this._metaToIndexMap.get(meta);
+        // which means source data has changed. such as one element has been deleted
+        if (meta !== this.getIndexMeta(targetIndex)) {
+          this.shuffle();
+          break;
+        }
         if (meta != null) {
           indices[idx] = {
             meta,
