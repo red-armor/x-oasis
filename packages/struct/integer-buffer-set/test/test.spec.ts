@@ -1,29 +1,12 @@
-import IntegerBufferSet from '../src';
+import IntegerBufferSet, { defaultBufferSize } from '../src';
 import { describe, it, expect } from 'vitest';
 
 describe('basic', () => {
   it('constructor', () => {
     const bufferSet = new IntegerBufferSet();
     expect(bufferSet.getSize()).toBe(0);
-    // const value = bufferSet.replaceFurthestIndexPosition({
-    //   startIndex: 0,
-    //   endIndex: 10,
-    // });
-    // const value = bufferSet.replaceFurthestIndexPosition(0, 10, 0);
-    expect(bufferSet.getPosition(0)).toBe(0);
-    expect(bufferSet.getPosition(1)).toBe(1);
-    expect(bufferSet.getPosition(2)).toBe(2);
-    expect(bufferSet.getPosition(3)).toBe(3);
-    expect(bufferSet.getPosition(4)).toBe(4);
-    expect(bufferSet.getPosition(5)).toBe(5);
-    expect(bufferSet.getPosition(6)).toBe(6);
-    expect(bufferSet.getPosition(7)).toBe(7);
-    expect(bufferSet.getPosition(8)).toBe(8);
-    expect(bufferSet.getPosition(9)).toBe(9);
-    expect(bufferSet.getPosition(10)).toBe(0);
-    expect(bufferSet.getPosition(11)).toBe(1);
-    // expect(bufferSet.getPosition(12)).toBe(12)
-    // console.log('bufferSet position ', bufferSet.getIndexPosition(10));
+    expect(bufferSet.isBufferFull).toBe(false);
+    expect(bufferSet.bufferSize).toBe(defaultBufferSize);
 
     // const position = bufferSet.replaceFurthestIndexPosition({
     //   startIndex: 7,
@@ -120,5 +103,47 @@ describe('basic', () => {
     // // @ts-ignore
     // console.log('buffer large - ', bufferSet._largeValues);
     // console.log('value ', value2);
+  });
+
+  it('no safeRange', () => {
+    const bufferSet = new IntegerBufferSet();
+    expect(bufferSet.getPosition(0)).toBe(0);
+    expect(bufferSet.getPosition(1)).toBe(1);
+    expect(bufferSet.getPosition(2)).toBe(2);
+    expect(bufferSet.getPosition(3)).toBe(3);
+    expect(bufferSet.getPosition(4)).toBe(4);
+    expect(bufferSet.getPosition(5)).toBe(5);
+    expect(bufferSet.getPosition(6)).toBe(6);
+    expect(bufferSet.getPosition(7)).toBe(7);
+    expect(bufferSet.getPosition(8)).toBe(8);
+    expect(bufferSet.getPosition(9)).toBe(9);
+    expect(bufferSet.getPosition(10)).toBe(0);
+    expect(bufferSet.getPosition(11)).toBe(1);
+  });
+
+  it('with safeRange', () => {
+    const bufferSet = new IntegerBufferSet();
+    expect(bufferSet.getPosition(0)).toBe(0);
+    expect(bufferSet.getPosition(1)).toBe(1);
+    expect(bufferSet.getPosition(2)).toBe(2);
+    expect(bufferSet.getPosition(3)).toBe(3);
+    expect(bufferSet.getPosition(4)).toBe(4);
+    expect(bufferSet.getPosition(5)).toBe(5);
+    expect(bufferSet.getPosition(6)).toBe(6);
+    expect(bufferSet.getPosition(7)).toBe(7);
+    expect(bufferSet.getPosition(8)).toBe(8);
+    expect(bufferSet.getPosition(9)).toBe(9);
+    expect(
+      bufferSet.getPosition(10, {
+        startIndex: 1,
+        endIndex: 6,
+      })
+    ).toBe(9);
+    expect(
+      bufferSet.getPosition(10, {
+        startIndex: 1,
+        endIndex: 6,
+      })
+    ).toBe(9);
   });
 });

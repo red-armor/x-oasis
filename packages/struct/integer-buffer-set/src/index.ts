@@ -31,7 +31,7 @@ const defaultUseMinValueFn = (options: {
 };
 
 const defaultMetaExtractor = (value) => value;
-const defaultBufferSize = 10;
+export const defaultBufferSize = 10;
 const isNumber = (v) => typeof v === 'number';
 const isUndefined = (val: any) => val === undefined;
 
@@ -110,6 +110,10 @@ class IntegerBufferSet<Meta = any> {
 
   getSize() {
     return this._size;
+  }
+
+  get bufferSize() {
+    return this._bufferSize;
   }
 
   setIsOnTheFlyFull(val: any) {
