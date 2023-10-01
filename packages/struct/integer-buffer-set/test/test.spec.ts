@@ -1,6 +1,8 @@
 import IntegerBufferSet, { defaultBufferSize } from '../src';
 import { describe, it, expect } from 'vitest';
 
+const extractTokenTargetIndex = (val) => val.map((v) => v.targetIndex);
+
 describe('basic', () => {
   it('constructor', () => {
     const bufferSet = new IntegerBufferSet();
@@ -23,8 +25,9 @@ describe('basic', () => {
     expect(bufferSet.getPosition(9)).toBe(9);
     expect(bufferSet.getPosition(10)).toBe(0);
     expect(bufferSet.getPosition(11)).toBe(1);
-
-    console.log('buffer indices 1 ', bufferSet.getIndices());
+    expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      10, 11, 2, 3, 4, 5, 6, 7, 8, 9,
+    ]);
   });
   it('no safeRange', () => {
     const bufferSet = new IntegerBufferSet();
@@ -44,7 +47,10 @@ describe('basic', () => {
     expect(bufferSet.getPosition(9, safeRange)).toBe(9);
     expect(bufferSet.getPosition(10, safeRange)).toBe(9);
     expect(bufferSet.getPosition(11, safeRange)).toBe(8);
-    console.log('buffer indices 2 ', bufferSet.getIndices());
+
+    expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 11, 10,
+    ]);
   });
 
   it('place same item twice', () => {
@@ -66,7 +72,9 @@ describe('basic', () => {
     expect(bufferSet.getPosition(10, safeRange)).toBe(9);
     expect(bufferSet.getPosition(10, safeRange)).toBe(9);
     expect(bufferSet.getPosition(1, safeRange)).toBe(1);
-    console.log('buffer indices 3 ', bufferSet.getIndices());
+    expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 10,
+    ]);
   });
 
   it('safeRange - inner', () => {
@@ -82,7 +90,9 @@ describe('basic', () => {
     expect(bufferSet.getPosition(8)).toBe(8);
     expect(bufferSet.getPosition(9)).toBe(9);
 
-    console.log('buffer indices 4 ', bufferSet.getIndices());
+    expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    ]);
 
     const safeRange = {
       startIndex: 1,
@@ -97,7 +107,9 @@ describe('basic', () => {
     expect(bufferSet.getPosition(16, safeRange)).toBe(null);
     expect(bufferSet.getPosition(17, safeRange)).toBe(null);
     expect(bufferSet.getPosition(18, safeRange)).toBe(null);
-    console.log('buffer indices ', bufferSet.getIndices());
+    expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      13, 1, 2, 3, 4, 5, 6, 12, 11, 10,
+    ]);
   });
 
   it('safeRange - outside', () => {
@@ -112,7 +124,9 @@ describe('basic', () => {
     expect(bufferSet.getPosition(7)).toBe(7);
     expect(bufferSet.getPosition(8)).toBe(8);
     expect(bufferSet.getPosition(9)).toBe(9);
-    console.log('buffer indices 5 ', bufferSet.getIndices());
+    expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    ]);
 
     const safeRange = {
       startIndex: 5,
@@ -133,6 +147,8 @@ describe('basic', () => {
     expect(bufferSet.getPosition(16, safeRange)).toBe(null);
     expect(bufferSet.getPosition(17, safeRange)).toBe(null);
     expect(bufferSet.getPosition(18, safeRange)).toBe(null);
-    console.log('buffer indices 6 ', bufferSet.getIndices());
+    expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      10, 11, 12, 13, 14, 5, 6, 7, 8, 9,
+    ]);
   });
 });

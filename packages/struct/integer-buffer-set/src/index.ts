@@ -72,6 +72,9 @@ class IntegerBufferSet<Meta = any> {
   private _isOnTheFlyFull: boolean;
   private _isOnTheFlyFullReturnHook: ReturnHook;
 
+  private _loopMS: number;
+  private _lastUpdatedMS: number;
+
   constructor(props: IntegerBufferSetProps<Meta> = {}) {
     const {
       name = `buffer_${count++}`,
@@ -108,6 +111,9 @@ class IntegerBufferSet<Meta = any> {
     this._isOnTheFlyFullReturnHook = returnHook(
       this.setIsOnTheFlyFull.bind(this)
     );
+
+    this._loopMS = Date.now();
+    this._lastUpdatedMS = this._loopMS;
   }
 
   getSize() {
@@ -538,18 +544,24 @@ class IntegerBufferSet<Meta = any> {
   }
 
   getIndices() {
-    const indices = new Array(this.bufferSize);
-    for (let idx = 0; idx < indices.length; idx++) {
-      const meta = this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
-      if (meta != null) {
-        indices[idx] = {
-          meta,
-          targetIndex: this._metaToIndexMap.get(meta),
-          recyclerKey: `${this._name}_${idx}`,
-        };
+    try {
+      const indices = new Array(this.bufferSize);
+      for (let idx = 0; idx < indices.length; idx++) {
+        const meta =
+          this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
+        if (meta != null) {
+          indices[idx] = {
+            meta,
+            targetIndex: this._metaToIndexMap.get(meta),
+            recyclerKey: `${this._name}_${idx}`,
+          };
+        }
       }
+      return indices;
+    } catch (err) {
+      this.readyToStartNextLoop();
+      return this._positionToMetaList;
     }
-    return indices;
   }
 
   _pushToHeaps(position: number, value: number) {
@@ -582,6 +594,21 @@ class IntegerBufferSet<Meta = any> {
     this._metaToIndexMap.set(meta, index);
     this._indexToMetaMap.set(index, meta);
     return false;
+  }
+
+  readyToStartNextLoop() {
+    this._lastUpdatedMS = Date.now();
+  }
+
+  prepare() {
+    if (this._loopMS === this._lastUpdatedMS) return;
+    this._loopMS = this._lastUpdatedMS;
+
+    this._onTheFlyIndices = [];
+    this._isOnTheFlyFull = false;
+    const len = this._positionToMetaList.length;
+
+    for (let index = 0; index < len; index++) {}
   }
 
   _cleanHeaps() {
