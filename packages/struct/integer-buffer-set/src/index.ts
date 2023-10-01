@@ -535,7 +535,6 @@ class IntegerBufferSet<Meta = any> {
   }
 
   _pushToHeaps(position: number, value: number) {
-    // console.log('posu ', position, value);
     const element = { position, value };
     // We can reuse the same object in both heaps, because we don't mutate them
     this._smallValues.push(element);
@@ -628,7 +627,6 @@ class IntegerBufferSet<Meta = any> {
     });
     this._smallValues = newSmallValues;
     this._largeValues = newLargeValues;
-    this._valueToPositionObject = valueToPositionObject;
   }
 
   rebuildHeaps() {
@@ -652,8 +650,6 @@ class IntegerBufferSet<Meta = any> {
 
     this._smallValues = newSmallValues;
     this._largeValues = newLargeValues;
-
-    this._valueToPositionObject = valueToPositionObject;
   }
 
   _recreateHeaps() {
