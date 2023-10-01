@@ -34,6 +34,7 @@ const defaultMetaExtractor = (value) => value;
 export const defaultBufferSize = 10;
 const isNumber = (v) => typeof v === 'number';
 const isUndefined = (val: any) => val === undefined;
+let count = 0;
 
 // !!!!! should do meta validation...meta should has an index...
 // value: original data `index` value
@@ -53,6 +54,7 @@ const isUndefined = (val: any) => val === undefined;
 // feature: add / delete / update item will also in consider..
 class IntegerBufferSet<Meta = any> {
   private _size: number;
+  private _name: string;
   private _bufferSize: number;
   private _positionToValueObject: ValueToPositionObject;
 
@@ -72,12 +74,14 @@ class IntegerBufferSet<Meta = any> {
 
   constructor(props: IntegerBufferSetProps<Meta> = {}) {
     const {
+      name = `buffer_${count++}`,
       bufferSize = defaultBufferSize,
       metaExtractor = defaultMetaExtractor,
     } = props;
     this._metaExtractor = metaExtractor;
 
     this._positionToValueObject = {};
+    this._name = name;
 
     /**
      * this._indexToMetaMap is used to find the prev meta when finding a position for index.
@@ -531,6 +535,21 @@ class IntegerBufferSet<Meta = any> {
     const position = this._metaToPositionMap.get(replacedMeta);
 
     return position;
+  }
+
+  getIndices() {
+    const indices = new Array(this.bufferSize);
+    for (let idx = 0; idx < indices.length; idx++) {
+      const meta = this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
+      if (meta != null) {
+        indices[idx] = {
+          meta,
+          targetIndex: this._metaToIndexMap.get(meta),
+          recyclerKey: `${this._name}_${idx}`,
+        };
+      }
+    }
+    return indices;
   }
 
   _pushToHeaps(position: number, value: number) {

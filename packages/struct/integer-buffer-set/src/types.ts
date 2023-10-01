@@ -12,6 +12,7 @@ export type IndexToMetaMap<T> = Map<number, T>;
 
 export type MetaExtractor<T> = (index: number) => T;
 export type IntegerBufferSetProps<T> = {
+  name?: string;
   bufferSize?: number;
   metaExtractor?: MetaExtractor<T>;
 };
@@ -24,4 +25,10 @@ export type HeapItem = {
 export type SafeRange = {
   startIndex: number;
   endIndex: number;
+};
+
+export type BufferResultToken = {
+  meta: any;
+  targetIndex: number;
+  recyclerKey: string;
 };
