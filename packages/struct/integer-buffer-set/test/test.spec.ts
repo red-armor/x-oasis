@@ -20,8 +20,8 @@ describe('basic', () => {
     expect(bufferSet.getPosition(7)).toBe(7);
     expect(bufferSet.getPosition(8)).toBe(8);
     expect(bufferSet.getPosition(9)).toBe(9);
-    expect(bufferSet.getPosition(10)).toBe(10);
-    expect(bufferSet.getPosition(11)).toBe(11);
+    expect(bufferSet.getPosition(10)).toBe(0);
+    expect(bufferSet.getPosition(11)).toBe(1);
     // expect(bufferSet.getPosition(12)).toBe(12)
     // console.log('bufferSet position ', bufferSet.getIndexPosition(10));
 
