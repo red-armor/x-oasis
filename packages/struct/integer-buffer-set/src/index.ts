@@ -98,8 +98,10 @@ class IntegerBufferSet<Meta = any> {
     this.getNewPositionForIndex = this.getNewPositionForIndex.bind(this);
     this.getIndexPosition = this.getIndexPosition.bind(this);
     this.getSize = this.getSize.bind(this);
-    this.replaceFurthestValuePosition =
-      this.replaceFurthestValuePosition.bind(this);
+    // this.replaceFurthestValuePosition =
+    //   this.replaceFurthestValuePosition.bind(this);
+    this.replacePositionInFliedIndices =
+      this.replacePositionInFliedIndices.bind(this);
     this._isFullReturnHook = returnHook(this.setIsOnTheFlyFull.bind(this));
   }
 
@@ -362,7 +364,7 @@ class IntegerBufferSet<Meta = any> {
    * @returns
    *
    */
-  getPosition(newIndex: number, safeRange: SafeRange) {
+  getPosition(newIndex: number, safeRange?: SafeRange) {
     const meta = this.getIndexMeta(newIndex);
     const prevMetaPosition = this._metaToPositionMap.get(meta);
 
@@ -394,71 +396,23 @@ class IntegerBufferSet<Meta = any> {
       return this._isFullReturnHook(this.getNewPositionForIndex(newIndex));
 
     let positionToReplace;
+    const prevIndexMeta = this._indexToMetaMap.get(newIndex);
 
     // Index has already been stored, but we cant use its old position directly...
     // 1：index -> meta, meta may be reused later
 
     // 2: temp use index -> meta -> position, this issue should exist for follows...
-    if (!this._indexToMetaMap.get(newIndex)) {
+    if (!prevIndexMeta) {
       this._cleanHeaps();
       positionToReplace = this.replaceFurthestIndexPosition(safeRange);
     } else {
-      const indexMeta = this._indexToMetaMap.get(newIndex);
-      positionToReplace = this._metaToPositionMap.get(indexMeta);
+      positionToReplace = this._metaToPositionMap.get(prevIndexMeta);
     }
 
     this._onTheFlyIndices[positionToReplace] = meta;
     this._setMetaIndex(meta, newIndex);
 
     return positionToReplace;
-
-    // const currentOccupiedMeta = this.findPositionMeta(prevMetaPosition);
-    // if (currentOccupiedMeta === meta) return prevMetaPosition;
-
-    // this._metaToIndexMap.delete(currentOccupiedMeta);
-
-    // if (prevMetaPosition !== undefined) return prevMetaPosition;
-
-    // const metaToReplace = this._indexToMetaMap.get(newIndex);
-    // this._metaToIndexMap.delete(metaToReplace);
-    // this._metaToIndexMap.set(meta, newIndex);
-
-    // let position = this._valueToPositionObject[newIndex];
-
-    // /**
-    //  * has meta && meta matched
-    //  */
-    // if (meta && meta === metaToReplace && isNumber(position)) {
-    //   console.warn(
-    //     "Shouldn't try to replace values with value already stored value in " +
-    //       'BufferSet'
-    //   );
-    //   return position;
-    // }
-
-    // // has position, but not matched.
-    // if (metaToReplace) {
-    //   const candidatePosition = this._metaToPositionMap.get(meta);
-
-    //   // meta has a position
-    //   if (candidatePosition !== undefined) {
-    //     const originalValue = this._positionToValueObject[candidatePosition];
-    //     position = candidatePosition;
-    //     delete this._valueToPositionObject[originalValue];
-    //     this._valueToPositionObject[newIndex] = position;
-    //     this._positionToValueObject[position] = newIndex;
-    //     this._metaToIndexMap.set(meta, newIndex);
-    //     this.rebuildHeaps();
-    //     return position;
-    //   }
-    // }
-
-    // // newValue has no position..
-    // return this.replaceFurthestValuePosition(
-    //   newIndex,
-    //   safeRange.endIndex,
-    //   safeRange.startIndex
-    // );
   }
 
   resolvePosition(
@@ -559,14 +513,27 @@ class IntegerBufferSet<Meta = any> {
     const { startIndex: lowValue, endIndex: highValue } = safeRange;
     const minValue = this._smallValues.peek()!.value;
     const maxValue = this._largeValues.peek()!.value;
-    if (minValue >= lowValue && maxValue <= highValue) {
-      // All values currently stored are necessary, we can't reuse any of them.
-      return null;
-    }
 
     let indexToReplace;
-
-    if (lowValue - minValue > maxValue - highValue) {
+    // All values currently stored are necessary, we can't reuse any of them.
+    if (
+      isClamped(lowValue, minValue, highValue) &&
+      isClamped(lowValue, maxValue, highValue)
+    ) {
+      return null;
+    } else if (
+      isClamped(lowValue, minValue, highValue) &&
+      !isClamped(lowValue, maxValue, highValue)
+    ) {
+      indexToReplace = maxValue;
+      this._largeValues.pop();
+    } else if (
+      !isClamped(lowValue, minValue, highValue) &&
+      isClamped(lowValue, maxValue, highValue)
+    ) {
+      indexToReplace = minValue;
+      this._smallValues.pop();
+    } else if (lowValue - minValue > maxValue - highValue) {
       // minValue is further from provided range. We will reuse it's position.
       indexToReplace = minValue;
       this._smallValues.pop();
@@ -580,36 +547,6 @@ class IntegerBufferSet<Meta = any> {
 
     return position;
   }
-
-  // replaceFurthestValuePosition(
-  //   lowValue: number,
-  //   highValue: number,
-  //   newValue: number,
-  //   useMinValueFn: (options: {
-  //     safeRange: {
-  //       lowValue: number;
-  //       highValue: number;
-  //     };
-  //     bufferSetRange: {
-  //       maxValue: number;
-  //       minValue: number;
-  //     };
-  //     currentIndex: number;
-  //   }) => boolean = defaultUseMinValueFn
-  // ): null | number {
-  //   const position = this.resolvePosition(
-  //     lowValue,
-  //     highValue,
-  //     newValue,
-  //     useMinValueFn
-  //   );
-
-  //   if (position !== undefined) {
-  //     this._valueToPositionObject[newValue] = position;
-  //     this._pushToHeaps(position, newValue);
-  //   }
-  //   return position;
-  // }
 
   _pushToHeaps(position: number, value: number) {
     const element = { position, value };

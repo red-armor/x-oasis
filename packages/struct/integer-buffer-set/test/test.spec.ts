@@ -5,47 +5,100 @@ describe('basic', () => {
   it('constructor', () => {
     const bufferSet = new IntegerBufferSet();
     expect(bufferSet.getSize()).toBe(0);
-    const value = bufferSet.replaceFurthestValuePosition(0, 10, 0);
+    const value = bufferSet.replaceFurthestIndexPosition({
+      startIndex: 0,
+      endIndex: 10,
+    });
+    // const value = bufferSet.replaceFurthestIndexPosition(0, 10, 0);
     if (!value) {
-      const position = bufferSet.getNewPositionForValue(0);
+      const position = bufferSet.getPosition(0);
       console.log('position ', position);
     }
 
-    const value2 = bufferSet.replaceFurthestValuePosition(0, 10, 1);
+    const value2 = bufferSet.replaceFurthestIndexPosition({
+      startIndex: 0,
+      endIndex: 10,
+    });
+    // const value2 = bufferSet.replaceFurthestIndexPosition(0, 10, 1);
 
     if (!value2) {
-      const position = bufferSet.getNewPositionForValue(1);
+      const position = bufferSet.getPosition(1);
       console.log('position 2', position);
     }
 
-    bufferSet.getNewPositionForValue(2);
-    bufferSet.getNewPositionForValue(3);
-    bufferSet.getNewPositionForValue(4);
-    bufferSet.getNewPositionForValue(5);
-    bufferSet.getNewPositionForValue(6);
-    bufferSet.getNewPositionForValue(7);
-    bufferSet.getNewPositionForValue(8);
-    bufferSet.getNewPositionForValue(9);
-    bufferSet.getNewPositionForValue(10);
-    bufferSet.getNewPositionForValue(11);
-    bufferSet.getNewPositionForValue(12);
-    bufferSet.getNewPositionForValue(13);
+    bufferSet.getPosition(2);
+    bufferSet.getPosition(3);
+    bufferSet.getPosition(4);
+    bufferSet.getPosition(5);
+    bufferSet.getPosition(6);
+    bufferSet.getPosition(7);
+    bufferSet.getPosition(8);
+    bufferSet.getPosition(9);
+    bufferSet.getPosition(10);
+    bufferSet.getPosition(11);
+    bufferSet.getPosition(12);
+    bufferSet.getPosition(13);
 
-    console.log('bufferSet position ', bufferSet.getValuePosition(10));
+    console.log('bufferSet position ', bufferSet.getIndexPosition(10));
 
-    const position = bufferSet.replaceFurthestValuePosition(7, 15, 14);
+    const position = bufferSet.replaceFurthestIndexPosition({
+      startIndex: 7,
+      endIndex: 15,
+    });
+    // const position = bufferSet.replaceFurthestIndexPosition(7, 15, 14);
     console.log('positions ', position);
 
-    const position2 = bufferSet.replaceFurthestValuePosition(15, 20, 16);
-    bufferSet.replaceFurthestValuePosition(15, 20, 17);
-    bufferSet.replaceFurthestValuePosition(15, 20, 18);
-    bufferSet.replaceFurthestValuePosition(15, 20, 19);
-    bufferSet.replaceFurthestValuePosition(15, 20, 20);
-    bufferSet.replaceFurthestValuePosition(20, 25, 21);
-    bufferSet.replaceFurthestValuePosition(20, 25, 22);
-    bufferSet.replaceFurthestValuePosition(20, 25, 23);
-    bufferSet.replaceFurthestValuePosition(20, 25, 24);
-    bufferSet.replaceFurthestValuePosition(20, 25, 25);
+    const position2 = bufferSet.replaceFurthestIndexPosition({
+      startIndex: 15,
+      endIndex: 20,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 15,
+      endIndex: 20,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 15,
+      endIndex: 20,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 15,
+      endIndex: 20,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 15,
+      endIndex: 20,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 20,
+      endIndex: 25,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 20,
+      endIndex: 25,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 20,
+      endIndex: 25,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 20,
+      endIndex: 25,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 20,
+      endIndex: 25,
+    });
+
+    // const position2 = bufferSet.replaceFurthestIndexPosition(15, 20, 16);
+    // bufferSet.replaceFurthestIndexPosition(15, 20, 17);
+    // bufferSet.replaceFurthestIndexPosition(15, 20, 18);
+    // bufferSet.replaceFurthestIndexPosition(15, 20, 19);
+    // bufferSet.replaceFurthestIndexPosition(15, 20, 20);
+    // bufferSet.replaceFurthestIndexPosition(20, 25, 21);
+    // bufferSet.replaceFurthestIndexPosition(20, 25, 22);
+    // bufferSet.replaceFurthestIndexPosition(20, 25, 23);
+    // bufferSet.replaceFurthestIndexPosition(20, 25, 24);
+    // bufferSet.replaceFurthestIndexPosition(20, 25, 25);
     console.log('positions ', position2);
 
     // @ts-ignore
@@ -58,9 +111,21 @@ describe('basic', () => {
 
     console.log('========================');
 
-    bufferSet.replaceFurthestValuePosition(5, 15, 5);
-    bufferSet.replaceFurthestValuePosition(5, 15, 6);
-    bufferSet.replaceFurthestValuePosition(5, 15, 7);
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 5,
+      endIndex: 15,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 5,
+      endIndex: 15,
+    });
+    bufferSet.replaceFurthestIndexPosition({
+      startIndex: 5,
+      endIndex: 15,
+    });
+    // bufferSet.replaceFurthestIndexPosition(5, 15, 5);
+    // bufferSet.replaceFurthestIndexPosition(5, 15, 6);
+    // bufferSet.replaceFurthestIndexPosition(5, 15, 7);
 
     console.log('positions ', position2);
 
