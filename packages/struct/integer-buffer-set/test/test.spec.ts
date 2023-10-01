@@ -167,17 +167,15 @@ describe('basic', () => {
     expect(bufferSet.getPosition(7)).toBe(7);
     expect(bufferSet.getPosition(8)).toBe(8);
     expect(bufferSet.getPosition(9)).toBe(9);
-    expect(
-      bufferSet.getPosition(10, {
-        startIndex: 1,
-        endIndex: 6,
-      })
-    ).toBe(9);
-    expect(
-      bufferSet.getPosition(11, {
-        startIndex: 1,
-        endIndex: 6,
-      })
-    ).toBe(8);
+
+    const safeRange = {
+      startIndex: 1,
+      endIndex: 6,
+    };
+    expect(bufferSet.getPosition(10, safeRange)).toBe(9);
+    expect(bufferSet.getPosition(11, safeRange)).toBe(8);
+    expect(bufferSet.getPosition(12, safeRange)).toBe(8);
+    expect(bufferSet.getPosition(13, safeRange)).toBe(8);
+    expect(bufferSet.getPosition(14, safeRange)).toBe(8);
   });
 });
