@@ -72,8 +72,6 @@ discreteSuite('simple', data, {
   },
 });
 
-console.log('ffff');
-
 discreteDeleteSuite('simple', data, {
   hooks: {
     beforeEach: () => {
