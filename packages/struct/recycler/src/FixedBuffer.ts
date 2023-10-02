@@ -7,8 +7,6 @@ import {
 } from './types';
 import { DEFAULT_RECYCLER_TYPE, RECYCLER_BUFFER_SIZE } from './common';
 
-const isValidPosition = (val: any) => typeof val === 'number';
-
 class FixedBuffer {
   private _bufferSet: IntegerBufferSet;
   /**
@@ -33,18 +31,19 @@ class FixedBuffer {
 
   constructor(props?: FixedBufferProps) {
     const {
-      size = 10,
+      bufferSize = RECYCLER_BUFFER_SIZE,
       thresholdIndexValue = 0,
       recyclerReservedBufferSize = RECYCLER_BUFFER_SIZE,
       recyclerType = DEFAULT_RECYCLER_TYPE,
       owner,
       startIndex,
     } = props;
-    this._size = size;
+    // this._size = size;
     this._owner = owner;
     this._startIndex = startIndex;
     this._bufferSet = new IntegerBufferSet({
-      bufferSize: 12,
+      bufferSize,
+      name: recyclerType,
     });
     this._recyclerType = recyclerType;
     this._thresholdIndexValue = thresholdIndexValue;

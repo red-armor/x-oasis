@@ -19,7 +19,7 @@ export type FixedBufferProps = {
   /**
    * max size
    */
-  size?: number;
+  bufferSize?: number;
 
   recyclerReservedBufferSize?: number;
 
