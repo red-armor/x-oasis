@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.20](https://github.com/ryuever/x-oasis/compare/v0.1.19...v0.1.20) (2023-10-02)
+
+
+### Features
+
+* update lock ([23c9497](https://github.com/ryuever/x-oasis/commit/23c949797000c43a269a6e7b9aea2238d2090dc6))
+
+
+
 ## [0.1.19](https://github.com/ryuever/x-oasis/compare/v0.1.18...v0.1.19) (2023-09-19)
 
 
