@@ -227,9 +227,15 @@ class IntegerBufferSet<Meta = any> {
       "Shouldn't try to find new position for value already stored in BufferSet"
     );
     const newPosition = this._positionToMetaList.length;
+
+    console.log('nw ', newPosition);
+
     this._pushToHeaps(newPosition, index);
     this._setMetaIndex(meta, index);
     this._setMetaPosition(meta, newPosition);
+
+    console.log('new ', newPosition);
+
     return newPosition;
   }
 
@@ -393,6 +399,8 @@ class IntegerBufferSet<Meta = any> {
     const meta = this.getIndexMeta(newIndex);
     const prevMetaPosition = this._metaToPositionMap.get(meta);
 
+    console.log('meta ', meta, prevMetaPosition, newIndex);
+
     if (prevMetaPosition !== undefined) {
       const onTheFlyPositionMeta = this._onTheFlyIndices[prevMetaPosition];
       // the occupied meta should change position
@@ -425,6 +433,7 @@ class IntegerBufferSet<Meta = any> {
       return this._isOnTheFlyFullReturnHook(prevMetaPosition);
     }
 
+    console.log('this. is ', this.isBufferFull);
     // placed on new buffered position
     if (!this.isBufferFull)
       return this._isOnTheFlyFullReturnHook(

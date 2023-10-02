@@ -66,7 +66,7 @@ const deleteSuite = (desc, data, fn) => {
         undefined,
       ]);
 
-      data.values.splice(4, 1);
+      fn.data.delete(4);
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
         0,
         1,
@@ -82,9 +82,10 @@ const deleteSuite = (desc, data, fn) => {
       fn.data.append(10);
 
       expect(bufferSet.getPosition(10, safeRange)).toBe(8);
+      expect(bufferSet.getPosition(11, safeRange)).toBe(9);
     });
 
-    it(`delete critical index`, () => {
+    it.only(`delete critical index`, () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
       });
@@ -105,11 +106,12 @@ const deleteSuite = (desc, data, fn) => {
       };
       expect(bufferSet.getPosition(10, safeRange)).toBe(9);
 
-      // fn.data.delete(3)
-      // fn.data.append(5)
-      // expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-      //   0, 1, 2, 8, 3, 4, 5, 6, 7, undefined,
-      // ]);
+      fn.data.delete(3);
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        0, 1, 2, 8, 3, 4, 5, 6, 7, 10,
+      ]);
+      fn.data.append(5);
+      expect(bufferSet.getPosition(12, safeRange)).toBe(8);
     });
 
     it(`safeRange - inner`, () => {
