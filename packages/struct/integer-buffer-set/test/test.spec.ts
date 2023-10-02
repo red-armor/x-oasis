@@ -1,75 +1,90 @@
-import IntegerBufferSet from '../src';
-import { describe, it, expect } from 'vitest';
+import { deleteSuite, discreteDeleteSuite } from './delete';
 
-describe('basic', () => {
-  it('constructor', () => {
-    const bufferSet = new IntegerBufferSet();
-    expect(bufferSet.getSize()).toBe(0);
-    const value = bufferSet.replaceFurthestValuePosition(0, 10, 0);
-    if (!value) {
-      const position = bufferSet.getNewPositionForValue(0);
-      console.log('position ', position);
-    }
+import {
+  buildSimpleList,
+  buildItemData,
+  buildDiscreteData,
+  resetStartIndex,
+} from './data';
+import { discreteSuite, basicSuite } from './basic';
 
-    const value2 = bufferSet.replaceFurthestValuePosition(0, 10, 1);
+const data = {
+  values: [] as Array<any>,
+};
 
-    if (!value2) {
-      const position = bufferSet.getNewPositionForValue(1);
-      console.log('position 2', position);
-    }
+deleteSuite('simple list', data, {
+  hooks: {
+    beforeEach: () => {
+      resetStartIndex();
+      data.values = buildSimpleList(12);
+    },
+  },
+  data: {
+    delete: (index) => data.values.splice(index, 1),
+    append: (count) => {
+      data.values = data.values.concat(buildSimpleList(count));
+    },
+  },
+});
 
-    bufferSet.getNewPositionForValue(2);
-    bufferSet.getNewPositionForValue(3);
-    bufferSet.getNewPositionForValue(4);
-    bufferSet.getNewPositionForValue(5);
-    bufferSet.getNewPositionForValue(6);
-    bufferSet.getNewPositionForValue(7);
-    bufferSet.getNewPositionForValue(8);
-    bufferSet.getNewPositionForValue(9);
-    bufferSet.getNewPositionForValue(10);
-    bufferSet.getNewPositionForValue(11);
-    bufferSet.getNewPositionForValue(12);
-    bufferSet.getNewPositionForValue(13);
+deleteSuite('item list', data, {
+  hooks: {
+    beforeEach: () => {
+      resetStartIndex();
+      data.values = buildItemData(12);
+    },
+  },
+  data: {
+    delete: (index) => data.values.splice(index, 1),
+    append: (count) => {
+      data.values = data.values.concat(buildItemData(count));
+    },
+  },
+});
 
-    console.log('bufferSet position ', bufferSet.getValuePosition(10));
+basicSuite('basic', data, {
+  hooks: {
+    beforeEach: () => {
+      resetStartIndex();
+      data.values = buildSimpleList(100);
+    },
+  },
+  data: {
+    delete: (index) => data.values.splice(index, 1),
+    append: (count) => {
+      data.values = data.values.concat(buildSimpleList(count));
+    },
+  },
+});
 
-    const position = bufferSet.replaceFurthestValuePosition(7, 15, 14);
-    console.log('positions ', position);
+discreteSuite('simple', data, {
+  hooks: {
+    beforeEach: () => {
+      resetStartIndex();
+      data.values = buildDiscreteData(100);
+    },
+  },
+  data: {
+    delete: (index) => data.values.splice(index, 1),
+    append: (count) => {
+      data.values = data.values.concat(buildDiscreteData(count));
+    },
+  },
+});
 
-    const position2 = bufferSet.replaceFurthestValuePosition(15, 20, 16);
-    bufferSet.replaceFurthestValuePosition(15, 20, 17);
-    bufferSet.replaceFurthestValuePosition(15, 20, 18);
-    bufferSet.replaceFurthestValuePosition(15, 20, 19);
-    bufferSet.replaceFurthestValuePosition(15, 20, 20);
-    bufferSet.replaceFurthestValuePosition(20, 25, 21);
-    bufferSet.replaceFurthestValuePosition(20, 25, 22);
-    bufferSet.replaceFurthestValuePosition(20, 25, 23);
-    bufferSet.replaceFurthestValuePosition(20, 25, 24);
-    bufferSet.replaceFurthestValuePosition(20, 25, 25);
-    console.log('positions ', position2);
+console.log('ffff');
 
-    // @ts-ignore
-    console.log('buffer._valueToPositionMap ', bufferSet._valueToPositionMap);
-    // @ts-ignore
-    console.log('buffer small ', bufferSet._smallValues);
-    // @ts-ignore
-    console.log('buffer large - ', bufferSet._largeValues);
-    console.log('value ', value2);
-
-    console.log('========================');
-
-    bufferSet.replaceFurthestValuePosition(5, 15, 5);
-    bufferSet.replaceFurthestValuePosition(5, 15, 6);
-    bufferSet.replaceFurthestValuePosition(5, 15, 7);
-
-    console.log('positions ', position2);
-
-    // @ts-ignore
-    console.log('buffer._valueToPositionMap ', bufferSet._valueToPositionMap);
-    // @ts-ignore
-    console.log('buffer small ', bufferSet._smallValues);
-    // @ts-ignore
-    console.log('buffer large - ', bufferSet._largeValues);
-    console.log('value ', value2);
-  });
+discreteDeleteSuite('simple', data, {
+  hooks: {
+    beforeEach: () => {
+      resetStartIndex();
+      data.values = buildDiscreteData(100);
+    },
+  },
+  data: {
+    delete: (index) => data.values.splice(index, 1),
+    append: (count) => {
+      data.values = data.values.concat(buildDiscreteData(count));
+    },
+  },
 });
