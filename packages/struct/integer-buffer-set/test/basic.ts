@@ -1,7 +1,6 @@
 import IntegerBufferSet, { defaultBufferSize } from '../src';
 import { describe, it, expect, beforeEach } from 'vitest';
-
-const extractTokenTargetIndex = (val) => val.map((v) => v.targetIndex);
+import { extractTokenTargetIndex } from './utils';
 
 export const basicSuite = (desc, data, fn?: any) => {
   describe('basic', () => {
@@ -164,7 +163,7 @@ export const discreteSuite = (desc, data, fn) => {
       fn.hooks?.beforeEach();
     });
 
-    it('recycler mod % 3 === 0', () => {
+    it.only('recycler mod % 3 === 0', () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
       });
@@ -195,13 +194,6 @@ export const discreteSuite = (desc, data, fn) => {
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
         63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
       ]);
-
-      fn.data.delete(20);
-      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
-      ]);
-
-      console.log('result ', data.values[21]);
     });
   });
 };

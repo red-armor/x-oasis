@@ -494,7 +494,11 @@ class IntegerBufferSet<Meta = any> {
       indices[idx] = targetIndex;
     }
 
-    // console.log('position xxx ', this._positionToMetaList);
+    console.log(
+      'position xxx ',
+      this._positionToMetaList,
+      this._onTheFlyIndices
+    );
 
     const _arr = new Array(indices.length);
     const _available = [];
@@ -504,7 +508,6 @@ class IntegerBufferSet<Meta = any> {
     for (let idx = 0; idx < indices.length; idx++) {
       const currentIndex = indices[idx];
       const currentMeta = this._metaExtractor(currentIndex);
-      // console.log('current ', currentIndex, currentMeta);
       if (currentMeta == null) continue;
 
       indexToMetaMap.set(currentIndex, currentMeta);
@@ -523,7 +526,7 @@ class IntegerBufferSet<Meta = any> {
       _available.push(currentMeta);
     }
 
-    // console.log('available ', _available);
+    console.log('available ', _available);
 
     const { smallValues, largeValues } = this.initialize();
     const positionToMetaList = [];
@@ -549,7 +552,7 @@ class IntegerBufferSet<Meta = any> {
       }
     }
 
-    // console.log('position ', positionToMetaList, largeValues.peek().value);
+    console.log('position ', positionToMetaList, largeValues.peek().value);
 
     this._positionToMetaList = positionToMetaList;
     this._smallValues = smallValues;
@@ -580,6 +583,7 @@ class IntegerBufferSet<Meta = any> {
     }
   }
 
+  // key point: `meta` should be preserved..
   getIndices() {
     try {
       const indices = new Array(this.bufferSize);
@@ -599,6 +603,9 @@ class IntegerBufferSet<Meta = any> {
           };
         }
       }
+      // clear on the fly indices after return indices.
+      this._onTheFlyIndices = [];
+
       return indices;
     } catch (err) {
       this.readyToStartNextLoop();
