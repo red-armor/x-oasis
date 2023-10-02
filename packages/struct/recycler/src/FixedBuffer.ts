@@ -13,14 +13,7 @@ class FixedBuffer {
    */
   private _thresholdIndexValue = 0;
 
-  private _startIndex: number;
   private _recyclerType: string;
-  private _indices: Array<number> = [];
-  private _recyclerReservedBufferSize: number;
-
-  private _indicesCopy = [];
-  private _itemMetaIndices = [];
-  private _positionToItemMetaMap = [];
 
   constructor(props: FixedBufferProps) {
     const {
@@ -32,7 +25,6 @@ class FixedBuffer {
       metaExtractor,
       indexExtractor,
     } = props;
-    this._startIndex = startIndex;
     this._bufferSet = new IntegerBufferSet({
       bufferSize,
       metaExtractor,
@@ -41,7 +33,6 @@ class FixedBuffer {
     });
     this._recyclerType = recyclerType;
     this._thresholdIndexValue = thresholdIndexValue;
-    this._recyclerReservedBufferSize = recyclerReservedBufferSize;
   }
 
   get thresholdIndexValue() {
@@ -53,7 +44,6 @@ class FixedBuffer {
   }
 
   place(index: number, safeRange: SafeRange) {
-    if (this._recyclerType === 'mod5') console.log('index ', index, safeRange);
     this._bufferSet.getPosition(index, safeRange);
   }
 

@@ -340,9 +340,6 @@ export const discreteDeleteSuite = (desc, data, fn) => {
 
       fn.data.delete(20);
 
-      // expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
-      //   55,  60, 10, 15, undefined, 25, 30, 35, 40, 50
-      // ])
       bufferSet.getPosition(15, safeRange);
       bufferSet.getPosition(24, safeRange);
       bufferSet.getPosition(29, safeRange);
