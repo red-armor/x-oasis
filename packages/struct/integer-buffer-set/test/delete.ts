@@ -272,5 +272,51 @@ export const discreteDeleteSuite = (desc, data, fn) => {
         63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
       ]);
     });
+
+    it('bad case : all the item after 20 is disposed', () => {
+      const bufferSet = new IntegerBufferSet({
+        metaExtractor: (index) => data.values[index],
+        indexExtractor: (meta) => {
+          const index = data.values.findIndex((val) => val === meta);
+          if (index === -1) return null;
+          return index;
+        },
+      });
+
+      for (let idx = 0; idx < 50; idx++) {
+        const item = data.values[idx];
+        if (item.type === 'mod3') bufferSet.getPosition(idx);
+      }
+
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        undefined,
+        undefined,
+      ]);
+
+      for (let idx = 0; idx < 70; idx++) {
+        const item = data.values[idx];
+        if (item.type === 'mod3') bufferSet.getPosition(idx);
+      }
+
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+      ]);
+
+      fn.data.delete(20);
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        62, 68, 15, 20, 26, 32, 38, 44, 50, 56,
+      ]);
+      expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
+        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+      ]);
+    });
   });
 };

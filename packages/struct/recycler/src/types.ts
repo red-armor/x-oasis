@@ -3,9 +3,9 @@ export type RecyclerProps = {
   recyclerBufferSize?: number;
   thresholdIndexValue?: number;
   recyclerReservedBufferPerBatch?: number;
-  // owner: any;
   metaExtractor?: (index: number) => any;
   indexExtractor?: (meta: any) => number;
+  getType?: (index: number) => string;
 };
 
 export type SafeRange = {
