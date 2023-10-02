@@ -200,11 +200,32 @@ describe('delete', () => {
       0, 1, 2, 3, 4, 5, 6, 7, 11, 10,
     ]);
     data.splice(3, 1);
-    console.log('data ==');
-    // expect(bufferSet.getPosition(11, safeRange)).toBe(8);
 
     expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-      0, 1, 2, 3, 4, 5, 6, 7, 11, 10,
+      0,
+      1,
+      2,
+      7,
+      3,
+      4,
+      5,
+      6,
+      10,
+      undefined,
+    ]);
+
+    data.splice(4, 1);
+    expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      0,
+      1,
+      2,
+      6,
+      3,
+      7,
+      4,
+      5,
+      undefined,
+      undefined,
     ]);
   });
 

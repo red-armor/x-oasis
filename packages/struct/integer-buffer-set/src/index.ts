@@ -39,6 +39,7 @@ let count = 0;
 // !!!!! should do meta validation...meta should has an index...
 // value: original data `index` value
 // value(index) => meta => position
+// `index to getIndices, meta to find index`
 
 // Data structure that allows to store values and assign positions to them
 // in a way to minimize changing positions of stored values when new ones are
@@ -172,55 +173,54 @@ class IntegerBufferSet<Meta = any> {
   /**
    * placed meta should has a index value
    */
-  afterIndices() {
-    let isDirty = false;
-    const positionToMetaList = [];
-    for (let idx = 0; idx < this._positionToMetaList.length; idx++) {
-      const meta = this._positionToMetaList[idx];
-      if (this._metaToIndexMap.get(meta) === undefined) {
-        this._metaToIndexMap.delete(meta);
-        positionToMetaList.push(undefined);
-        isDirty = true;
-      } else {
-        positionToMetaList.push(meta);
-      }
-    }
+  // afterIndices() {
+  //   let isDirty = false;
+  //   const positionToMetaList = [];
+  //   for (let idx = 0; idx < this._positionToMetaList.length; idx++) {
+  //     const meta = this._positionToMetaList[idx];
+  //     if (this._metaToIndexMap.get(meta) === undefined) {
+  //       this._metaToIndexMap.delete(meta);
+  //       positionToMetaList.push(undefined);
+  //       isDirty = true;
+  //     } else {
+  //       positionToMetaList.push(meta);
+  //     }
+  //   }
 
-    let counter = 0;
+  //   let counter = 0;
 
-    if (isDirty) {
-      const { smallValues, largeValues } = this.initialize();
-      for (
-        let position = 0;
-        position < this._positionToMetaList.length;
-        position++
-      ) {
-        const meta = positionToMetaList[position];
-        const token = { position, value: null };
-        if (this._metaToIndexMap.get(meta) === undefined) {
-          token.value = Number.MAX_SAFE_INTEGER - counter++;
-          token.position = position;
-        } else {
-          token.value = this._metaToIndexMap.get(meta);
-        }
-        smallValues.push(token);
-        largeValues.push(token);
-      }
+  //   if (isDirty) {
+  //     const { smallValues, largeValues } = this.initialize();
+  //     for (
+  //       let position = 0;
+  //       position < this._positionToMetaList.length;
+  //       position++
+  //     ) {
+  //       const meta = positionToMetaList[position];
+  //       const token = { position, value: null };
+  //       if (this._metaToIndexMap.get(meta) === undefined) {
+  //         token.value = Number.MAX_SAFE_INTEGER - counter++;
+  //         token.position = position;
+  //       } else {
+  //         token.value = this._metaToIndexMap.get(meta);
+  //       }
+  //       smallValues.push(token);
+  //       largeValues.push(token);
+  //     }
 
-      this._smallValues = smallValues;
-      this._largeValues = largeValues;
-      this._positionToMetaList = positionToMetaList;
-    }
+  //     this._smallValues = smallValues;
+  //     this._largeValues = largeValues;
+  //     this._positionToMetaList = positionToMetaList;
+  //   }
 
-    this._onTheFlyIndices = [];
-  }
+  //   this._onTheFlyIndices = [];
+  // }
 
   getIndexPosition(index: number): undefined | number {
     return this._metaToIndexMap.get(this.getIndexMeta(index));
   }
 
   getNewPositionForIndex(index: number) {
-    // console.log('get new ----');
     const meta = this.getIndexMeta(index);
     invariant(
       this._metaToPositionMap.get(meta) === undefined,
@@ -550,6 +550,9 @@ class IntegerBufferSet<Meta = any> {
       const targetIndex = this._metaToIndexMap.get(meta);
       indices[idx] = targetIndex;
     }
+
+    console.log('position xxx ', this._positionToMetaList);
+
     const _arr = new Array(indices.length);
     const _available = [];
     const indexToMetaMap = new Map();
@@ -557,6 +560,7 @@ class IntegerBufferSet<Meta = any> {
     for (let idx = 0; idx < indices.length; idx++) {
       const currentIndex = indices[idx];
       const currentMeta = this._metaExtractor(currentIndex);
+      console.log('current ', currentIndex, currentMeta);
       if (currentMeta == null) continue;
 
       indexToMetaMap.set(currentIndex, currentMeta);
@@ -575,24 +579,56 @@ class IntegerBufferSet<Meta = any> {
       _available.push(currentMeta);
     }
 
+    console.log('available ', _available);
+
     const { smallValues, largeValues } = this.initialize();
     const positionToMetaList = [];
 
     for (let position = 0; position < indices.length; position++) {
       const value = indices[position];
-      if (_arr[position]) {
+      if (_arr[position] != null) {
         positionToMetaList[position] = _arr[position];
         const element = { position, value };
         smallValues.push(element);
         largeValues.push(element);
+        continue;
       }
       const meta = _available.shift();
-      if (meta) {
+      if (meta != null) {
         positionToMetaList[position] = meta;
         const element = { position, value };
         smallValues.push(element);
         largeValues.push(element);
       }
+    }
+
+    console.log('position ', positionToMetaList);
+
+    this._positionToMetaList = positionToMetaList;
+    this._smallValues = smallValues;
+    this._largeValues = largeValues;
+    this._indexToMetaMap = indexToMetaMap;
+    this._metaToIndexMap = metaToIndexMap;
+    this._onTheFlyIndices = [];
+
+    try {
+      const indices = new Array(this.bufferSize);
+      for (let idx = 0; idx < indices.length; idx++) {
+        const meta =
+          this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
+        const targetIndex = this._metaToIndexMap.get(meta);
+        if (meta != null) {
+          indices[idx] = {
+            meta,
+            targetIndex,
+            recyclerKey: `${this._name}_${idx}`,
+          };
+        }
+      }
+      return indices;
+    } catch (err) {
+      this.readyToStartNextLoop();
+      return this._positionToMetaList;
     }
   }
 
@@ -605,13 +641,12 @@ class IntegerBufferSet<Meta = any> {
         const targetIndex = this._metaToIndexMap.get(meta);
         // which means source data has changed. such as one element has been deleted
         if (meta !== this.getIndexMeta(targetIndex)) {
-          this.shuffle();
-          break;
+          return this.shuffle();
         }
         if (meta != null) {
           indices[idx] = {
             meta,
-            targetIndex: this._metaToIndexMap.get(meta),
+            targetIndex,
             recyclerKey: `${this._name}_${idx}`,
           };
         }
