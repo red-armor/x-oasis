@@ -32,6 +32,57 @@ importers:
       vite: 4.1.4_@types+node@16.18.14
       vitest: 0.29.2
 
+  packages/assertion/is:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/assertion/is-empty:
+    specifiers:
+      '@x-oasis/to-string': workspace:^0.1.19
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/to-string': link:../../proto/to-string
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/assertion/is-nan:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/assertion/is-object:
+    specifiers:
+      '@x-oasis/to-string': workspace:*
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/to-string': link:../../proto/to-string
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/assertion/is-primitive:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/assertion/is-primitive-empty:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/assertion/is-ref:
+    specifiers:
+      '@x-oasis/is-object': workspace:*
+      tsdx: ^0.14.1
+    dependencies:
+      '@x-oasis/is-object': link:../is-object
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/comparison/clamp:
     specifiers:
       tsdx: ^0.14.1
@@ -61,7 +112,7 @@ importers:
       '@x-oasis/is': workspace:^0.1.19
       tsdx: ^0.14.1
     dependencies:
-      '@x-oasis/is': link:../../predication/is
+      '@x-oasis/is': link:../../assertion/is
     devDependencies:
       tsdx: 0.14.1
 
@@ -100,7 +151,7 @@ importers:
       '@x-oasis/is-object': workspace:*
       tsdx: ^0.14.1
     dependencies:
-      '@x-oasis/is-object': link:../../predication/is-object
+      '@x-oasis/is-object': link:../../assertion/is-object
     devDependencies:
       tsdx: 0.14.1
 
@@ -158,57 +209,6 @@ importers:
   packages/misc/return-hook:
     specifiers:
       tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/predication/is:
-    specifiers:
-      tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/predication/is-empty:
-    specifiers:
-      '@x-oasis/to-string': workspace:^0.1.19
-      tsdx: ^0.14.1
-    dependencies:
-      '@x-oasis/to-string': link:../../proto/to-string
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/predication/is-nan:
-    specifiers:
-      tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/predication/is-object:
-    specifiers:
-      '@x-oasis/to-string': workspace:*
-      tsdx: ^0.14.1
-    dependencies:
-      '@x-oasis/to-string': link:../../proto/to-string
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/predication/is-primitive:
-    specifiers:
-      tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/predication/is-primitive-empty:
-    specifiers:
-      tsdx: ^0.14.1
-    devDependencies:
-      tsdx: 0.14.1
-
-  packages/predication/is-ref:
-    specifiers:
-      '@x-oasis/is-object': workspace:*
-      tsdx: ^0.14.1
-    dependencies:
-      '@x-oasis/is-object': link:../is-object
     devDependencies:
       tsdx: 0.14.1
 
