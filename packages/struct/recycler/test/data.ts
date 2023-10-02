@@ -17,19 +17,6 @@ export type Item = {
   type?: string;
 };
 
-export const buildItemData = (count: number, label?: string) => {
-  const _label = label || 'item';
-  const arr = [] as Array<Item>;
-  for (let i = 0; i < count; i++) {
-    arr.push({
-      key: `${_label}_${startIndex}`,
-      index: startIndex,
-    });
-    startIndex += 1;
-  }
-  return arr;
-};
-
 export const buildDiscreteData = (count: number, label?: string) => {
   const _label = label || 'item';
   const arr = [] as Array<Item>;

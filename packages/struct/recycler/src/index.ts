@@ -8,7 +8,7 @@ import {
 } from './common';
 
 class Recycler {
-  private _owner: any;
+  // private _owner: any;
 
   private _queue: Array<FixedBuffer> = [];
 
@@ -22,17 +22,21 @@ class Recycler {
    */
   private _recyclerBufferSize: number;
   private _recyclerReservedBufferSize: number;
+  private _metaExtractor: (index: number) => any;
+  private _indexExtractor: (meta: any) => number;
 
-  constructor(props: RecyclerProps) {
+  constructor(props?: RecyclerProps) {
     const {
-      owner,
+      metaExtractor,
+      indexExtractor,
       recyclerTypes = [],
       recyclerBufferSize = RECYCLER_BUFFER_SIZE,
       thresholdIndexValue = RECYCLER_THRESHOLD_INDEX_VALUE,
       recyclerReservedBufferPerBatch = RECYCLER_RESERVED_BUFFER_PER_BATCH,
-    } = props;
+    } = props || {};
 
-    this._owner = owner;
+    this._metaExtractor = metaExtractor;
+    this._indexExtractor = indexExtractor;
     this._recyclerBufferSize = recyclerBufferSize;
     this._thresholdIndexValue = thresholdIndexValue;
     this._recyclerReservedBufferSize = Math.floor(
@@ -40,6 +44,10 @@ class Recycler {
     );
     this._recyclerReservedBufferPerBatch = recyclerReservedBufferPerBatch;
     recyclerTypes.forEach((type) => this.addBuffer(type));
+  }
+
+  get queue() {
+    return this._queue;
   }
 
   get thresholdIndexValue() {
@@ -63,8 +71,10 @@ class Recycler {
     const startIndex = this._queue.length * this._recyclerReservedBufferSize;
     const buffer = new FixedBuffer({
       startIndex,
-      owner: this._owner,
+      // owner: this._owner,
       recyclerType: type,
+      metaExtractor: this._metaExtractor,
+      indexExtractor: this._indexExtractor,
       bufferSize: this._recyclerBufferSize,
       thresholdIndexValue: this._thresholdIndexValue,
       recyclerReservedBufferSize: this._recyclerReservedBufferSize,
@@ -88,7 +98,7 @@ class Recycler {
     /** the max index value, always be the length of data */
     maxIndex: number;
   }) {
-    this._queue.forEach((buffer) => buffer.start());
+    // this._queue.forEach((buffer) => buffer.start());
     const {
       startIndex: _startIndex,
       safeRange,
@@ -121,8 +131,6 @@ class Recycler {
       }
 
       if (index >= this._thresholdIndexValue) count++;
-
-      // if (itemMeta && !itemMeta.ignoredToPerBatch) count++;
     }
   }
 
