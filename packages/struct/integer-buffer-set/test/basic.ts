@@ -1,12 +1,12 @@
 import IntegerBufferSet, { defaultBufferSize } from '../src';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 const extractTokenTargetIndex = (val) => val.map((v) => v.targetIndex);
 
 const basicSuite = (hooks?: any) => {
   describe('basic', () => {
-    beforeAll(() => {
-      hooks?.beforeAll();
+    beforeEach(() => {
+      hooks?.beforeEach();
     });
     it('constructor', () => {
       const bufferSet = new IntegerBufferSet();

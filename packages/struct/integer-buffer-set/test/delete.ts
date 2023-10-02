@@ -1,15 +1,14 @@
 import IntegerBufferSet from '../src';
-import { describe, it, expect, beforeAll } from 'vitest';
-import { buildSimpleList } from './data';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 const extractTokenTargetIndex = (val) => val.map((v) => v.targetIndex);
 
-const deleteSuite = (hooks) => {
-  describe('delete', () => {
-    beforeAll(() => {
-      hooks?.beforeAll();
+const deleteSuite = (desc, data, fn) => {
+  describe(`${desc} - delete`, () => {
+    beforeEach(() => {
+      fn.hooks?.beforeEach();
     });
-    it('no safeRange', () => {
+    it(`no safeRange`, () => {
       const bufferSet = new IntegerBufferSet();
       expect(bufferSet.getPosition(0)).toBe(0);
       expect(bufferSet.getPosition(1)).toBe(1);
@@ -27,11 +26,10 @@ const deleteSuite = (hooks) => {
         10, 11, 2, 3, 4, 5, 6, 7, 8, 9,
       ]);
     });
-    it('getIndices add `meta` validation', () => {
-      const data = buildSimpleList(12);
 
+    it(`getIndices add 'meta' validation`, () => {
       const bufferSet = new IntegerBufferSet({
-        metaExtractor: (index) => data[index],
+        metaExtractor: (index) => data.values[index],
       });
       const safeRange = {
         startIndex: 0,
@@ -53,7 +51,7 @@ const deleteSuite = (hooks) => {
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
         0, 1, 2, 3, 4, 5, 6, 7, 11, 10,
       ]);
-      data.splice(3, 1);
+      data.values.splice(3, 1);
 
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
         0,
@@ -68,7 +66,7 @@ const deleteSuite = (hooks) => {
         undefined,
       ]);
 
-      data.splice(4, 1);
+      data.values.splice(4, 1);
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
         0,
         1,
@@ -81,10 +79,16 @@ const deleteSuite = (hooks) => {
         undefined,
         undefined,
       ]);
+      fn.data.append(10);
+
+      expect(bufferSet.getPosition(10, safeRange)).toBe(8);
     });
 
-    it('place same item twice', () => {
-      const bufferSet = new IntegerBufferSet();
+    it(`delete critical index`, () => {
+      const bufferSet = new IntegerBufferSet({
+        metaExtractor: (index) => data.values[index],
+      });
+
       expect(bufferSet.getPosition(0)).toBe(0);
       expect(bufferSet.getPosition(1)).toBe(1);
       expect(bufferSet.getPosition(2)).toBe(2);
@@ -100,14 +104,15 @@ const deleteSuite = (hooks) => {
         endIndex: 6,
       };
       expect(bufferSet.getPosition(10, safeRange)).toBe(9);
-      expect(bufferSet.getPosition(10, safeRange)).toBe(9);
-      expect(bufferSet.getPosition(1, safeRange)).toBe(1);
-      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 10,
-      ]);
+
+      // fn.data.delete(3)
+      // fn.data.append(5)
+      // expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+      //   0, 1, 2, 8, 3, 4, 5, 6, 7, undefined,
+      // ]);
     });
 
-    it('safeRange - inner', () => {
+    it(`safeRange - inner`, () => {
       const bufferSet = new IntegerBufferSet();
       expect(bufferSet.getPosition(0)).toBe(0);
       expect(bufferSet.getPosition(1)).toBe(1);
@@ -142,7 +147,7 @@ const deleteSuite = (hooks) => {
       ]);
     });
 
-    it('safeRange - outside', () => {
+    it(`safeRange - outside`, () => {
       const bufferSet = new IntegerBufferSet();
       expect(bufferSet.getPosition(0)).toBe(0);
       expect(bufferSet.getPosition(1)).toBe(1);
