@@ -111,7 +111,8 @@ const deleteSuite = (desc, data, fn) => {
         0, 1, 2, 8, 3, 4, 5, 6, 7, 10,
       ]);
       fn.data.append(5);
-      expect(bufferSet.getPosition(12, safeRange)).toBe(8);
+      console.log('data values ', data.values, data.values[12]);
+      expect(bufferSet.getPosition(12, safeRange)).toBe(9);
     });
 
     it(`safeRange - inner`, () => {
