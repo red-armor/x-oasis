@@ -2,7 +2,7 @@ import IntegerBufferSet from '../src';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { extractTokenMetaIndex, extractTokenTargetIndex } from './utils';
 
-const deleteSuite = (desc, data, fn) => {
+export const deleteSuite = (desc, data, fn) => {
   describe(`${desc} - delete`, () => {
     beforeEach(() => {
       fn.hooks?.beforeEach();
@@ -26,7 +26,7 @@ const deleteSuite = (desc, data, fn) => {
       ]);
     });
 
-    it.only(`getIndices add 'meta' validation`, () => {
+    it(`getIndices add 'meta' validation`, () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
       });
@@ -159,11 +159,22 @@ const deleteSuite = (desc, data, fn) => {
       ]);
     });
   });
+};
 
+export const discreteDeleteSuite = (desc, data, fn) => {
   describe(`${desc} - usage of indexExtractor`, () => {
+    beforeEach(() => {
+      fn.hooks?.beforeEach();
+    });
+
     it(`bad case: metaIndex 10 is replaced with 11`, () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
+        indexExtractor: (meta) => {
+          const index = data.values.findIndex((val) => val === meta);
+          if (index === -1) return null;
+          return index;
+        },
       });
 
       expect(bufferSet.getPosition(0)).toBe(0);
@@ -189,10 +200,28 @@ const deleteSuite = (desc, data, fn) => {
       ]);
       fn.data.delete(3);
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        0, 1, 2, 8, 3, 4, 5, 6, 7, 10,
+        0,
+        1,
+        2,
+        undefined,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
       ]);
       expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
-        0, 1, 2, 9, 4, 5, 6, 7, 8, 11,
+        0,
+        1,
+        2,
+        undefined,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
       ]);
       fn.data.append(5);
       expect(bufferSet.getPosition(12, safeRange)).toBe(9);
@@ -201,6 +230,11 @@ const deleteSuite = (desc, data, fn) => {
     it('bad case : all the item after 20 is disposed', () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
+        indexExtractor: (meta) => {
+          const index = data.values.findIndex((val) => val === meta);
+          if (index === -1) return null;
+          return index;
+        },
       });
 
       for (let idx = 0; idx < 50; idx++) {
@@ -232,13 +266,11 @@ const deleteSuite = (desc, data, fn) => {
 
       fn.data.delete(20);
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+        62, 68, 15, 20, 26, 32, 38, 44, 50, 56,
       ]);
       expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
-        64, 70, 15, 22, 28, 34, 40, 46, 52, 58,
+        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
       ]);
     });
   });
 };
-
-export default deleteSuite;

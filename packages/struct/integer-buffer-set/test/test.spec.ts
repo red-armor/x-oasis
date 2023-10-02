@@ -1,4 +1,4 @@
-import deleteSuite from './delete';
+import { deleteSuite, discreteDeleteSuite } from './delete';
 
 import {
   buildSimpleList,
@@ -58,6 +58,21 @@ basicSuite('basic', data, {
 });
 
 discreteSuite('simple', data, {
+  hooks: {
+    beforeEach: () => {
+      resetStartIndex();
+      data.values = buildDiscreteData(100);
+    },
+  },
+  data: {
+    delete: (index) => data.values.splice(index, 1),
+    append: (count) => {
+      data.values = data.values.concat(buildDiscreteData(count));
+    },
+  },
+});
+
+discreteDeleteSuite('simple', data, {
   hooks: {
     beforeEach: () => {
       resetStartIndex();

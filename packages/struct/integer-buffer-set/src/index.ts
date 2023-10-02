@@ -654,7 +654,7 @@ class IntegerBufferSet<Meta = any> {
     const prevMetaIndex = this.getMetaIndex(meta);
     if (prevMetaIndex !== undefined) {
       // no need to set
-      if (prevMetaIndex === index) return true;
+      // if (prevMetaIndex === index) return true;
       this._indexToMetaMap.delete(prevMetaIndex);
     }
     this.setMetaIndex(meta, index);
