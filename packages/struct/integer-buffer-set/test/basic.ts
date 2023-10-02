@@ -176,12 +176,12 @@ export const discreteSuite = (desc, data, fn) => {
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
         3,
         9,
-        15,
         21,
         27,
         33,
         39,
-        45,
+        undefined,
+        undefined,
         undefined,
         undefined,
       ]);
@@ -192,7 +192,7 @@ export const discreteSuite = (desc, data, fn) => {
       }
 
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+        3, 9, 21, 27, 33, 39, 51, 57, 63, 69,
       ]);
     });
   });

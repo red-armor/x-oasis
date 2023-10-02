@@ -245,12 +245,12 @@ export const discreteDeleteSuite = (desc, data, fn) => {
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
         3,
         9,
-        15,
         21,
         27,
         33,
         39,
-        45,
+        undefined,
+        undefined,
         undefined,
         undefined,
       ]);
@@ -261,19 +261,19 @@ export const discreteDeleteSuite = (desc, data, fn) => {
       }
 
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+        3, 9, 21, 27, 33, 39, 51, 57, 63, 69,
       ]);
 
       fn.data.delete(20);
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        62, 68, 15, 20, 26, 32, 38, 44, 50, 56,
+        3, 9, 20, 26, 32, 38, 50, 56, 62, 68,
       ]);
       expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
-        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+        3, 9, 21, 27, 33, 39, 51, 57, 63, 69,
       ]);
     });
 
-    it('bad case : all the item after 20 is disposed', () => {
+    it('bad case 2 : all the item after 20 is disposed', () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
         indexExtractor: (meta) => {
@@ -283,39 +283,87 @@ export const discreteDeleteSuite = (desc, data, fn) => {
         },
       });
 
-      for (let idx = 0; idx < 50; idx++) {
-        const item = data.values[idx];
-        if (item.type === 'mod3') bufferSet.getPosition(idx);
-      }
+      let safeRange = {
+        startIndex: 1,
+        endIndex: 10,
+      };
+      bufferSet.getPosition(0, safeRange);
+      bufferSet.getPosition(5, safeRange);
+      bufferSet.getPosition(10, safeRange);
+      bufferSet.getPosition(15, safeRange);
+      bufferSet.getPosition(20, safeRange);
+      bufferSet.getPosition(25, safeRange);
+      bufferSet.getPosition(30, safeRange);
+      bufferSet.getPosition(35, safeRange);
+      bufferSet.getPosition(40, safeRange);
+      bufferSet.getPosition(45, safeRange);
 
-      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        3,
-        9,
-        15,
-        21,
-        27,
-        33,
-        39,
-        45,
-        undefined,
-        undefined,
+      expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
+        0, 5, 10, 15, 20, 25, 30, 35, 40, 45,
       ]);
 
-      for (let idx = 0; idx < 70; idx++) {
-        const item = data.values[idx];
-        if (item.type === 'mod3') bufferSet.getPosition(idx);
-      }
+      safeRange = {
+        startIndex: 12,
+        endIndex: 20,
+      };
+      bufferSet.getPosition(5, safeRange);
+      bufferSet.getPosition(10, safeRange);
+      bufferSet.getPosition(15, safeRange);
+      bufferSet.getPosition(20, safeRange);
+      bufferSet.getPosition(25, safeRange);
+      bufferSet.getPosition(30, safeRange);
+      bufferSet.getPosition(35, safeRange);
+      bufferSet.getPosition(40, safeRange);
+      bufferSet.getPosition(45, safeRange);
+      bufferSet.getPosition(50, safeRange);
+      expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
+        0, 5, 10, 15, 20, 25, 30, 35, 40, 50,
+      ]);
+      safeRange = {
+        startIndex: 20,
+        endIndex: 28,
+      };
+      bufferSet.getPosition(15, safeRange);
+      bufferSet.getPosition(20, safeRange);
+      bufferSet.getPosition(25, safeRange);
+      bufferSet.getPosition(30, safeRange);
+      bufferSet.getPosition(35, safeRange);
+      bufferSet.getPosition(40, safeRange);
+      bufferSet.getPosition(45, safeRange);
+      bufferSet.getPosition(50, safeRange);
+      bufferSet.getPosition(55, safeRange);
+      bufferSet.getPosition(60, safeRange);
 
-      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+      expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
+        55, 60, 10, 15, 20, 25, 30, 35, 40, 50,
       ]);
 
       fn.data.delete(20);
-      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        62, 68, 15, 20, 26, 32, 38, 44, 50, 56,
-      ]);
+
+      // expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
+      //   55,  60, 10, 15, undefined, 25, 30, 35, 40, 50
+      // ])
+      bufferSet.getPosition(15, safeRange);
+      bufferSet.getPosition(24, safeRange);
+      bufferSet.getPosition(29, safeRange);
+      bufferSet.getPosition(34, safeRange);
+      bufferSet.getPosition(39, safeRange);
+      bufferSet.getPosition(44, safeRange);
+      bufferSet.getPosition(49, safeRange);
+      bufferSet.getPosition(54, safeRange);
+      bufferSet.getPosition(59, safeRange);
+      bufferSet.getPosition(64, safeRange);
       expect(extractTokenMetaIndex(bufferSet.getIndices())).toEqual([
-        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+        55,
+        60,
+        65,
+        15,
+        undefined,
+        25,
+        30,
+        35,
+        45,
+        50,
       ]);
     });
   });

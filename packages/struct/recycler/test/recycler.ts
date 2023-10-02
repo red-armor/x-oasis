@@ -1,16 +1,16 @@
 import Recycler from '../src';
 import { describe, it, beforeEach, expect } from 'vitest';
 
+const extractRecycleKeyIndex = (val) => val.match(/_([0-9]*)/)[1];
+
 const finalizeIndices = (indices) => {
   return indices.reduce((acc, cur) => {
-    if (!cur) {
-      acc.push(undefined);
-      return acc;
-    }
-    const meta = cur.meta;
+    if (!cur) return acc;
+    const { meta, recyclerKey } = cur;
     const type = meta.type;
     if (!acc[type]) acc[type] = [];
-    acc[type].push(`${meta.index}_${type}`);
+    const index = extractRecycleKeyIndex(recyclerKey);
+    acc[type][index] = `${meta.index}_${type}`;
     return acc;
   }, {});
 };
