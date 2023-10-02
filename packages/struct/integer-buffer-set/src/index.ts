@@ -37,7 +37,6 @@ class IntegerBufferSet<Meta = any> {
   private _size: number;
   private _name: string;
   private _bufferSize: number;
-  // private _positionToValueObject: ValueToPositionObject;
 
   private _indexToMetaMap: IndexToMetaMap<Meta>;
   private _metaToPositionMap: MetaToPositionMap<Meta>;
@@ -68,7 +67,6 @@ class IntegerBufferSet<Meta = any> {
     this._indexExtractor = indexExtractor;
 
     this._name = name;
-    // this._positionToValueObject = {};
 
     /**
      * this._indexToMetaMap is used to find the prev meta when finding a position for index.
@@ -193,117 +191,6 @@ class IntegerBufferSet<Meta = any> {
     return this._largeValues.peek()?.value;
   }
 
-  /**
-   * values actually is the position of original data.
-   */
-  setValuePosition(value: number, position: number) {}
-
-  findPositionMeta(position: number) {
-    for (const [meta, pos] of this._metaToPositionMap) {
-      if (pos === position) return meta;
-    }
-    return null;
-  }
-
-  rebuildHeapsWithMeta(metaToPositionMap: MetaToPositionMap<Meta>) {
-    const { smallValues, largeValues } = this.initialize();
-
-    for (const [meta, position] of metaToPositionMap) {
-      const index = this.getMetaIndex(meta);
-      const token = { index, position };
-      smallValues.push(token);
-      largeValues.push(token);
-    }
-
-    this._smallValues = smallValues;
-    this._largeValues = largeValues;
-  }
-
-  /**
-   *
-   * @param position
-   * @param value
-   *
-   *
-   */
-  setPositionIndex(position: number, index: number) {
-    const meta = this._metaExtractor(index);
-    const originalPosition = this._metaToPositionMap.get(meta);
-
-    // current index has a position
-    if (originalPosition !== undefined) {
-      if (originalPosition === position) return true;
-      this.deleteMetaIndex(meta);
-    }
-
-    const metaToReplace = this.findPositionMeta(position);
-    if (metaToReplace) this._metaToPositionMap.delete(metaToReplace);
-    this._metaToPositionMap.set(meta, position);
-
-    this.rebuildHeapsWithMeta(this._metaToPositionMap);
-    return true;
-  }
-
-  getMetaPosition(meta: Meta) {
-    return this._metaToPositionMap.get(meta);
-  }
-
-  // performRangeUpdate(
-  //   startIndex: number,
-  //   endIndex: number,
-  //   safeRange: {
-  //     startIndex: number;
-  //     endIndex: number;
-  //   }
-  // ) {
-  //   const _start = Math.max(startIndex, safeRange.startIndex);
-  //   const _end = Math.min(endIndex, safeRange.endIndex);
-  //   const primaryMetaList = [];
-  //   const secondaryMetaList = [];
-  //   const locationStartIndex = startIndex;
-  //   const targetIndices = new Array(this._bufferSize);
-
-  //   const _valueToPositionObject = {};
-  //   const _positionToValueObject = {};
-
-  //   const _valueToMetaObject = {};
-  //   const _metaToIndexMap = new Map();
-
-  //   for (let value = startIndex; value <= endIndex; value++) {
-  //     const meta = this._metaExtractor(value);
-  //     if (meta) {
-  //       const _i = value - locationStartIndex;
-  //       if (isClamped(value, safeRange.startIndex, safeRange.endIndex)) {
-  //         primaryMetaList[_i] = meta;
-  //         const targetIndex = this.getMetaPosition(meta);
-  //         if (isNumber(targetIndex)) {
-  //           targetIndices[targetIndex] = value;
-  //           _valueToPositionObject[value] = targetIndex;
-  //           _valueToMetaObject[value] = meta;
-  //           _metaToIndexMap.set(meta, value);
-  //           _positionToValueObject[targetIndex] = value;
-  //         }
-  //       } else {
-  //         secondaryMetaList[_i] = meta;
-  //       }
-  //     }
-  //   }
-
-  // for (let idx = _start; idx <= _end; idx++) {
-  //   const meta = this._metaExtractor(idx);
-  //   if (_metaToIndexMap.get(meta) !== undefined) continue;
-  //   let p;
-  //   while (
-  //     (p =
-  //       targetIndices[
-  //         this.resolvePosition(safeRange.startIndex, safeRange.endIndex, idx)
-  //       ]) === undefined
-  //   ) {
-  //     targetIndices[p] = idx;
-  //   }
-  // }
-  // }
-
   replacePositionInFliedIndices(newIndex: number, safeRange: SafeRange) {
     const { startIndex, endIndex } = safeRange;
 
@@ -383,12 +270,10 @@ class IntegerBufferSet<Meta = any> {
         this.getNewPositionForIndex(newIndex)
       );
 
-    // console.log('this. fly ', this._isOnTheFlyFull)
     if (this._isOnTheFlyFull) return this.getFliedPosition(newIndex, safeRange);
 
     let positionToReplace;
     const prevIndexMeta = this._indexToMetaMap.get(newIndex);
-    // console.log('this. is ', this.isBufferFull, prevIndexMeta);
 
     // Index has already been stored, but we cant use its old position directly...
     // 1：index -> meta, meta may be reused later
@@ -445,7 +330,6 @@ class IntegerBufferSet<Meta = any> {
     const minValue = this._smallValues.peek()!.value;
     const maxValue = this._largeValues.peek()!.value;
 
-    // console.log('mxa ', maxValue, minValue);
     let indexToReplace;
 
     if (!safeRange) {
@@ -506,12 +390,6 @@ class IntegerBufferSet<Meta = any> {
       indices[idx] = targetIndex;
     }
 
-    // console.log(
-    //   'position xxx ',
-    //   this._positionToMetaList,
-    //   this._onTheFlyIndices
-    // );
-
     const _arr = new Array(indices.length);
     const _available = [];
     const indexToMetaMap = new Map();
@@ -561,8 +439,6 @@ class IntegerBufferSet<Meta = any> {
         largeValues.push(element);
       }
     }
-
-    // console.log('position ', positionToMetaList, largeValues.peek().value);
 
     this._positionToMetaList = positionToMetaList;
     this._smallValues = smallValues;
@@ -689,73 +565,6 @@ class IntegerBufferSet<Meta = any> {
       this._recreateHeaps();
     }
   }
-
-  rebuildHeapsWithValues(
-    arr: Array<{
-      position: number;
-      value: number;
-    }>
-  ) {
-    const valueToPositionObject = {};
-    const newSmallValues = new Heap<HeapItem>([], this._smallerComparator);
-    const newLargeValues = new Heap<HeapItem>([], this._greaterComparator);
-
-    arr.forEach((element) => {
-      const { position, value } = element;
-      if (value !== undefined) {
-        const element = {
-          position,
-          value,
-        };
-        newSmallValues.push(element);
-        newLargeValues.push(element);
-        valueToPositionObject[value] = position;
-      }
-    });
-    const _arr = new Array(this._bufferSize).fill(2);
-    Object.keys(valueToPositionObject).map(
-      (key) => (_arr[valueToPositionObject[key]] = 1)
-    );
-    _arr.forEach((_i, position) => {
-      if (_i === 2) {
-        const value = Number.MAX_SAFE_INTEGER - position;
-        const element = {
-          position,
-          value,
-        };
-
-        newSmallValues.push(element);
-        newLargeValues.push(element);
-        valueToPositionObject[value] = position;
-      }
-    });
-    this._smallValues = newSmallValues;
-    this._largeValues = newLargeValues;
-  }
-
-  // rebuildHeaps() {
-  //   const valueToPositionObject = {};
-  //   const newSmallValues = new Heap<HeapItem>([], this._smallerComparator);
-  //   const newLargeValues = new Heap<HeapItem>([], this._greaterComparator);
-
-  //   const keys = Object.keys(this._positionToValueObject);
-  //   for (let position = 0; position < keys.length; position++) {
-  //     const value = this._positionToValueObject[position];
-  //     if (value !== undefined) {
-  //       const element = {
-  //         position,
-  //         value,
-  //       };
-  //       valueToPositionObject[value] = position;
-  //       newSmallValues.push(element);
-  //       newLargeValues.push(element);
-  //     }
-  //   }
-
-  //   this._smallValues = newSmallValues;
-  //   this._largeValues = newLargeValues;
-  // }
-
   _recreateHeaps() {
     const sourceHeap =
       this._smallValues.size() < this._largeValues.size()
