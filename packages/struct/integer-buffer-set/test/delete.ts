@@ -85,7 +85,7 @@ const deleteSuite = (desc, data, fn) => {
       expect(bufferSet.getPosition(11, safeRange)).toBe(9);
     });
 
-    it.only(`delete critical index`, () => {
+    it(`delete critical index`, () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
       });

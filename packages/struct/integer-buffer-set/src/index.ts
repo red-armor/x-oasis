@@ -331,8 +331,6 @@ class IntegerBufferSet<Meta = any> {
     const meta = this.getIndexMeta(newIndex);
     const prevMetaPosition = this._metaToPositionMap.get(meta);
 
-    console.log('meta ', meta, prevMetaPosition, newIndex);
-
     if (prevMetaPosition !== undefined) {
       const onTheFlyPositionMeta = this._onTheFlyIndices[prevMetaPosition];
       // the occupied meta should change position
@@ -376,7 +374,7 @@ class IntegerBufferSet<Meta = any> {
 
     let positionToReplace;
     const prevIndexMeta = this._indexToMetaMap.get(newIndex);
-    console.log('this. is ', this.isBufferFull, prevIndexMeta);
+    // console.log('this. is ', this.isBufferFull, prevIndexMeta);
 
     // Index has already been stored, but we cant use its old position directly...
     // 1：index -> meta, meta may be reused later
@@ -398,7 +396,7 @@ class IntegerBufferSet<Meta = any> {
     // should not push to heap, pop only
     // this._pushToHeaps(positionToReplace, newIndex)
 
-    console.log('on the x fly ', positionToReplace, this._onTheFlyIndices);
+    // console.log('on the x fly ', positionToReplace, this._onTheFlyIndices);
 
     return this._isOnTheFlyFullReturnHook(positionToReplace);
   }
@@ -435,7 +433,7 @@ class IntegerBufferSet<Meta = any> {
     const minValue = this._smallValues.peek()!.value;
     const maxValue = this._largeValues.peek()!.value;
 
-    console.log('mxa ', maxValue, minValue);
+    // console.log('mxa ', maxValue, minValue);
     let indexToReplace;
 
     if (!safeRange) {
@@ -496,7 +494,7 @@ class IntegerBufferSet<Meta = any> {
       indices[idx] = targetIndex;
     }
 
-    console.log('position xxx ', this._positionToMetaList);
+    // console.log('position xxx ', this._positionToMetaList);
 
     const _arr = new Array(indices.length);
     const _available = [];
@@ -506,7 +504,7 @@ class IntegerBufferSet<Meta = any> {
     for (let idx = 0; idx < indices.length; idx++) {
       const currentIndex = indices[idx];
       const currentMeta = this._metaExtractor(currentIndex);
-      console.log('current ', currentIndex, currentMeta);
+      // console.log('current ', currentIndex, currentMeta);
       if (currentMeta == null) continue;
 
       indexToMetaMap.set(currentIndex, currentMeta);
@@ -525,7 +523,7 @@ class IntegerBufferSet<Meta = any> {
       _available.push(currentMeta);
     }
 
-    console.log('available ', _available);
+    // console.log('available ', _available);
 
     const { smallValues, largeValues } = this.initialize();
     const positionToMetaList = [];
@@ -551,7 +549,7 @@ class IntegerBufferSet<Meta = any> {
       }
     }
 
-    console.log('position ', positionToMetaList, largeValues.peek().value);
+    // console.log('position ', positionToMetaList, largeValues.peek().value);
 
     this._positionToMetaList = positionToMetaList;
     this._smallValues = smallValues;

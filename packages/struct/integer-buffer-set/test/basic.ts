@@ -3,10 +3,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 const extractTokenTargetIndex = (val) => val.map((v) => v.targetIndex);
 
-export const basicSuite = (hooks?: any) => {
+export const basicSuite = (desc, data, fn?: any) => {
   describe('basic', () => {
     beforeEach(() => {
-      hooks?.beforeEach();
+      fn.hooks?.beforeEach();
     });
     it('constructor', () => {
       const bufferSet = new IntegerBufferSet();
@@ -164,15 +164,10 @@ export const discreteSuite = (desc, data, fn) => {
       fn.hooks?.beforeEach();
     });
 
-    it.only('recycler mod % 3 === 0', () => {
+    it('recycler mod % 3 === 0', () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
       });
-
-      console.log(
-        'data.values ===== ',
-        data.values.filter((v) => v.type === 'mod3').length
-      );
 
       for (let idx = 0; idx < 50; idx++) {
         const item = data.values[idx];
@@ -201,7 +196,12 @@ export const discreteSuite = (desc, data, fn) => {
         63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
       ]);
 
-      console.log('buffer ', extractTokenTargetIndex(bufferSet.getIndices()));
+      fn.data.delete(20);
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+      ]);
+
+      console.log('result ', data.values[21]);
     });
   });
 };
