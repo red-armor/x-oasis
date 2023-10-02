@@ -23,12 +23,7 @@ export type FixedBufferProps = {
    */
   bufferSize?: number;
 
-  recyclerReservedBufferSize?: number;
-
   recyclerType?: string;
-
-  startIndex?: number;
-  // owner?: any;
 
   metaExtractor?: (index: number) => any;
   indexExtractor?: (meta: any) => number;

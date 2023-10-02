@@ -4,24 +4,15 @@ import { DEFAULT_RECYCLER_TYPE, RECYCLER_BUFFER_SIZE } from './common';
 
 class FixedBuffer {
   private _bufferSet: IntegerBufferSet;
-  /**
-   * buffer size, the oversize node will run into recycle strategy
-   */
-  // private _size;
-  /**
-   * start index
-   */
   private _thresholdIndexValue = 0;
 
   private _recyclerType: string;
 
   constructor(props: FixedBufferProps) {
     const {
-      bufferSize = RECYCLER_BUFFER_SIZE,
       thresholdIndexValue = 0,
-      recyclerReservedBufferSize = RECYCLER_BUFFER_SIZE,
+      bufferSize = RECYCLER_BUFFER_SIZE,
       recyclerType = DEFAULT_RECYCLER_TYPE,
-      startIndex,
       metaExtractor,
       indexExtractor,
     } = props;
