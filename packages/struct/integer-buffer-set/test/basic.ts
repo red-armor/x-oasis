@@ -165,9 +165,43 @@ export const discreteSuite = (desc, data, fn) => {
     });
 
     it.only('recycler mod % 3 === 0', () => {
-      const bufferSet = new IntegerBufferSet();
+      const bufferSet = new IntegerBufferSet({
+        metaExtractor: (index) => data.values[index],
+      });
 
-      for (let count = 0; count < data.values.length; count++) {}
+      console.log(
+        'data.values ===== ',
+        data.values.filter((v) => v.type === 'mod3').length
+      );
+
+      for (let idx = 0; idx < 50; idx++) {
+        const item = data.values[idx];
+        if (item.type === 'mod3') bufferSet.getPosition(idx);
+      }
+
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        undefined,
+        undefined,
+      ]);
+
+      for (let idx = 0; idx < 70; idx++) {
+        const item = data.values[idx];
+        if (item.type === 'mod3') bufferSet.getPosition(idx);
+      }
+
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        63, 69, 15, 21, 27, 33, 39, 45, 51, 57,
+      ]);
+
+      console.log('buffer ', extractTokenTargetIndex(bufferSet.getIndices()));
     });
   });
 };

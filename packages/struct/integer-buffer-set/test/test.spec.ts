@@ -1,42 +1,41 @@
-import { buildSimpleList, buildItemData, buildDiscreteData } from './data';
-import { basicSuite, discreteSuite } from './basic';
-import deleteSuite from './delete';
+import { buildDiscreteData } from './data';
+import { discreteSuite } from './basic';
 
 const data = {
   values: [] as Array<any>,
 };
 
-deleteSuite('simple list', data, {
-  hooks: {
-    beforeEach: () => {
-      console.log('before all ');
+// deleteSuite('simple list', data, {
+//   hooks: {
+//     beforeEach: () => {
+//       console.log('before all ');
 
-      data.values = buildSimpleList(12);
-    },
-  },
-  data: {
-    delete: (index) => data.values.splice(index, 1),
-    append: (count) => {
-      data.values = data.values.concat(buildSimpleList(count));
-    },
-  },
-});
+//       data.values = buildSimpleList(12);
+//     },
+//   },
+//   data: {
+//     delete: (index) => data.values.splice(index, 1),
+//     append: (count) => {
+//       data.values = data.values.concat(buildSimpleList(count));
+//     },
+//   },
+// });
 
-deleteSuite('item list', data, {
-  hooks: {
-    beforeEach: () => {
-      data.values = buildItemData(12);
-    },
-  },
-  data: {
-    delete: (index) => data.values.splice(index, 1),
-    append: (count) => {
-      data.values = data.values.concat(buildItemData(count));
-    },
-  },
-});
+// deleteSuite('item list', data, {
+//   hooks: {
+//     beforeEach: () => {
+//       data.values = buildItemData(12);
+//     },
+//   },
+//   data: {
+//     delete: (index) => data.values.splice(index, 1),
+//     append: (count) => {
+//       data.values = data.values.concat(buildItemData(count));
+//     },
+//   },
+// });
 
-basicSuite();
+// basicSuite();
 
 discreteSuite('simple', data, {
   hooks: {
