@@ -6,6 +6,7 @@ import {
   HeapItem,
   SafeRange,
   MetaExtractor,
+  IndexExtractor,
   IntegerBufferSetProps,
   ValueToPositionObject,
   MetaToValueMap,
@@ -49,6 +50,7 @@ class IntegerBufferSet<Meta = any> {
   private _smallValues: Heap<HeapItem>;
   private _largeValues: Heap<HeapItem>;
   private _metaExtractor: MetaExtractor<Meta>;
+  private _indexExtractor: IndexExtractor<Meta>;
 
   private _onTheFlyIndices: Array<Meta>;
 
