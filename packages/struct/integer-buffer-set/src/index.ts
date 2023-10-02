@@ -8,7 +8,6 @@ import {
   MetaExtractor,
   IndexExtractor,
   IntegerBufferSetProps,
-  // ValueToPositionObject,
   MetaToIndexMap,
   MetaToPositionMap,
   IndexToMetaMap,
@@ -16,8 +15,6 @@ import {
 
 const defaultMetaExtractor = (value) => value;
 export const defaultBufferSize = 10;
-const isNumber = (v) => typeof v === 'number';
-const isUndefined = (val: any) => val === undefined;
 
 // !!!!! should do meta validation...meta should has an index...
 // value: original data `index` value
@@ -413,8 +410,6 @@ class IntegerBufferSet<Meta = any> {
     // should not push to heap, pop only
     // this._pushToHeaps(positionToReplace, newIndex)
 
-    // console.log('on the x fly ', positionToReplace, this._onTheFlyIndices);
-
     return this._isOnTheFlyFullReturnHook(positionToReplace);
   }
 
@@ -542,8 +537,6 @@ class IntegerBufferSet<Meta = any> {
 
       _available.push(currentMeta);
     }
-
-    // console.log('available ', _available);
 
     const { smallValues, largeValues } = this.initialize();
     const positionToMetaList = [];
