@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 const extractTokenTargetIndex = (val) => val.map((v) => v.targetIndex);
 
-const basicSuite = (hooks?: any) => {
+export const basicSuite = (hooks?: any) => {
   describe('basic', () => {
     beforeEach(() => {
       hooks?.beforeEach();
@@ -158,4 +158,16 @@ const basicSuite = (hooks?: any) => {
   });
 };
 
-export default basicSuite;
+export const discreteSuite = (desc, data, fn) => {
+  describe(`${desc} - discrete`, () => {
+    beforeEach(() => {
+      fn.hooks?.beforeEach();
+    });
+
+    it.only('recycler mod % 3 === 0', () => {
+      const bufferSet = new IntegerBufferSet();
+
+      for (let count = 0; count < data.values.length; count++) {}
+    });
+  });
+};

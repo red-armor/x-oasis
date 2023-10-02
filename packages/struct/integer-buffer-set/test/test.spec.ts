@@ -1,5 +1,5 @@
-import { buildSimpleList, buildItemData } from './data';
-import basicSuite from './basic';
+import { buildSimpleList, buildItemData, buildDiscreteData } from './data';
+import { basicSuite, discreteSuite } from './basic';
 import deleteSuite from './delete';
 
 const data = {
@@ -37,3 +37,12 @@ deleteSuite('item list', data, {
 });
 
 basicSuite();
+
+discreteSuite('simple', data, {
+  hooks: {
+    beforeEach: () => {
+      console.log('before all ');
+      data.values = buildDiscreteData(100);
+    },
+  },
+});

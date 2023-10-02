@@ -13,28 +13,10 @@ import {
   IndexToMetaMap,
 } from './types';
 
-const defaultUseMinValueFn = (options: {
-  safeRange: {
-    lowValue: number;
-    highValue: number;
-  };
-  bufferSetRange: {
-    maxValue: number;
-    minValue: number;
-  };
-  currentIndex: number;
-}) => {
-  const { safeRange, bufferSetRange } = options;
-  const { lowValue, highValue } = safeRange;
-  const { maxValue, minValue } = bufferSetRange;
-  return lowValue - minValue > maxValue - highValue;
-};
-
 const defaultMetaExtractor = (value) => value;
 export const defaultBufferSize = 10;
 const isNumber = (v) => typeof v === 'number';
 const isUndefined = (val: any) => val === undefined;
-let count = 0;
 
 // !!!!! should do meta validation...meta should has an index...
 // value: original data `index` value
@@ -78,7 +60,7 @@ class IntegerBufferSet<Meta = any> {
 
   constructor(props: IntegerBufferSetProps<Meta> = {}) {
     const {
-      name = `buffer_${count++}`,
+      name = 'default_buffer',
       bufferSize = defaultBufferSize,
       metaExtractor = defaultMetaExtractor,
     } = props;
@@ -169,52 +151,6 @@ class IntegerBufferSet<Meta = any> {
     }
     return indices;
   }
-
-  /**
-   * placed meta should has a index value
-   */
-  // afterIndices() {
-  //   let isDirty = false;
-  //   const positionToMetaList = [];
-  //   for (let idx = 0; idx < this._positionToMetaList.length; idx++) {
-  //     const meta = this._positionToMetaList[idx];
-  //     if (this._metaToIndexMap.get(meta) === undefined) {
-  //       this._metaToIndexMap.delete(meta);
-  //       positionToMetaList.push(undefined);
-  //       isDirty = true;
-  //     } else {
-  //       positionToMetaList.push(meta);
-  //     }
-  //   }
-
-  //   let counter = 0;
-
-  //   if (isDirty) {
-  //     const { smallValues, largeValues } = this.initialize();
-  //     for (
-  //       let position = 0;
-  //       position < this._positionToMetaList.length;
-  //       position++
-  //     ) {
-  //       const meta = positionToMetaList[position];
-  //       const token = { position, value: null };
-  //       if (this._metaToIndexMap.get(meta) === undefined) {
-  //         token.value = Number.MAX_SAFE_INTEGER - counter++;
-  //         token.position = position;
-  //       } else {
-  //         token.value = this._metaToIndexMap.get(meta);
-  //       }
-  //       smallValues.push(token);
-  //       largeValues.push(token);
-  //     }
-
-  //     this._smallValues = smallValues;
-  //     this._largeValues = largeValues;
-  //     this._positionToMetaList = positionToMetaList;
-  //   }
-
-  //   this._onTheFlyIndices = [];
-  // }
 
   getIndexPosition(index: number): undefined | number {
     return this._metaToIndexMap.get(this.getIndexMeta(index));
