@@ -163,7 +163,7 @@ export const discreteSuite = (desc, data, fn) => {
       fn.hooks?.beforeEach();
     });
 
-    it.only('recycler mod % 3 === 0', () => {
+    it('recycler mod % 3 === 0', () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
       });

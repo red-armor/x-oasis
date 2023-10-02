@@ -28,6 +28,7 @@ create a `onTheFlyIndices` as a slave buffer. theoretically, at most buffer size
 item could occupy a position.
 
 `IndexExtractor` is the key point of design.
+if you do not delete/reorder an an array, `indexExtractor` is useless.
 
 ## bad case 
 

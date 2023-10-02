@@ -8,8 +8,8 @@ import {
   MetaExtractor,
   IndexExtractor,
   IntegerBufferSetProps,
-  ValueToPositionObject,
-  MetaToValueMap,
+  // ValueToPositionObject,
+  MetaToIndexMap,
   MetaToPositionMap,
   IndexToMetaMap,
 } from './types';
@@ -40,12 +40,12 @@ class IntegerBufferSet<Meta = any> {
   private _size: number;
   private _name: string;
   private _bufferSize: number;
-  private _positionToValueObject: ValueToPositionObject;
+  // private _positionToValueObject: ValueToPositionObject;
 
   private _indexToMetaMap: IndexToMetaMap<Meta>;
   private _metaToPositionMap: MetaToPositionMap<Meta>;
   private _positionToMetaList: Array<Meta>;
-  private _metaToIndexMap: MetaToValueMap<Meta>;
+  private _metaToIndexMap: MetaToIndexMap<Meta>;
 
   private _smallValues: Heap<HeapItem>;
   private _largeValues: Heap<HeapItem>;
@@ -63,13 +63,15 @@ class IntegerBufferSet<Meta = any> {
   constructor(props: IntegerBufferSetProps<Meta> = {}) {
     const {
       name = 'default_buffer',
+      indexExtractor,
       bufferSize = defaultBufferSize,
       metaExtractor = defaultMetaExtractor,
     } = props;
     this._metaExtractor = metaExtractor;
+    this._indexExtractor = indexExtractor;
 
-    this._positionToValueObject = {};
     this._name = name;
+    // this._positionToValueObject = {};
 
     /**
      * this._indexToMetaMap is used to find the prev meta when finding a position for index.
@@ -144,18 +146,31 @@ class IntegerBufferSet<Meta = any> {
     return this._metaExtractor(index);
   }
 
-  get indices() {
-    const indices = [];
-    for (let idx = 0; idx < this._positionToMetaList.length; idx++) {
-      const meta = this._positionToMetaList[idx];
-      const index = this._metaToIndexMap.get(meta);
-      if (index !== undefined) indices[idx] = index;
+  getMetaIndex(meta: Meta) {
+    if (this._indexExtractor) return this._indexExtractor(meta);
+    return this._metaToIndexMap.get(meta);
+  }
+
+  setMetaIndex(meta: Meta, index: number) {
+    if (!this._indexExtractor) {
+      return this._metaToIndexMap.set(meta, index);
     }
-    return indices;
+    return false;
+  }
+
+  deleteMetaIndex(meta: Meta) {
+    return this._metaToIndexMap.delete(meta);
+  }
+
+  replaceMetaToIndexMap(newMetaToIndexMap: MetaToIndexMap<Meta>) {
+    if (!this._indexExtractor) {
+      return (this._metaToIndexMap = newMetaToIndexMap);
+    }
+    return false;
   }
 
   getIndexPosition(index: number): undefined | number {
-    return this._metaToIndexMap.get(this.getIndexMeta(index));
+    return this.getMetaIndex(this.getIndexMeta(index));
   }
 
   getNewPositionForIndex(index: number) {
@@ -197,7 +212,7 @@ class IntegerBufferSet<Meta = any> {
     const { smallValues, largeValues } = this.initialize();
 
     for (const [meta, position] of metaToPositionMap) {
-      const index = this._metaToIndexMap.get(meta);
+      const index = this.getMetaIndex(meta);
       const token = { index, position };
       smallValues.push(token);
       largeValues.push(token);
@@ -221,7 +236,7 @@ class IntegerBufferSet<Meta = any> {
     // current index has a position
     if (originalPosition !== undefined) {
       if (originalPosition === position) return true;
-      this._metaToIndexMap.delete(meta);
+      this.deleteMetaIndex(meta);
     }
 
     const metaToReplace = this.findPositionMeta(position);
@@ -236,61 +251,61 @@ class IntegerBufferSet<Meta = any> {
     return this._metaToPositionMap.get(meta);
   }
 
-  performRangeUpdate(
-    startIndex: number,
-    endIndex: number,
-    safeRange: {
-      startIndex: number;
-      endIndex: number;
-    }
-  ) {
-    const _start = Math.max(startIndex, safeRange.startIndex);
-    const _end = Math.min(endIndex, safeRange.endIndex);
-    const primaryMetaList = [];
-    const secondaryMetaList = [];
-    const locationStartIndex = startIndex;
-    const targetIndices = new Array(this._bufferSize);
+  // performRangeUpdate(
+  //   startIndex: number,
+  //   endIndex: number,
+  //   safeRange: {
+  //     startIndex: number;
+  //     endIndex: number;
+  //   }
+  // ) {
+  //   const _start = Math.max(startIndex, safeRange.startIndex);
+  //   const _end = Math.min(endIndex, safeRange.endIndex);
+  //   const primaryMetaList = [];
+  //   const secondaryMetaList = [];
+  //   const locationStartIndex = startIndex;
+  //   const targetIndices = new Array(this._bufferSize);
 
-    const _valueToPositionObject = {};
-    const _positionToValueObject = {};
+  //   const _valueToPositionObject = {};
+  //   const _positionToValueObject = {};
 
-    const _valueToMetaObject = {};
-    const _metaToIndexMap = new Map();
+  //   const _valueToMetaObject = {};
+  //   const _metaToIndexMap = new Map();
 
-    for (let value = startIndex; value <= endIndex; value++) {
-      const meta = this._metaExtractor(value);
-      if (meta) {
-        const _i = value - locationStartIndex;
-        if (isClamped(value, safeRange.startIndex, safeRange.endIndex)) {
-          primaryMetaList[_i] = meta;
-          const targetIndex = this.getMetaPosition(meta);
-          if (isNumber(targetIndex)) {
-            targetIndices[targetIndex] = value;
-            _valueToPositionObject[value] = targetIndex;
-            _valueToMetaObject[value] = meta;
-            _metaToIndexMap.set(meta, value);
-            _positionToValueObject[targetIndex] = value;
-          }
-        } else {
-          secondaryMetaList[_i] = meta;
-        }
-      }
-    }
+  //   for (let value = startIndex; value <= endIndex; value++) {
+  //     const meta = this._metaExtractor(value);
+  //     if (meta) {
+  //       const _i = value - locationStartIndex;
+  //       if (isClamped(value, safeRange.startIndex, safeRange.endIndex)) {
+  //         primaryMetaList[_i] = meta;
+  //         const targetIndex = this.getMetaPosition(meta);
+  //         if (isNumber(targetIndex)) {
+  //           targetIndices[targetIndex] = value;
+  //           _valueToPositionObject[value] = targetIndex;
+  //           _valueToMetaObject[value] = meta;
+  //           _metaToIndexMap.set(meta, value);
+  //           _positionToValueObject[targetIndex] = value;
+  //         }
+  //       } else {
+  //         secondaryMetaList[_i] = meta;
+  //       }
+  //     }
+  //   }
 
-    // for (let idx = _start; idx <= _end; idx++) {
-    //   const meta = this._metaExtractor(idx);
-    //   if (_metaToIndexMap.get(meta) !== undefined) continue;
-    //   let p;
-    //   while (
-    //     (p =
-    //       targetIndices[
-    //         this.resolvePosition(safeRange.startIndex, safeRange.endIndex, idx)
-    //       ]) === undefined
-    //   ) {
-    //     targetIndices[p] = idx;
-    //   }
-    // }
-  }
+  // for (let idx = _start; idx <= _end; idx++) {
+  //   const meta = this._metaExtractor(idx);
+  //   if (_metaToIndexMap.get(meta) !== undefined) continue;
+  //   let p;
+  //   while (
+  //     (p =
+  //       targetIndices[
+  //         this.resolvePosition(safeRange.startIndex, safeRange.endIndex, idx)
+  //       ]) === undefined
+  //   ) {
+  //     targetIndices[p] = idx;
+  //   }
+  // }
+  // }
 
   replacePositionInFliedIndices(newIndex: number, safeRange: SafeRange) {
     const { startIndex, endIndex } = safeRange;
@@ -492,15 +507,15 @@ class IntegerBufferSet<Meta = any> {
     const indices = new Array(this.bufferSize);
     for (let idx = 0; idx < indices.length; idx++) {
       const meta = this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
-      const targetIndex = this._metaToIndexMap.get(meta);
+      const targetIndex = this.getMetaIndex(meta);
       indices[idx] = targetIndex;
     }
 
-    console.log(
-      'position xxx ',
-      this._positionToMetaList,
-      this._onTheFlyIndices
-    );
+    // console.log(
+    //   'position xxx ',
+    //   this._positionToMetaList,
+    //   this._onTheFlyIndices
+    // );
 
     const _arr = new Array(indices.length);
     const _available = [];
@@ -528,7 +543,7 @@ class IntegerBufferSet<Meta = any> {
       _available.push(currentMeta);
     }
 
-    console.log('available ', _available);
+    // console.log('available ', _available);
 
     const { smallValues, largeValues } = this.initialize();
     const positionToMetaList = [];
@@ -554,13 +569,13 @@ class IntegerBufferSet<Meta = any> {
       }
     }
 
-    console.log('position ', positionToMetaList, largeValues.peek().value);
+    // console.log('position ', positionToMetaList, largeValues.peek().value);
 
     this._positionToMetaList = positionToMetaList;
     this._smallValues = smallValues;
     this._largeValues = largeValues;
     this._indexToMetaMap = indexToMetaMap;
-    this._metaToIndexMap = metaToIndexMap;
+    this.replaceMetaToIndexMap(metaToIndexMap);
     this._metaToPositionMap = metaToPositionMap;
     this._onTheFlyIndices = [];
 
@@ -569,7 +584,7 @@ class IntegerBufferSet<Meta = any> {
       for (let idx = 0; idx < indices.length; idx++) {
         const meta =
           this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
-        const targetIndex = this._metaToIndexMap.get(meta);
+        const targetIndex = this.getMetaIndex(meta);
         if (meta != null) {
           indices[idx] = {
             meta,
@@ -592,7 +607,7 @@ class IntegerBufferSet<Meta = any> {
       for (let idx = 0; idx < indices.length; idx++) {
         const meta =
           this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
-        const targetIndex = this._metaToIndexMap.get(meta);
+        const targetIndex = this.getMetaIndex(meta);
         // which means source data has changed. such as one element has been deleted
         if (meta !== this.getIndexMeta(targetIndex)) {
           return this.shuffle();
@@ -636,13 +651,13 @@ class IntegerBufferSet<Meta = any> {
    * @returns true means index not changed
    */
   _setMetaIndex(meta: Meta, index: number) {
-    const prevMetaIndex = this._metaToIndexMap.get(meta);
+    const prevMetaIndex = this.getMetaIndex(meta);
     if (prevMetaIndex !== undefined) {
       // no need to set
       if (prevMetaIndex === index) return true;
       this._indexToMetaMap.delete(prevMetaIndex);
     }
-    this._metaToIndexMap.set(meta, index);
+    this.setMetaIndex(meta, index);
     this._indexToMetaMap.set(index, meta);
     return false;
   }
@@ -725,28 +740,28 @@ class IntegerBufferSet<Meta = any> {
     this._largeValues = newLargeValues;
   }
 
-  rebuildHeaps() {
-    const valueToPositionObject = {};
-    const newSmallValues = new Heap<HeapItem>([], this._smallerComparator);
-    const newLargeValues = new Heap<HeapItem>([], this._greaterComparator);
+  // rebuildHeaps() {
+  //   const valueToPositionObject = {};
+  //   const newSmallValues = new Heap<HeapItem>([], this._smallerComparator);
+  //   const newLargeValues = new Heap<HeapItem>([], this._greaterComparator);
 
-    const keys = Object.keys(this._positionToValueObject);
-    for (let position = 0; position < keys.length; position++) {
-      const value = this._positionToValueObject[position];
-      if (value !== undefined) {
-        const element = {
-          position,
-          value,
-        };
-        valueToPositionObject[value] = position;
-        newSmallValues.push(element);
-        newLargeValues.push(element);
-      }
-    }
+  //   const keys = Object.keys(this._positionToValueObject);
+  //   for (let position = 0; position < keys.length; position++) {
+  //     const value = this._positionToValueObject[position];
+  //     if (value !== undefined) {
+  //       const element = {
+  //         position,
+  //         value,
+  //       };
+  //       valueToPositionObject[value] = position;
+  //       newSmallValues.push(element);
+  //       newLargeValues.push(element);
+  //     }
+  //   }
 
-    this._smallValues = newSmallValues;
-    this._largeValues = newLargeValues;
-  }
+  //   this._smallValues = newSmallValues;
+  //   this._largeValues = newLargeValues;
+  // }
 
   _recreateHeaps() {
     const sourceHeap =

@@ -1,12 +1,12 @@
-export type ValueToPositionObject = {
-  [key: string]: number;
-};
+// export type ValueToPositionObject = {
+//   [key: string]: number;
+// };
 
-export type ValueToMetaObject<T> = {
-  [key: string]: T;
-};
+// export type ValueToMetaObject<T> = {
+//   [key: string]: T;
+// };
 
-export type MetaToValueMap<T> = Map<T, number>;
+export type MetaToIndexMap<T> = Map<T, number>;
 export type MetaToPositionMap<T> = Map<T, number>;
 export type IndexToMetaMap<T> = Map<number, T>;
 
@@ -16,6 +16,7 @@ export type IntegerBufferSetProps<T> = {
   name?: string;
   bufferSize?: number;
   metaExtractor?: MetaExtractor<T>;
+  indexExtractor?: IndexExtractor<T>;
 };
 
 export type HeapItem = {

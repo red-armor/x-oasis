@@ -26,7 +26,7 @@ const deleteSuite = (desc, data, fn) => {
       ]);
     });
 
-    it(`getIndices add 'meta' validation`, () => {
+    it.only(`getIndices add 'meta' validation`, () => {
       const bufferSet = new IntegerBufferSet({
         metaExtractor: (index) => data.values[index],
       });
