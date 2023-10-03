@@ -34,7 +34,6 @@ export const defaultBufferSize = 10;
 // the set.
 // feature: add / delete / update item will also in consider..
 class IntegerBufferSet<Meta = any> {
-  private _size: number;
   private _name: string;
   private _bufferSize: number;
 
@@ -77,7 +76,6 @@ class IntegerBufferSet<Meta = any> {
     this._metaToIndexMap = new Map();
     this._onTheFlyIndices = [];
 
-    this._size = 0;
     this._bufferSize = bufferSize;
 
     this._smallValues = new Heap([], this._smallerComparator);
@@ -85,7 +83,6 @@ class IntegerBufferSet<Meta = any> {
 
     this.getNewPositionForIndex = this.getNewPositionForIndex.bind(this);
     this.getIndexPosition = this.getIndexPosition.bind(this);
-    this.getSize = this.getSize.bind(this);
     this.replacePositionInFliedIndices =
       this.replacePositionInFliedIndices.bind(this);
     this.replaceFurthestIndexPosition =
@@ -96,10 +93,6 @@ class IntegerBufferSet<Meta = any> {
 
     this._loopMS = Date.now();
     this._lastUpdatedMS = this._loopMS;
-  }
-
-  getSize() {
-    return this._size;
   }
 
   get bufferSize() {
@@ -541,9 +534,6 @@ class IntegerBufferSet<Meta = any> {
 
     this._onTheFlyIndices = [];
     this._isOnTheFlyFull = false;
-    const len = this._positionToMetaList.length;
-
-    for (let index = 0; index < len; index++) {}
   }
 
   _cleanHeaps() {

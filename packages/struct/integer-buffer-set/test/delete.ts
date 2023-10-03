@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { extractTokenMetaIndex, extractTokenTargetIndex } from './utils';
 
 export const deleteSuite = (desc, data, fn) => {
-  describe(`${desc} - delete`, () => {
+  describe(`delete - ${desc} `, () => {
     beforeEach(() => {
       fn.hooks?.beforeEach();
     });
@@ -162,7 +162,7 @@ export const deleteSuite = (desc, data, fn) => {
 };
 
 export const discreteDeleteSuite = (desc, data, fn) => {
-  describe(`${desc} - usage of indexExtractor`, () => {
+  describe(`delete - ${desc} usage of indexExtractor`, () => {
     beforeEach(() => {
       fn.hooks?.beforeEach();
     });

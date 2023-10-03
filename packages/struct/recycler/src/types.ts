@@ -38,3 +38,5 @@ export type FixedBufferStateItem = {
 };
 
 export type FixedBufferState = Array<FixedBufferStateItem>;
+
+export type OnProcess = (type?: string, index?: number) => boolean;

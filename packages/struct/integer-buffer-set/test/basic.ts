@@ -3,13 +3,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { extractTokenTargetIndex } from './utils';
 
 export const basicSuite = (desc, data, fn?: any) => {
-  describe('basic', () => {
+  describe(`basic - ${desc}`, () => {
     beforeEach(() => {
       fn.hooks?.beforeEach();
     });
     it('constructor', () => {
       const bufferSet = new IntegerBufferSet();
-      expect(bufferSet.getSize()).toBe(0);
       expect(bufferSet.isBufferFull).toBe(false);
       expect(bufferSet.bufferSize).toBe(defaultBufferSize);
     });

@@ -1,10 +1,10 @@
 import FixedBuffer from './FixedBuffer';
-import { RecyclerProps } from './types';
+import { OnProcess, RecyclerProps } from './types';
 import {
   DEFAULT_RECYCLER_TYPE,
   RECYCLER_BUFFER_SIZE,
   RECYCLER_RESERVED_BUFFER_PER_BATCH,
-  RECYCLER_RESERVED_BUFFER_SIZE_RATIO,
+  // RECYCLER_RESERVED_BUFFER_SIZE_RATIO,
   RECYCLER_THRESHOLD_INDEX_VALUE,
 } from './common';
 
@@ -20,7 +20,6 @@ class Recycler {
    * buffer size, the oversize node will run into recycle strategy
    */
   private _recyclerBufferSize: number;
-  private _recyclerReservedBufferSize: number;
   private _metaExtractor: (index: number) => any;
   private _indexExtractor: (meta: any) => number;
   private _getType: (index: number) => string;
@@ -41,9 +40,6 @@ class Recycler {
     this._getType = getType;
     this._recyclerBufferSize = recyclerBufferSize;
     this._thresholdIndexValue = thresholdIndexValue;
-    this._recyclerReservedBufferSize = Math.floor(
-      recyclerBufferSize * RECYCLER_RESERVED_BUFFER_SIZE_RATIO
-    );
     this._recyclerReservedBufferPerBatch = recyclerReservedBufferPerBatch;
     recyclerTypes.forEach((type) => this.addBuffer(type));
   }
@@ -95,39 +91,26 @@ class Recycler {
     };
     startIndex: number;
     maxCount: number;
-    step: number;
-
-    // /** the max index value, always be the length of data */
-    maxIndex: number;
+    step?: number;
+    onProcess?: OnProcess;
   }) {
-    // this._queue.forEach((buffer) => buffer.start());
-    const {
-      startIndex: _startIndex,
-      safeRange,
-      step,
-      maxCount,
-      maxIndex,
-    } = props;
-    const startIndex = Math.max(_startIndex, 0);
+    const { startIndex, safeRange, step = 1, maxCount, onProcess } = props;
     let count = 0;
-    if (maxCount < 0) return null;
-    for (
-      let index = startIndex;
-      step > 0 ? index <= maxIndex : index >= 0;
-      index += step
-    ) {
-      if (index < this._thresholdIndexValue) continue;
-      const recyclerType = this._getType(index);
-
-      // itemLayout should not be a condition, may cause too many unLayout item
-      if (count < maxCount) {
+    let _index = Math.max(startIndex, 0);
+    while (count < maxCount) {
+      if (_index >= this._thresholdIndexValue) {
+        const recyclerType = this._getType(_index);
         const buffer = this.ensureBuffer(recyclerType);
-        buffer.place(index, safeRange);
-      } else {
-        break;
-      }
+        buffer.place(_index, safeRange);
 
-      if (index >= this._thresholdIndexValue) count++;
+        if (
+          typeof onProcess !== 'function' ||
+          onProcess(recyclerType, _index)
+        ) {
+          count += 1;
+        }
+      }
+      _index += step;
     }
   }
 
@@ -151,14 +134,3 @@ class Recycler {
 }
 
 export default Recycler;
-
-// const origin = [163, 168, 142, 147, 152, 173, 178, 137, 157, 162]
-
-// const target = [163, 163, 142, 147, 152, 168, 173, 137, 157]
-
-// const next = [168, 168, 142, 147, 152, 173, 178, 137, 157, 162]
-
-// Next Sample
-// const origin = [35, 36, 37, 38, 39, 40, 41, 32, 33, 34]
-// const target = [35, 36, 37, 36, 37, 40, 41, 32, 33, 34]
-// const target = [35, 38, 39, 38, 39, 40, 41, 32, 33, 34]
