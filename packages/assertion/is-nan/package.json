@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/is-nan",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "is-nan function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

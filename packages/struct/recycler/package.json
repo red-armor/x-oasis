@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/recycler",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "IntegerBufferSet function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
