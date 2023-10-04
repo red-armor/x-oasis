@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/is-empty",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "description": "is-empty function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
