@@ -25,10 +25,10 @@ export const basicSuite = (desc, data, fn?: any) => {
       expect(bufferSet.getPosition(7)).toBe(7);
       expect(bufferSet.getPosition(8)).toBe(8);
       expect(bufferSet.getPosition(9)).toBe(9);
-      expect(bufferSet.getPosition(10)).toBe(0);
-      expect(bufferSet.getPosition(11)).toBe(1);
+      expect(bufferSet.getPosition(10)).toBe(null);
+      expect(bufferSet.getPosition(11)).toBe(null);
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        10, 11, 2, 3, 4, 5, 6, 7, 8, 9,
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
       ]);
     });
     it('no safeRange', () => {
@@ -47,6 +47,9 @@ export const basicSuite = (desc, data, fn?: any) => {
       expect(bufferSet.getPosition(7, safeRange)).toBe(7);
       expect(bufferSet.getPosition(8, safeRange)).toBe(8);
       expect(bufferSet.getPosition(9, safeRange)).toBe(9);
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+      ]);
       expect(bufferSet.getPosition(10, safeRange)).toBe(9);
       expect(bufferSet.getPosition(11, safeRange)).toBe(8);
 
@@ -71,6 +74,9 @@ export const basicSuite = (desc, data, fn?: any) => {
         startIndex: 1,
         endIndex: 6,
       };
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+      ]);
       expect(bufferSet.getPosition(10, safeRange)).toBe(9);
       expect(bufferSet.getPosition(10, safeRange)).toBe(9);
       expect(bufferSet.getPosition(1, safeRange)).toBe(1);
@@ -173,16 +179,11 @@ export const discreteSuite = (desc, data, fn) => {
       }
 
       expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
-        3,
-        9,
-        21,
-        27,
-        33,
-        39,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
+        3, 9, 21, 27, 33, 39,
+        // undefined,
+        // undefined,
+        // undefined,
+        // undefined,
       ]);
 
       for (let idx = 0; idx < 70; idx++) {
