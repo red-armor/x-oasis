@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.25](https://github.com/ryuever/x-oasis/compare/v0.1.24...v0.1.25) (2023-10-04)
+
+
+### Features
+
+* update ([43d2703](https://github.com/ryuever/x-oasis/commit/43d27035c40ad524694304d2ab4d561b85bb7591))
+
+
+
 ## [0.1.24](https://github.com/ryuever/x-oasis/compare/v0.1.23...v0.1.24) (2023-10-04)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/shallow-array-equal",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "description": "shallow array equal function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
