@@ -333,6 +333,7 @@ class IntegerBufferSet<Meta = any> {
       indexToReplace = maxValue;
       this._largeValues.pop();
       const replacedMeta = this._indexToMetaMap.get(indexToReplace);
+
       const position = this._metaToPositionMap.get(replacedMeta);
       return position;
     }
@@ -457,6 +458,8 @@ class IntegerBufferSet<Meta = any> {
     try {
       const indices = new Array(this._positionToMetaList.length);
       const metaToPositionMap = new Map();
+      const indexToMetaMap = new Map();
+      const metaToIndexMap = new Map();
       for (let idx = 0; idx < indices.length; idx++) {
         const meta =
           this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
@@ -473,6 +476,8 @@ class IntegerBufferSet<Meta = any> {
           smallValues.push(element);
           largeValues.push(element);
           metaToPositionMap.set(meta, idx);
+          indexToMetaMap.set(targetIndex, meta);
+          metaToIndexMap.set(meta, targetIndex);
           indices[idx] = {
             meta,
             targetIndex,
@@ -485,6 +490,8 @@ class IntegerBufferSet<Meta = any> {
       this._metaToPositionMap = metaToPositionMap;
       this._positionToMetaList = indices.map((v) => v?.meta);
       this.resetOnTheFlies();
+      this._indexToMetaMap = indexToMetaMap;
+      this.replaceMetaToIndexMap(metaToIndexMap);
 
       return indices;
     } catch (err) {
