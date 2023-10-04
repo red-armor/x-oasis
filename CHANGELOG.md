@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.24](https://github.com/ryuever/x-oasis/compare/v0.1.23...v0.1.24) (2023-10-04)
+
+
+### Features
+
+* reuse as possible and works with cart ([#11](https://github.com/ryuever/x-oasis/issues/11)) ([1deede6](https://github.com/ryuever/x-oasis/commit/1deede613921a1e4471fcec1116b0408e313f17d))
+
+
+
 ## [0.1.23](https://github.com/ryuever/x-oasis/compare/v0.1.22...v0.1.23) (2023-10-03)
 
 
