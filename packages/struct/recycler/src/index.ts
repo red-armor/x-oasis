@@ -97,7 +97,7 @@ class Recycler {
     const { startIndex, safeRange, step = 1, maxCount, onProcess } = props;
     let count = 0;
     let _index = Math.max(startIndex, 0);
-    while (count < maxCount) {
+    while (count < maxCount && this._metaExtractor(_index)) {
       if (_index >= this._thresholdIndexValue) {
         const recyclerType = this._getType(_index);
         const buffer = this.ensureBuffer(recyclerType);
