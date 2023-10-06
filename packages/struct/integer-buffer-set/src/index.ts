@@ -516,6 +516,7 @@ class IntegerBufferSet<Meta = any> {
           this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
         const targetIndex = this.getMetaIndex(meta);
         // which means source data has changed. such as one element has been deleted
+        // only use `this._positionToMetaList[idx]` may has a conflict.
         if (
           !this.isThresholdMeta(meta) &&
           meta != this.getIndexMeta(targetIndex)
