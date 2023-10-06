@@ -140,15 +140,23 @@ class IntegerBufferSet<Meta = any> {
   }
 
   getIndexMeta(index: number) {
-    if (index == null || index < 0) return null;
-    return this._metaExtractor(index);
+    try {
+      if (index == null || index < 0) return null;
+      return this._metaExtractor(index);
+    } catch (err) {
+      return null;
+    }
   }
 
   getMetaIndex(meta: Meta) {
-    if (meta == null) return -1;
-    if (this.isThresholdMeta(meta)) return -1;
-    if (this._indexExtractor) return this._indexExtractor(meta);
-    return this._metaToIndexMap.get(meta);
+    try {
+      if (meta == null) return -1;
+      if (this.isThresholdMeta(meta)) return -1;
+      if (this._indexExtractor) return this._indexExtractor(meta);
+      return this._metaToIndexMap.get(meta);
+    } catch (err) {
+      return -1;
+    }
   }
 
   setMetaIndex(meta: Meta, index: number) {
@@ -390,7 +398,7 @@ class IntegerBufferSet<Meta = any> {
     return position;
   }
 
-  shuffle() {
+  shuffle(options: { retry: boolean; fallback: boolean }) {
     const indices = new Array(this.bufferSize);
     for (let idx = 0; idx < indices.length; idx++) {
       const meta = this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
@@ -448,28 +456,38 @@ class IntegerBufferSet<Meta = any> {
 
     this._positionToMetaList = positionToMetaList;
 
-    return this.getIndices();
+    return this.getIndices({
+      ...options,
+      retry: true,
+    });
   }
 
   // key point: `meta` should be preserved..
-  getIndices() {
-    const { smallValues, largeValues } = this.initialize();
-
+  getIndices(
+    options = {
+      retry: false,
+      fallback: false,
+    }
+  ) {
     try {
+      const { retry, fallback } = options;
+      const { smallValues, largeValues } = this.initialize();
       const indices = new Array(this._positionToMetaList.length);
       const metaToPositionMap = new Map();
       const indexToMetaMap = new Map();
       const metaToIndexMap = new Map();
       for (let idx = 0; idx < indices.length; idx++) {
-        const meta =
-          this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
+        const meta = fallback
+          ? this._onTheFlyIndices[idx]
+          : this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
         const targetIndex = this.getMetaIndex(meta);
         // which means source data has changed. such as one element has been deleted
         if (
           !this.isThresholdMeta(meta) &&
-          meta != this.getIndexMeta(targetIndex)
+          meta != this.getIndexMeta(targetIndex) &&
+          !retry
         ) {
-          return this.shuffle();
+          return this.shuffle(options);
         }
         if (meta != null && !this.isThresholdMeta(meta)) {
           const element = { position: idx, value: targetIndex };
@@ -496,7 +514,10 @@ class IntegerBufferSet<Meta = any> {
       return indices;
     } catch (err) {
       console.log('err ', err);
-      return this._positionToMetaList;
+      return this.getIndices({
+        ...options,
+        fallback: true,
+      });
     } finally {
       this.readyToStartNextLoop();
       // clear on the fly indices after return indices.
