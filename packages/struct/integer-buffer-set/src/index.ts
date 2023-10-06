@@ -253,7 +253,7 @@ class IntegerBufferSet<Meta = any> {
       position = this.getFliedPosition(newIndex, safeRange);
     } else if (
       (indexMeta = this._indexToMetaMap.get(newIndex)) &&
-      this._metaToPositionMap.get(indexMeta)
+      this._metaToPositionMap.get(indexMeta) != null
     ) {
       /**
       Index has already been stored, but we cant use its old position directly...
@@ -632,7 +632,7 @@ class IntegerBufferSet<Meta = any> {
       }
     }
 
-    this._largeValues.peek().value;
+    // this._largeValues.peek().value;
 
     this._smallValues = smallValues;
     this._largeValues = largeValues;
