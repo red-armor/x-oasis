@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/clamp",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "clamp function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

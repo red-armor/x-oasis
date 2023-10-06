@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.27](https://github.com/ryuever/x-oasis/compare/v0.1.26...v0.1.27) (2023-10-06)
+
+
+### Bug Fixes
+
+* `this._metaToPositionMap.get(indexMeta)` return 0 issue ([02f4d63](https://github.com/ryuever/x-oasis/commit/02f4d6308d30053444e47a74dbec0e8b7eb440aa))
+
+
+
 ## [0.1.26](https://github.com/ryuever/x-oasis/compare/v0.1.25...v0.1.26) (2023-10-04)
 
 

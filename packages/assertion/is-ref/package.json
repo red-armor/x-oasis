@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/is-ref",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "is-ref function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
