@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.28](https://github.com/ryuever/x-oasis/compare/v0.1.27...v0.1.28) (2023-10-06)
+
+
+### Features
+
+* add fallback ([485ebf5](https://github.com/ryuever/x-oasis/commit/485ebf556db51a93f04555af88abe6c8bb16e52f))
+
+
+
 ## [0.1.27](https://github.com/ryuever/x-oasis/compare/v0.1.26...v0.1.27) (2023-10-06)
 
 
