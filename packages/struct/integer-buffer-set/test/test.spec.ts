@@ -7,6 +7,7 @@ import {
   resetStartIndex,
 } from './data';
 import { discreteSuite, basicSuite } from './basic';
+import { testUseCase } from './usecase';
 
 const data = {
   values: [] as Array<any>,
@@ -81,6 +82,23 @@ discreteDeleteSuite('simple', data, {
   },
   data: {
     delete: (index) => data.values.splice(index, 1),
+    append: (count) => {
+      data.values = data.values.concat(buildDiscreteData(count));
+    },
+  },
+});
+
+testUseCase('simple', data, {
+  hooks: {
+    beforeEach: () => {
+      resetStartIndex();
+      data.values = buildDiscreteData(100);
+      console.log('hell0000');
+    },
+  },
+  data: {
+    delete: (index) => data.values.splice(index, 1),
+    replace: () => (data.values = buildDiscreteData(100)),
     append: (count) => {
       data.values = data.values.concat(buildDiscreteData(count));
     },

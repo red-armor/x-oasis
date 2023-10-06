@@ -229,15 +229,17 @@ class IntegerBufferSet<Meta = any> {
     let position, indexMeta;
 
     // if (this._name === 'normal_goods')
-    //   console.log(
-    //     'getPosition ',
-    //     newIndex,
-    //     !this.isBufferFull,
-    //     this._isOnTheFlyFull,
-    //     this._onTheFlyIndices.slice(),
-    //     this._indexToMetaMap.get(newIndex),
-    //     this._metaToPositionMap.get(this._indexToMetaMap.get(newIndex))
-    //   );
+    console.log(
+      'getPosition ',
+      newIndex,
+      meta,
+      metaPosition,
+      !this.isBufferFull,
+      this._isOnTheFlyFull,
+      this._onTheFlyIndices.slice(),
+      this._indexToMetaMap.get(newIndex),
+      this._metaToPositionMap.get(this._indexToMetaMap.get(newIndex))
+    );
 
     if (metaPosition !== undefined) {
       position = this.commitPosition({
@@ -249,12 +251,21 @@ class IntegerBufferSet<Meta = any> {
     } else if (!this.isBufferFull) {
       /** placed on new buffered position */
       position = this.getNewPositionForIndex(newIndex);
+      // if (this._name === 'normal_goods') {
+      console.log('create new position ', newIndex, position);
+      // }
     } else if (this._isOnTheFlyFull) {
       position = this.getFliedPosition(newIndex, safeRange);
     } else if (
       (indexMeta = this._indexToMetaMap.get(newIndex)) &&
+      // (this._metaToPositionMap.get(indexMeta) != null)
       this._metaToPositionMap.get(indexMeta)
     ) {
+      // console.log('commeit ---')
+      // if (this._name === 'normal_goods') {
+      console.log('_metaToPositionMap ', newIndex, indexMeta);
+      // console.log('_metaToPositionMap ', newIndex, indexMeta, this._positionToMetaList.slice())
+      // }
       /**
       Index has already been stored, but we cant use its old position directly...
         1：index -> meta, meta may be reused later
@@ -269,6 +280,15 @@ class IntegerBufferSet<Meta = any> {
     } else {
       this._cleanHeaps();
       // console.log('commeit ---')
+      // if (this._name === 'normal_goods') {
+      console.log(
+        'after clean position ',
+        newIndex,
+        this._positionToMetaList.slice(),
+        this._smallValues.empty(),
+        this._largeValues.empty()
+      );
+      // }
       position = this.commitPosition({
         newIndex,
         meta,
@@ -318,6 +338,13 @@ class IntegerBufferSet<Meta = any> {
     }
   ) {
     if (this._largeValues.empty() || this._smallValues.empty()) {
+      console.log(
+        'replaceFurthestIndexPosition ',
+        newIndex,
+        this._largeValues.empty(),
+        this._smallValues.empty()
+      );
+
       return this._isOnTheFlyFullReturnHook(
         this.getNewPositionForIndex(newIndex)
       );
@@ -354,6 +381,14 @@ class IntegerBufferSet<Meta = any> {
     }
 
     const { startIndex: lowValue, endIndex: highValue } = safeRange;
+    console.log(
+      'replaceFurthestIndexPosition pop ',
+      newIndex,
+      maxValue,
+      isClamped(lowValue, minValue, highValue),
+      this._largeValues.empty(),
+      this._smallValues.empty()
+    );
 
     // All values currently stored are necessary, we can't reuse any of them.
     if (
@@ -399,12 +434,14 @@ class IntegerBufferSet<Meta = any> {
       indices[idx] = targetIndex;
     }
 
-    // console.log(
-    //   'indices ',
-    //   this._positionToMetaList,
-    //   this._onTheFlyIndices.slice(),
-    //   indices
-    // );
+    if (this._name === 'normal_goods') {
+      console.log(
+        'indices ',
+        this._positionToMetaList.slice(),
+        this._onTheFlyIndices.slice(),
+        indices
+      );
+    }
 
     const _arr = new Array(indices.length);
     const _available = [];
@@ -435,13 +472,17 @@ class IntegerBufferSet<Meta = any> {
     this._indexToMetaMap = indexToMetaMap;
     this.replaceMetaToIndexMap(metaToIndexMap);
 
+    console.log('shuff ====');
+
     for (let position = 0; position < indices.length; position++) {
       if (_arr[position] != null) {
         positionToMetaList[position] = _arr[position];
+        console.log('shufft==== ', position);
         continue;
       }
       const meta = _available.shift();
       if (meta != null) {
+        console.log('postion ====', position, meta);
         positionToMetaList[position] = meta;
       }
     }
@@ -454,6 +495,16 @@ class IntegerBufferSet<Meta = any> {
   // key point: `meta` should be preserved..
   getIndices() {
     const { smallValues, largeValues } = this.initialize();
+
+    console.log(
+      'get indices ',
+      this._positionToMetaList.slice(),
+      this._onTheFlyIndices.slice()
+    );
+
+    if (this._name === 'normal_goods') {
+      console.log('get indices ', this._positionToMetaList.slice());
+    }
 
     try {
       const indices = new Array(this._positionToMetaList.length);
@@ -545,8 +596,12 @@ class IntegerBufferSet<Meta = any> {
           newIndex,
           safeRange
         );
+
+        console.log('positionToReplace ', positionToReplace);
       }
     }
+
+    console.log('postion ', newIndex, positionToReplace);
     return positionToReplace;
   }
 
@@ -575,6 +630,11 @@ class IntegerBufferSet<Meta = any> {
   prepare() {
     if (this._loopMS === this._lastUpdatedMS) return;
     this._loopMS = this._lastUpdatedMS;
+    if (this._name === 'normal_goods') {
+      console.log('prepare ', this._positionToMetaList.slice());
+    }
+
+    console.log('prepare ', this._positionToMetaList.slice());
 
     this._onTheFlyIndices = [];
     this._isOnTheFlyFull = false;
@@ -625,14 +685,14 @@ class IntegerBufferSet<Meta = any> {
       smallValues.push(element);
       largeValues.push(element);
       if (value > thresholdNumber) {
+        if (this._name === 'normal_goods')
+          console.log('recreate ', value, position);
         // @ts-ignore
         this._setMetaPosition(value, position);
         // @ts-ignore
         this._setMetaIndex(value, value);
       }
     }
-
-    this._largeValues.peek().value;
 
     this._smallValues = smallValues;
     this._largeValues = largeValues;
