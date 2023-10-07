@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.30](https://github.com/ryuever/x-oasis/compare/v0.1.29...v0.1.30) (2023-10-07)
+
+
+
 ## [0.1.29](https://github.com/ryuever/x-oasis/compare/v0.1.28...v0.1.29) (2023-10-07)
 
 
