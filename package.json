@@ -1,6 +1,6 @@
 {
   "name": "x-oasis",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "description": "A collection of utility libraries",
   "main": "index.js",
   "repository": {

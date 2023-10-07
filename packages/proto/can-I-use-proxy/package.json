@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/can-i-use-proxy",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "description": "can-i-use-proxy function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

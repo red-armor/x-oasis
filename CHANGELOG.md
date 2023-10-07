@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [0.1.31](https://github.com/ryuever/x-oasis/compare/v0.1.30...v0.1.31) (2023-10-07)
+
+
+### Features
+
+* add `reset` ([affba96](https://github.com/ryuever/x-oasis/commit/affba960ace39120f77426a1252199bd6d0a5e83))
+* return `place` ([bea018c](https://github.com/ryuever/x-oasis/commit/bea018cfac0d113dd3a335caed84900af105687c))
+* use IntegerBufferSet directly ([f007ade](https://github.com/ryuever/x-oasis/commit/f007ade3dba7409d8246d631bfd7ccef579cd67d))
+
+
+
 ## [0.1.30](https://github.com/ryuever/x-oasis/compare/v0.1.29...v0.1.30) (2023-10-07)
 
 
