@@ -194,19 +194,62 @@ class IntegerBufferSet<Meta = any> {
   }
 
   _peek(heap: Heap) {
-    return heap.peek()?.value;
+    return heap.peek();
   }
 
-  _getMinValue() {
-    return this._peek(this._smallValues);
-  }
-
-  _getMaxValue() {
+  _getMaxItem() {
     return this._peek(this._largeValues);
   }
 
-  _push(heap: Heap, element: HeapItem) {
-    heap.push(element);
+  _getMinItem() {
+    return this._peek(this._smallValues);
+  }
+
+  _getMinValue() {
+    return this._peek(this._smallValues)?.value;
+  }
+
+  _getMaxValue() {
+    return this._peek(this._largeValues)?.value;
+  }
+
+  // should omit thresholdNumber
+  getMaxValue() {
+    const stack = [];
+    let item;
+
+    while ((item = this._getMaxItem()) && assertThresholdNumber(item?.value)) {
+      stack.push(item);
+      this._largeValues.pop();
+    }
+
+    let stackItem;
+    while ((stackItem = stack.pop())) {
+      this._largeValues.push(stackItem);
+    }
+
+    return item?.value;
+  }
+
+  getMinValue() {
+    const stack = [];
+    let item;
+
+    while ((item = this._getMinItem()) && assertThresholdNumber(item?.value)) {
+      stack.push(item);
+      this._smallValues.pop();
+    }
+
+    let stackItem;
+    while ((stackItem = stack.pop())) {
+      this._smallValues.push(stackItem);
+    }
+
+    return item?.value;
+  }
+
+  _push(heap: Heap, item: HeapItem) {
+    heap.push(item);
   }
 
   getFliedPosition(newIndex: number, safeRange: SafeRange) {
@@ -484,7 +527,7 @@ class IntegerBufferSet<Meta = any> {
           ? this._onTheFlyIndices[idx]
           : this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
         const targetIndex = this.getMetaIndex(meta);
-        // which means source data has changed. such as one element has been deleted
+        // which means source data has changed. such as one item has been deleted
         if (
           !assertThresholdNumber(meta) &&
           meta != this.getIndexMeta(targetIndex) &&
@@ -493,9 +536,9 @@ class IntegerBufferSet<Meta = any> {
           return this.shuffle(options);
         }
         if (meta != null && !assertThresholdNumber(meta)) {
-          const element = { position: idx, value: targetIndex };
-          this._push(smallValues, element);
-          this._push(largeValues, element);
+          const item = { position: idx, value: targetIndex };
+          this._push(smallValues, item);
+          this._push(largeValues, item);
           metaToPositionMap.set(meta, idx);
           indexToMetaMap.set(targetIndex, meta);
           metaToIndexMap.set(meta, targetIndex);
@@ -528,10 +571,10 @@ class IntegerBufferSet<Meta = any> {
   }
 
   _pushToHeaps(position: number, value: number) {
-    const element = { position, value };
+    const item = { position, value };
     // We can reuse the same object in both heaps, because we don't mutate them
-    this._push(this._smallValues, element);
-    this._push(this._largeValues, element);
+    this._push(this._smallValues, item);
+    this._push(this._largeValues, item);
   }
 
   _setMetaPosition(meta: Meta, position: number) {
@@ -551,8 +594,6 @@ class IntegerBufferSet<Meta = any> {
     const { newIndex, safeRange, position, meta } = props;
     const onTheFlyPositionMeta = this._onTheFlyIndices[position];
     let positionToReplace = position;
-
-    // console.log('position ', newIndex, position);
 
     if (onTheFlyPositionMeta) {
       // such as place item 11 twice...
@@ -605,11 +646,6 @@ class IntegerBufferSet<Meta = any> {
   }
 
   _cleanHeaps() {
-    // We not usually only remove object from one heap while moving value.
-    // Here we make sure that there is no stale data on top of heaps.
-    // this._cleanHeap(this._smallValues);
-    // this._cleanHeap(this._largeValues);
-
     for (let idx = 0; idx < this._positionToMetaList.length; idx++) {
       if (this._positionToMetaList[idx] == null) {
         this._recreateHeaps();
@@ -625,6 +661,8 @@ class IntegerBufferSet<Meta = any> {
       this._smallValues.size(),
       this._largeValues.size()
     );
+    // We not usually only remove object from one heap while moving value.
+    // Here we make sure that there is no stale data on top of heaps.
     if (maxHeapSize > 10 * minHeapSize) {
       // There are many old values in one of heaps. We need to get rid of them
       // to not use too avoid memory leaks
@@ -640,14 +678,13 @@ class IntegerBufferSet<Meta = any> {
     ) {
       const meta = this._positionToMetaList[position];
       let value = this.getMetaIndex(meta);
-
-      if (!meta || value === -1 || value == null) {
+      if (meta == null || value === -1 || value == null) {
         value = Number.MAX_SAFE_INTEGER - position;
       }
 
-      const element = { position, value };
-      this._push(smallValues, element);
-      this._push(largeValues, element);
+      const item = { position, value };
+      this._push(smallValues, item);
+      this._push(largeValues, item);
       if (value > thresholdNumber) {
         // @ts-ignore
         this._setMetaPosition(value, position);
@@ -658,18 +695,6 @@ class IntegerBufferSet<Meta = any> {
     this._smallValues = smallValues;
     this._largeValues = largeValues;
   }
-
-  // _cleanHeap(heap: Heap<HeapItem>) {
-  //   while (
-  //     !heap.empty() &&
-  //     this._metaToPositionMap.get(
-  //       this._indexToMetaMap.get(heap.peek()!.value)
-  //     ) == null
-  //   ) {
-  //     console.log('pop ---', heap.peek()!.value);
-  //     heap.pop();
-  //   }
-  // }
 
   _smallerComparator(lhs: HeapItem, rhs: HeapItem) {
     return lhs.value < rhs.value;

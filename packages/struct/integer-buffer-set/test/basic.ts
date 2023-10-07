@@ -159,6 +159,42 @@ export const basicSuite = (desc, data, fn?: any) => {
         10, 11, 12, 13, 14, 5, 6, 7, 8, 9,
       ]);
     });
+
+    it('getMaxValue - omit thresholdNumber', () => {
+      const bufferSet = new IntegerBufferSet();
+      expect(bufferSet.getPosition(0)).toBe(0);
+      expect(bufferSet.getPosition(1)).toBe(1);
+      expect(bufferSet.getPosition(2)).toBe(2);
+      expect(bufferSet.getPosition(3)).toBe(3);
+      expect(bufferSet.getPosition(4)).toBe(4);
+      expect(bufferSet.getPosition(5)).toBe(5);
+      expect(bufferSet.getPosition(6)).toBe(6);
+      expect(bufferSet.getPosition(7)).toBe(7);
+      expect(bufferSet.getPosition(8)).toBe(8);
+      expect(bufferSet.getPosition(9)).toBe(9);
+      expect(extractTokenTargetIndex(bufferSet.getIndices())).toEqual([
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+      ]);
+
+      expect(bufferSet._getMaxValue()).toBe(9);
+      expect(bufferSet._getMinValue()).toBe(0);
+      expect(bufferSet.getMaxValue()).toBe(9);
+      expect(bufferSet.getMinValue()).toBe(0);
+
+      // @ts-ignore
+      bufferSet._positionToMetaList.splice(2, 1, undefined);
+      bufferSet._cleanHeaps();
+      // @ts-ignore
+      expect(bufferSet._positionToMetaList).toEqual([
+        0, 1, 9007199254740989, 3, 4, 5, 6, 7, 8, 9,
+      ]);
+      expect(bufferSet._getMaxValue()).toBe(9007199254740989);
+      expect(bufferSet._getMinValue()).toBe(0);
+      expect(bufferSet.getMaxValue()).toBe(9);
+      expect(bufferSet.getMinValue()).toBe(0);
+      expect(bufferSet._getMaxValue()).toBe(9007199254740989);
+      expect(bufferSet._getMinValue()).toBe(0);
+    });
   });
 };
 
