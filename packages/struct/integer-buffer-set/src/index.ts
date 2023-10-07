@@ -37,7 +37,7 @@ const assertThresholdNumber = (val: any) =>
 // the set.
 // feature: add / delete / update item will also in consider..
 class IntegerBufferSet<Meta = any> {
-  private _name: string;
+  private _type: string;
   private _bufferSize: number;
 
   private _indexToMetaMap: IndexToMetaMap<Meta>;
@@ -60,7 +60,7 @@ class IntegerBufferSet<Meta = any> {
 
   constructor(props: IntegerBufferSetProps<Meta> = {}) {
     const {
-      name = 'default_buffer',
+      type = 'default_buffer',
       indexExtractor,
       bufferSize = defaultBufferSize,
       metaExtractor = defaultMetaExtractor,
@@ -68,7 +68,7 @@ class IntegerBufferSet<Meta = any> {
     this._metaExtractor = metaExtractor;
     this._indexExtractor = indexExtractor;
 
-    this._name = name;
+    this._type = type;
 
     /**
      * this._indexToMetaMap is used to find the prev meta when finding a position for index.
@@ -96,9 +96,15 @@ class IntegerBufferSet<Meta = any> {
     this._lastUpdatedMS = this._loopMS;
   }
 
+  getType() {
+    return this._type;
+  }
+
   get bufferSize() {
     return this._bufferSize;
   }
+
+  reset() {}
 
   setIsOnTheFlyFull(val: any) {
     if (val != null) {
@@ -284,7 +290,7 @@ class IntegerBufferSet<Meta = any> {
     const metaPosition = this._metaToPositionMap.get(meta);
     let position, indexMeta;
 
-    // if (this._name === 'normal_goods')
+    // if (this._type === 'normal_goods')
     //   console.log(
     //     'getPosition ',
     //     newIndex,
@@ -545,7 +551,7 @@ class IntegerBufferSet<Meta = any> {
           indices[idx] = {
             meta,
             targetIndex,
-            recyclerKey: `${this._name}_${idx}`,
+            recyclerKey: `${this._type}_${idx}`,
           };
         }
       }

@@ -1,15 +1,14 @@
-import FixedBuffer from './FixedBuffer';
+import IntegerBufferSet from '@x-oasis/integer-buffer-set';
 import { OnProcess, RecyclerProps } from './types';
 import {
   DEFAULT_RECYCLER_TYPE,
   RECYCLER_BUFFER_SIZE,
   RECYCLER_RESERVED_BUFFER_PER_BATCH,
-  // RECYCLER_RESERVED_BUFFER_SIZE_RATIO,
   RECYCLER_THRESHOLD_INDEX_VALUE,
 } from './common';
 
 class Recycler {
-  private _queue: Array<FixedBuffer> = [];
+  private _queue: Array<IntegerBufferSet> = [];
 
   /**
    * start index
@@ -62,16 +61,13 @@ class Recycler {
 
   addBuffer(type: string) {
     if (!type) return null;
-    const index = this._queue.findIndex(
-      (buffer) => buffer.recyclerType === type
-    );
+    const index = this._queue.findIndex((buffer) => buffer.getType() === type);
     if (index !== -1) return this._queue[index];
-    const buffer = new FixedBuffer({
-      recyclerType: type,
+    const buffer = new IntegerBufferSet({
+      type,
       metaExtractor: this._metaExtractor,
       indexExtractor: this._indexExtractor,
       bufferSize: this._recyclerBufferSize,
-      thresholdIndexValue: this._thresholdIndexValue,
     });
     this._queue.push(buffer);
     return buffer;
@@ -79,6 +75,10 @@ class Recycler {
 
   ensureBuffer(type: string) {
     return this.addBuffer(type || DEFAULT_RECYCLER_TYPE);
+  }
+
+  reset() {
+    this.queue.forEach((buffer) => buffer.reset());
   }
 
   updateIndices(props: {
@@ -101,7 +101,7 @@ class Recycler {
       if (_index >= this._thresholdIndexValue) {
         const recyclerType = this._getType(_index);
         const buffer = this.ensureBuffer(recyclerType);
-        buffer.place(_index, safeRange);
+        buffer.getPosition(_index, safeRange);
 
         if (
           typeof onProcess !== 'function' ||

@@ -27,7 +27,7 @@ export const basicSuite = (desc, data, fn?: any) => {
       });
 
       expect(recycler.queue.length).toBe(3);
-      expect(recycler.queue.map((buffer) => buffer.recyclerType)).toEqual([
+      expect(recycler.queue.map((buffer) => buffer.getType())).toEqual([
         'mod3',
         'mod5',
         'mod7',
@@ -39,7 +39,7 @@ export const basicSuite = (desc, data, fn?: any) => {
       }
 
       expect(recycler.queue.length).toBe(5);
-      expect(recycler.queue.map((buffer) => buffer.recyclerType)).toEqual([
+      expect(recycler.queue.map((buffer) => buffer.getType())).toEqual([
         'mod3',
         'mod5',
         'mod7',

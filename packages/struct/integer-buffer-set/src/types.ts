@@ -13,7 +13,7 @@ export type IndexToMetaMap<T> = Map<number, T>;
 export type MetaExtractor<T> = (index: number) => T;
 export type IndexExtractor<T> = (meta: T) => number;
 export type IntegerBufferSetProps<T> = {
-  name?: string;
+  type?: string;
   bufferSize?: number;
   metaExtractor?: MetaExtractor<T>;
   indexExtractor?: IndexExtractor<T>;
