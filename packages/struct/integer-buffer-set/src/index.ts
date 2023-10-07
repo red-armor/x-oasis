@@ -16,6 +16,8 @@ import {
 const defaultMetaExtractor = (value) => value;
 export const defaultBufferSize = 10;
 const thresholdNumber = Number.MAX_SAFE_INTEGER - 100000;
+const assertThresholdNumber = (val: any) =>
+  typeof val === 'number' && val > thresholdNumber;
 
 // !!!!! should do meta validation...meta should has an index...
 // value: original data `index` value
@@ -98,11 +100,6 @@ class IntegerBufferSet<Meta = any> {
     return this._bufferSize;
   }
 
-  isThresholdMeta(meta) {
-    if (typeof meta === 'number' && meta > thresholdNumber) return true;
-    return false;
-  }
-
   setIsOnTheFlyFull(val: any) {
     if (val != null) {
       const data = this._onTheFlyIndices.filter((v) => v != null);
@@ -151,7 +148,7 @@ class IntegerBufferSet<Meta = any> {
   getMetaIndex(meta: Meta) {
     try {
       if (meta == null) return -1;
-      if (this.isThresholdMeta(meta)) return -1;
+      if (assertThresholdNumber(meta)) return -1;
       if (this._indexExtractor) return this._indexExtractor(meta);
       return this._metaToIndexMap.get(meta);
     } catch (err) {
@@ -196,12 +193,20 @@ class IntegerBufferSet<Meta = any> {
     return newPosition;
   }
 
-  getMinValue() {
-    return this._smallValues.peek()?.value;
+  _peek(heap: Heap) {
+    return heap.peek()?.value;
   }
 
-  getMaxValue() {
-    return this._largeValues.peek()?.value;
+  _getMinValue() {
+    return this._peek(this._smallValues);
+  }
+
+  _getMaxValue() {
+    return this._peek(this._largeValues);
+  }
+
+  _push(heap: Heap, element: HeapItem) {
+    heap.push(element);
   }
 
   getFliedPosition(newIndex: number, safeRange: SafeRange) {
@@ -276,7 +281,6 @@ class IntegerBufferSet<Meta = any> {
       });
     } else {
       this._cleanHeaps();
-      // console.log('commeit ---')
       position = this.commitPosition({
         newIndex,
         meta,
@@ -333,11 +337,10 @@ class IntegerBufferSet<Meta = any> {
 
     let indexToReplace;
 
-    const minValue = this._smallValues.peek()!.value;
-    const maxValue = this._largeValues.peek()!.value;
+    const minValue = this._getMinValue();
+    const maxValue = this._getMaxValue();
 
-    // console.log('mathc ', maxValue, maxValue > thresholdNumber)
-    if (maxValue > thresholdNumber) {
+    if (assertThresholdNumber(maxValue)) {
       indexToReplace = maxValue;
       this._largeValues.pop();
       const replacedMeta = this._indexToMetaMap.get(indexToReplace);
@@ -483,16 +486,16 @@ class IntegerBufferSet<Meta = any> {
         const targetIndex = this.getMetaIndex(meta);
         // which means source data has changed. such as one element has been deleted
         if (
-          !this.isThresholdMeta(meta) &&
+          !assertThresholdNumber(meta) &&
           meta != this.getIndexMeta(targetIndex) &&
           !retry
         ) {
           return this.shuffle(options);
         }
-        if (meta != null && !this.isThresholdMeta(meta)) {
+        if (meta != null && !assertThresholdNumber(meta)) {
           const element = { position: idx, value: targetIndex };
-          smallValues.push(element);
-          largeValues.push(element);
+          this._push(smallValues, element);
+          this._push(largeValues, element);
           metaToPositionMap.set(meta, idx);
           indexToMetaMap.set(targetIndex, meta);
           metaToIndexMap.set(meta, targetIndex);
@@ -527,8 +530,8 @@ class IntegerBufferSet<Meta = any> {
   _pushToHeaps(position: number, value: number) {
     const element = { position, value };
     // We can reuse the same object in both heaps, because we don't mutate them
-    this._smallValues.push(element);
-    this._largeValues.push(element);
+    this._push(this._smallValues, element);
+    this._push(this._largeValues, element);
   }
 
   _setMetaPosition(meta: Meta, position: number) {
@@ -643,8 +646,8 @@ class IntegerBufferSet<Meta = any> {
       }
 
       const element = { position, value };
-      smallValues.push(element);
-      largeValues.push(element);
+      this._push(smallValues, element);
+      this._push(largeValues, element);
       if (value > thresholdNumber) {
         // @ts-ignore
         this._setMetaPosition(value, position);
@@ -652,9 +655,6 @@ class IntegerBufferSet<Meta = any> {
         this._setMetaIndex(value, value);
       }
     }
-
-    // this._largeValues.peek().value;
-
     this._smallValues = smallValues;
     this._largeValues = largeValues;
   }
