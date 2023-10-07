@@ -35,7 +35,7 @@ class FixedBuffer {
   }
 
   place(index: number, safeRange: SafeRange) {
-    this._bufferSet.getPosition(index, safeRange);
+    return this._bufferSet.getPosition(index, safeRange);
   }
 
   getMaxValue() {
