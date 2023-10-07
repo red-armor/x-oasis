@@ -70,19 +70,9 @@ class IntegerBufferSet<Meta = any> {
 
     this._type = type;
 
-    /**
-     * this._indexToMetaMap is used to find the prev meta when finding a position for index.
-     */
-    this._indexToMetaMap = new Map();
-    this._metaToPositionMap = new Map();
-    this._positionToMetaList = [];
-    this._metaToIndexMap = new Map();
-    this._onTheFlyIndices = [];
+    this.initialize();
 
     this._bufferSize = bufferSize;
-
-    this._smallValues = new Heap([], this._smallerComparator);
-    this._largeValues = new Heap([], this._greaterComparator);
 
     this.getNewPositionForIndex = this.getNewPositionForIndex.bind(this);
     this.getIndexPosition = this.getIndexPosition.bind(this);
@@ -96,6 +86,21 @@ class IntegerBufferSet<Meta = any> {
     this._lastUpdatedMS = this._loopMS;
   }
 
+  initialize() {
+    const { smallValues, largeValues } = this.createEmptyHeaps();
+    this._smallValues = smallValues;
+    this._largeValues = largeValues;
+    this._positionToMetaList = [];
+    /**
+     * this._indexToMetaMap is used to find the prev meta when finding a position for index.
+     */
+    this._indexToMetaMap = new Map();
+    this._metaToPositionMap = new Map();
+    this._metaToIndexMap = new Map();
+    this._onTheFlyIndices = [];
+    this._isOnTheFlyFull = false;
+  }
+
   getType() {
     return this._type;
   }
@@ -104,13 +109,14 @@ class IntegerBufferSet<Meta = any> {
     return this._bufferSize;
   }
 
-  reset() {}
+  reset() {
+    this.initialize();
+  }
 
   setIsOnTheFlyFull(val: any) {
     if (val != null) {
       const data = this._onTheFlyIndices.filter((v) => v != null);
       this._isOnTheFlyFull = data.length === this._bufferSize;
-      // console.log('fly ', this._isOnTheFlyFull, data.length, this._bufferSize);
     }
   }
 
@@ -135,7 +141,7 @@ class IntegerBufferSet<Meta = any> {
     return null;
   }
 
-  initialize() {
+  createEmptyHeaps() {
     return {
       smallValues: new Heap([], this._smallerComparator),
       largeValues: new Heap([], this._greaterComparator),
@@ -523,7 +529,7 @@ class IntegerBufferSet<Meta = any> {
   ) {
     try {
       const { retry, fallback } = options;
-      const { smallValues, largeValues } = this.initialize();
+      const { smallValues, largeValues } = this.createEmptyHeaps();
       const indices = new Array(this._positionToMetaList.length);
       const metaToPositionMap = new Map();
       const indexToMetaMap = new Map();
@@ -676,7 +682,7 @@ class IntegerBufferSet<Meta = any> {
     }
   }
   _recreateHeaps() {
-    const { smallValues, largeValues } = this.initialize();
+    const { smallValues, largeValues } = this.createEmptyHeaps();
     for (
       let position = 0;
       position < this._positionToMetaList.length;
