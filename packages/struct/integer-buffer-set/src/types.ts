@@ -34,3 +34,9 @@ export type BufferResultToken = {
   targetIndex: number;
   recyclerKey: string;
 };
+
+export type BufferIndicesItem<T = any> = {
+  meta: T;
+  targetIndex: number;
+  recyclerKey: string;
+};

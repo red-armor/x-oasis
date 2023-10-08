@@ -11,10 +11,11 @@ import {
   MetaToIndexMap,
   MetaToPositionMap,
   IndexToMetaMap,
+  BufferIndicesItem,
 } from './types';
 
 const defaultMetaExtractor = (value) => value;
-export const defaultBufferSize = 10;
+const defaultBufferSize = 10;
 const thresholdNumber = Number.MAX_SAFE_INTEGER - 100000;
 const assertThresholdNumber = (val: any) =>
   typeof val === 'number' && val > thresholdNumber;
@@ -526,11 +527,13 @@ class IntegerBufferSet<Meta = any> {
       retry: false,
       fallback: false,
     }
-  ) {
+  ): Array<BufferIndicesItem<Meta>> {
     try {
       const { retry, fallback } = options;
       const { smallValues, largeValues } = this.createEmptyHeaps();
-      const indices = new Array(this._positionToMetaList.length);
+      const indices = new Array(this._positionToMetaList.length) as Array<
+        BufferIndicesItem<Meta>
+      >;
       const metaToPositionMap = new Map();
       const indexToMetaMap = new Map();
       const metaToIndexMap = new Map();
