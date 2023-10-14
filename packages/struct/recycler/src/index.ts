@@ -1,11 +1,12 @@
 import IntegerBufferSet from '@x-oasis/integer-buffer-set';
-import { OnProcess, RecyclerProps } from './types';
+import { OnRecyclerProcess, RecyclerProps, SafeRange } from './types';
 import {
   DEFAULT_RECYCLER_TYPE,
   RECYCLER_BUFFER_SIZE,
   RECYCLER_RESERVED_BUFFER_PER_BATCH,
   RECYCLER_THRESHOLD_INDEX_VALUE,
 } from './common';
+export { OnRecyclerProcess, RecyclerProps };
 
 class Recycler {
   private _queue: Array<IntegerBufferSet> = [];
@@ -85,14 +86,11 @@ class Recycler {
     /**
      * index in range should not be recycled
      */
-    safeRange: {
-      startIndex: number;
-      endIndex: number;
-    };
+    safeRange: SafeRange;
     startIndex: number;
     maxCount: number;
     step?: number;
-    onProcess?: OnProcess;
+    onProcess?: OnRecyclerProcess;
   }) {
     const { startIndex, safeRange, step = 1, maxCount, onProcess } = props;
     let count = 0;
