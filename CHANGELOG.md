@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.32](https://github.com/ryuever/x-oasis/compare/v0.1.31...v0.1.32) (2023-10-14)
+
+
+### Features
+
+* add types ([#14](https://github.com/ryuever/x-oasis/issues/14)) ([2ebae21](https://github.com/ryuever/x-oasis/commit/2ebae21e1dc54e2e53b47b460a5b62a522ceb691))
+
+
+
 ## [0.1.31](https://github.com/ryuever/x-oasis/compare/v0.1.30...v0.1.31) (2023-10-07)
 
 
