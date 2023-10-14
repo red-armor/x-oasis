@@ -15,7 +15,7 @@ import {
 } from './types';
 
 const defaultMetaExtractor = (value) => value;
-const defaultBufferSize = 10;
+export const defaultBufferSize = 10;
 const thresholdNumber = Number.MAX_SAFE_INTEGER - 100000;
 const assertThresholdNumber = (val: any) =>
   typeof val === 'number' && val > thresholdNumber;
