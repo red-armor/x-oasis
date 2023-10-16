@@ -1,5 +1,5 @@
 import IntegerBufferSet from '@x-oasis/integer-buffer-set';
-import { OnRecyclerProcess, RecyclerProps, SafeRange } from './types';
+import { OnRecyclerProcess, RecyclerProps, SafeRange, ItemMeta } from './types';
 import {
   DEFAULT_RECYCLER_TYPE,
   RECYCLER_BUFFER_SIZE,
@@ -23,11 +23,13 @@ class Recycler {
   private _metaExtractor: (index: number) => any;
   private _indexExtractor: (meta: any) => number;
   private _getType: (index: number) => string;
+  private _getMetaType: (meta: ItemMeta) => string;
 
   constructor(props?: RecyclerProps) {
     const {
       getType,
       metaExtractor,
+      getMetaType,
       indexExtractor,
       recyclerTypes = [],
       recyclerBufferSize = RECYCLER_BUFFER_SIZE,
@@ -38,6 +40,7 @@ class Recycler {
     this._metaExtractor = metaExtractor;
     this._indexExtractor = indexExtractor;
     this._getType = getType;
+    this._getMetaType = getMetaType;
     this._recyclerBufferSize = recyclerBufferSize;
     this._thresholdIndexValue = thresholdIndexValue;
     this._recyclerReservedBufferPerBatch = recyclerReservedBufferPerBatch;
@@ -66,6 +69,7 @@ class Recycler {
     if (index !== -1) return this._queue[index];
     const buffer = new IntegerBufferSet({
       type,
+      getMetaType: this._getMetaType,
       metaExtractor: this._metaExtractor,
       indexExtractor: this._indexExtractor,
       bufferSize: this._recyclerBufferSize,

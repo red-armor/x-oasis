@@ -5,6 +5,7 @@ import returnHook, { ReturnHook } from '@x-oasis/return-hook';
 import {
   HeapItem,
   SafeRange,
+  GetMetaType,
   MetaExtractor,
   IndexExtractor,
   IntegerBufferSetProps,
@@ -58,11 +59,13 @@ class IntegerBufferSet<Meta = any> {
 
   private _loopMS: number;
   private _lastUpdatedMS: number;
+  private _getMetaType: GetMetaType<Meta>;
 
   constructor(props: IntegerBufferSetProps<Meta> = {}) {
     const {
       type = 'default_buffer',
       indexExtractor,
+      getMetaType,
       bufferSize = defaultBufferSize,
       metaExtractor = defaultMetaExtractor,
     } = props;
@@ -70,6 +73,7 @@ class IntegerBufferSet<Meta = any> {
     this._indexExtractor = indexExtractor;
 
     this._type = type;
+    this._getMetaType = getMetaType;
 
     this.initialize();
 
@@ -463,7 +467,7 @@ class IntegerBufferSet<Meta = any> {
       const meta = this._onTheFlyIndices[idx] || this._positionToMetaList[idx];
       // console.log('ix ', idx,this.getMetaIndex(meta) )
       const targetIndex = this.getMetaIndex(meta);
-      indices[idx] = targetIndex;
+      if (targetIndex >= 0) indices[idx] = targetIndex;
     }
 
     // console.log(
@@ -550,7 +554,11 @@ class IntegerBufferSet<Meta = any> {
         ) {
           return this.shuffle(options);
         }
-        if (meta != null && !assertThresholdNumber(meta)) {
+        if (
+          meta != null &&
+          !assertThresholdNumber(meta) &&
+          (!this._getMetaType || this._getMetaType(meta) === this._type)
+        ) {
           const item = { position: idx, value: targetIndex };
           this._push(smallValues, item);
           this._push(largeValues, item);

@@ -15,6 +15,7 @@ export type IndexExtractor<T> = (meta: T) => number;
 export type IntegerBufferSetProps<T> = {
   type?: string;
   bufferSize?: number;
+  getMetaType?: GetMetaType<T>;
   metaExtractor?: MetaExtractor<T>;
   indexExtractor?: IndexExtractor<T>;
 };
@@ -40,3 +41,5 @@ export type BufferIndicesItem<T = any> = {
   targetIndex: number;
   recyclerKey: string;
 };
+
+export type GetMetaType<T> = (meta: T) => string;

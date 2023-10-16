@@ -6,6 +6,7 @@ export type RecyclerProps = {
   metaExtractor?: (index: number) => ItemMeta;
   indexExtractor?: (meta: any) => number;
   getType?: (index: number) => string;
+  getMetaType?: (meta: ItemMeta) => string;
 };
 
 export type SafeRange = {
