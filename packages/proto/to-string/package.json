@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/to-string",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "to-string function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

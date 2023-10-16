@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.1.33](https://github.com/ryuever/x-oasis/compare/v0.1.32...v0.1.33) (2023-10-16)
+
+
+### Bug Fixes
+
+* IntegerBufferSet testing error ([b0b4641](https://github.com/ryuever/x-oasis/commit/b0b4641249edde1b5d80bc28a3dc78c88762743d))
+
+
+### Features
+
+* add `getMetaType` ([9c9d64c](https://github.com/ryuever/x-oasis/commit/9c9d64c8905e3480c22df15cdcfc2e6ad95591f6))
+
+
+
 ## [0.1.32](https://github.com/ryuever/x-oasis/compare/v0.1.31...v0.1.32) (2023-10-14)
 
 
