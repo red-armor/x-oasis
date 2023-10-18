@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.34](https://github.com/ryuever/x-oasis/compare/v0.1.33...v0.1.34) (2023-10-18)
+
+
+### Features
+
+* add lots lib ([715d913](https://github.com/ryuever/x-oasis/commit/715d913ca5f3e015e3b0b6e3d2dd4d47648ae2e5))
+
+
+
 ## [0.1.33](https://github.com/ryuever/x-oasis/compare/v0.1.32...v0.1.33) (2023-10-16)
 
 
