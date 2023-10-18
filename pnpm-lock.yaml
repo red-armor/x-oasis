@@ -134,6 +134,24 @@ importers:
     devDependencies:
       tsdx: 0.14.1
 
+  packages/dom/bind-events:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/dom/env:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/dom/find-parent-element:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
   packages/error/invariant:
     specifiers:
       tsdx: ^0.14.1
@@ -152,6 +170,18 @@ importers:
       tsdx: ^0.14.1
     dependencies:
       '@x-oasis/is-object': link:../../assertion/is-object
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/functional/find-last-index:
+    specifiers:
+      tsdx: ^0.14.1
+    devDependencies:
+      tsdx: 0.14.1
+
+  packages/functional/get-map-key-by-value:
+    specifiers:
+      tsdx: ^0.14.1
     devDependencies:
       tsdx: 0.14.1
 

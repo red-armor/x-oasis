@@ -8,7 +8,7 @@ type Iter<T extends Array<any> | { [key: string]: any }> = T extends Array<any>
   ? EachObject<T>
   : never;
 
-export function each<T>(obj: T, iter: Iter<T>) {
+export default function each<T>(obj: T, iter: Iter<T>) {
   if (Array.isArray(obj)) {
     (obj as Array<any>).forEach((entry, index) =>
       (iter as EachArray<T>)(index, entry, obj)
