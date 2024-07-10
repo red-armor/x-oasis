@@ -9,7 +9,8 @@
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
     "test": "vitest",
-    "compile": "tsc -p tsconfig.build.json"
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublish": "npm run build"
   },
   "author": "",
   "license": "ISC",
