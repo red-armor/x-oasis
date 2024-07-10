@@ -7,9 +7,6 @@
     "type": "git",
     "url": "git+https://github.com/ryuever/x-oasis.git"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "clean": "pnpm run -r clean",
     "build": "pnpm run -r build",
