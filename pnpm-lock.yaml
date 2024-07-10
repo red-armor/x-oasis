@@ -132,7 +132,7 @@ importers:
   packages/comparison/shallow-equal:
     dependencies:
       '@x-oasis/is':
-        specifier: workspace:^0.1.19
+        specifier: workspace:*
         version: link:../../assertion/is
     devDependencies:
       tsdx:

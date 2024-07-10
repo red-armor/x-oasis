@@ -17,6 +17,6 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
-    "@x-oasis/is": "workspace:^0.1.19"
+    "@x-oasis/is": "workspace:*"
   }
 }
