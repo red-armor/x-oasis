@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.1.35](https://github.com/ryuever/x-oasis/compare/v0.1.34...v0.1.35) (2024-07-10)
+
+
+### Features
+
+* add inBoundingRect ([b86d20d](https://github.com/ryuever/x-oasis/commit/b86d20d2c6f0387cd2e3fa9a4535f9f0e46c45e8))
+* update color ([e5ec56b](https://github.com/ryuever/x-oasis/commit/e5ec56bb418b2f23ef854d61e8a8fbc52bbfb594))
+
+
+
 ## [0.1.34](https://github.com/ryuever/x-oasis/compare/v0.1.33...v0.1.34) (2023-10-18)
 
 
