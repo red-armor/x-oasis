@@ -3,8 +3,8 @@ import { rgbConvert, rgbaString } from './rgb';
 // https://github.com/d3/d3-interpolate#interpolateRgb
 // https://github.com/d3/d3-interpolate/blob/main/src/rgb.js
 export function interpolateRgb(a: string, b: string) {
-  const rgba = rgbConvert(a);
   const rgbb = rgbConvert(b);
+  const rgba = rgbConvert(a);
 
   return (number: number) => {
     const n = Math.max(Math.min(1, number), 0);
