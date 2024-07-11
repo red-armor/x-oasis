@@ -16,7 +16,6 @@ defaults:
 jobs:
   changelog:
     name: Changelog PR or Release
-    if: ${{ github.repository_owner == 'withastro' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
