@@ -1,141 +1,54 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
+  merge_group:
   pull_request:
     paths-ignore:
-      - '.vscode/**'
+      - ".vscode/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
 
-# Automatically cancel in-progress actions on the same branch
+# Automatically cancel older in-progress jobs on the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
   cancel-in-progress: true
-
 defaults:
   run:
     shell: bash
 
 jobs:
-  # Build installs all devDependencies and runs our full build pipeline.
-  # We upload all `dist/` artifacts to GitHub, which can be shared by all dependent jobs.
+  # Build primes out Turbo build cache and pnpm cache
   build:
-    name: Build Packages
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v2.2.1
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build Packages
-        run: pnpm run build
-
-      - name: Upload Package Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: artifacts
-          path: |
-            packages/*/dist/**
-            packages/*/*/dist/**
-            packages/webapi/mod.js
-            packages/webapi/mod.js.map
-          if-no-files-found: error
-
-  smoke:
-    name: 'Test (Smoke) ${{ matrix.os }}'
+    name: "Build: ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 3
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
-    needs:
-      - build
+        OS: [ubuntu-latest, windows-latest]
+        NODE_VERSION: [18]
+      fail-fast: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-
-      - name: Update submodules
-        run: git submodule update --remote
+        uses: actions/checkout@v4
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2.2.1
+        uses: pnpm/action-setup@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Setup node@${{ matrix.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          node-version: 14
-          cache: 'pnpm'
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v3
-
-      - name: Extract Artifacts
-        run: ./.github/extract-artifacts.sh
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Test
-        run: pnpm run test:smoke
-
-      - name: Memory Leak Test
-        run: |
-          node ./scripts/memory/mk.js
-          node --expose-gc ./scripts/memory/index.js --ci
-
-
-  # Changelog can only run _after_ build.
-  # We download all `dist/` artifacts from GitHub to skip the build process.
-  changelog:
-    name: Changelog PR or Release
-    if: ${{ (github.ref_name == 'main' || github.head_ref == 'next') && github.repository_owner == 'withastro' }}
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v2.2.1
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'pnpm'
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v3
-
-      - name: Extract Artifacts
-        run: ./.github/extract-artifacts.sh
+          node-version: ${{ matrix.NODE_VERSION }}
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          # Note: pnpm install after versioning is necessary to refresh lockfile
-          version: pnpm run version
-          publish: pnpm exec changeset publish
-          commit: '[ci] release'
-          title: '[ci] release'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Only build in ubuntu as windows can share the build cache.
+      # Also only build in core repo as forks don't have access to the Turbo cache.
+      - name: Build Packages
+        if: ${{ matrix.os == 'ubuntu-latest' && github.repository_owner == 'withastro' }}
+        run: pnpm run build
