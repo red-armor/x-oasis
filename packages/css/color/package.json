@@ -20,5 +20,8 @@
   "license": "ISC",
   "devDependencies": {
     "tsdx": "^0.14.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
