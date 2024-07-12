@@ -1,5 +1,11 @@
 # @x-oasis/color
 
+## 0.1.39
+
+### Patch Changes
+
+- a8317d0: update color
+
 ## 0.1.38
 
 ### Patch Changes
