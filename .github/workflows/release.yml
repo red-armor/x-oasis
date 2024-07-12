@@ -47,15 +47,15 @@ jobs:
         run: pnpm install
 
       - name: Build Packages
-        run: turbo run build
+        run: pnpm turbo run build
 
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
-          version: turbo run version
-          publish: turbo changeset publish
+          version: pnpm turbo run version
+          publish: pnpm turbo changeset publish
           commit: "[ci] release"
           title: "[ci] release"
         env:
