@@ -54,8 +54,8 @@ jobs:
         uses: changesets/action@v1
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
-          version: pnpm turbo run version
-          publish: pnpm turbo changeset publish
+          version: pnpm run version
+          publish: pnpm changeset publish
           commit: "[ci] release"
           title: "[ci] release"
         env:
