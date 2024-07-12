@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import each from '../src';
+import each from '../';
 
 test('each', async () => {
   const array = [6.1, 4.2, 6.3];
