@@ -22,6 +22,9 @@
   "devDependencies": {
     "tsdx": "^0.14.1"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@x-oasis/heap": "workspace:*",
     "@x-oasis/invariant": "workspace:^0.1.19",

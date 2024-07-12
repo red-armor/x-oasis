@@ -16,6 +16,9 @@
     "test": "vitest",
     "compile": "tsc -p tsconfig.build.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {

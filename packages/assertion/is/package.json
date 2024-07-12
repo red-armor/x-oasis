@@ -12,6 +12,9 @@
     "compile": "tsc -p tsconfig.build.json",
     "prepublish": "npm run build"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
