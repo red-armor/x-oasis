@@ -49,11 +49,13 @@ jobs:
       - name: Build Packages
         run: pnpm turbo run build
 
+      - name: run
+        run: |
+          node ./scripts/log.js
+
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
-        run: |
-          node ./scripts/log.js
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run version
