@@ -1,5 +1,16 @@
 # @x-oasis/is
 
+## 0.2.0
+
+### Minor Changes
+
+- 9ef02f8: third is minor
+
+### Patch Changes
+
+- 2d6eee8: second message
+- 181604c: 'first'
+
 ## 0.1.39
 
 ### Patch Changes
