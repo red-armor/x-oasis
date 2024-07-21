@@ -1,5 +1,14 @@
 # @x-oasis/is
 
+## 0.1.39
+
+### Patch Changes
+
+- 61ecc29: turbo
+- 2129870: is change
+- 27d986c: 'testing'
+- 0fbc80c: add turbo
+
 ## 0.1.38
 
 ### Patch Changes
