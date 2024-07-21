@@ -53,6 +53,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
+          log: node ./scripts/log.js
           # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run version
           publish: pnpm changeset publish
