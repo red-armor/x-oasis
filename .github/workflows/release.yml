@@ -52,9 +52,11 @@ jobs:
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
+        run: |
+          node ./scripts/log.js
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
-          version: node ./scripts/log.js && pnpm run version
+          version: pnpm run version
           publish: pnpm changeset publish
           commit: "[ci] release"
           title: "[ci] release"
