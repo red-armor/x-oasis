@@ -1,5 +1,14 @@
 # @x-oasis/shallow-equal
 
+## 0.1.39
+
+### Patch Changes
+
+- Updated dependencies [2d6eee8]
+- Updated dependencies [181604c]
+- Updated dependencies [9ef02f8]
+  - @x-oasis/is@0.2.0
+
 ## 0.1.38
 
 ### Patch Changes
