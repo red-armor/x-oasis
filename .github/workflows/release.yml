@@ -52,7 +52,7 @@ jobs:
       - name: run
         run: |
           node ./scripts/log.js
-          echo $secrets
+          echo ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release Pull Request or Publish
         id: changesets
