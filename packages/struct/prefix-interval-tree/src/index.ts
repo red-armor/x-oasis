@@ -1,5 +1,3 @@
-// import invariant from 'invariant';
-
 const parent = (node: number) => Math.floor(node / 2);
 
 const createArray = function (size: number) {
@@ -45,7 +43,7 @@ class PrefixIntervalTree {
   private _half: number;
   private _heap: number[];
 
-  private _maxUsefulLength: number;
+  private _actualSize: number;
 
   private _onUpdateItemLayout: Function;
   private _onUpdateIntervalTree: Function;
@@ -69,14 +67,13 @@ class PrefixIntervalTree {
     this._half = ceilLog2(length);
     this._size = this._half;
     this._heap = createArray(2 * this._half);
-    this._maxUsefulLength = 0;
+    this._actualSize = 0;
   }
 
   initWithArray(arr: number[]) {
     this._half = ceilLog2(arr.length);
     this._size = this._half;
     this._heap = createArray(2 * this._half);
-    // this._maxUsefulLength = arr.length;
     let i;
     for (i = 0; i < this._size; ++i) {
       this._heap[this._half + i] = arr[i];
@@ -85,6 +82,7 @@ class PrefixIntervalTree {
     for (i = this._half - 1; i > 0; --i) {
       this._heap[i] = this._heap[2 * i] + this._heap[2 * i + 1];
     }
+    this._actualSize = arr.length;
   }
 
   static uniform(size: number, initialValue: number) {
@@ -100,6 +98,9 @@ class PrefixIntervalTree {
     return PrefixIntervalTree.uniform(size, 0);
   }
 
+  /**
+   * the length should be 2
+   */
   stretch() {
     const nextHeap = createArray(2 * this._half * 2);
     const nextHeapHalf = this._half * 2;
@@ -119,9 +120,71 @@ class PrefixIntervalTree {
     this._heap = nextHeap;
   }
 
+  isValidIndex(index: number) {
+    return typeof index === 'number' && index >= 0 && index < this._actualSize;
+  }
+
+  reflowHeap(startIndex: number, endIndex = this._half * 2 - 2) {
+    const len = Math.log2(this._size);
+
+    Array.from({ length: len }, (v, i) => i).reduce(
+      (acc) => {
+        const { startIndex, endIndex } = acc;
+        const _nextStart = parent(startIndex);
+        const _nextEnd = parent(endIndex);
+
+        for (let idx = _nextStart; idx <= _nextEnd; idx++) {
+          this._heap[idx] = this._heap[2 * idx] + this._heap[2 * idx + 1];
+        }
+
+        return {
+          startIndex: _nextStart,
+          endIndex: _nextEnd,
+        };
+      },
+      {
+        startIndex,
+        endIndex,
+      }
+    );
+  }
+
   remove(index: number) {
     // if typeof index === 'undefined', then it will go into looooooooop
-    if (typeof index !== 'number' || index >= this._maxUsefulLength) return;
+
+    this.batchRemove([index]);
+  }
+
+  batchRemove(indices: number[]) {
+    indices.sort((a, b) => a - b);
+
+    indices.forEach((index) => {
+      if (!this.isValidIndex(index)) return;
+      if (isNaN(index)) {
+        console.warn('Passing a NaN value as interval tree index');
+        return;
+      }
+
+      this._heap.splice(this._half + index, 1);
+      this._heap.push(0);
+      this._actualSize = this._actualSize - 1;
+    });
+
+    this.reflowHeap(indices[0] + this._half);
+    if (typeof this._onUpdateIntervalTree === 'function') {
+      this._onUpdateIntervalTree(this._heap);
+    }
+
+    if (typeof this._onUpdateItemLayout === 'function') {
+      for (let idx = indices[0]; idx < this._half; idx++) {
+        this._onUpdateItemLayout(idx, this.get(idx));
+      }
+    }
+  }
+
+  removeV0(index: number) {
+    // if typeof index === 'undefined', then it will go into looooooooop
+    if (!this.isValidIndex(index)) return;
     if (isNaN(index)) {
       console.warn('Passing a NaN value as interval tree index');
       return;
@@ -130,6 +193,7 @@ class PrefixIntervalTree {
     const nextHeap = createArray(this._half * 2);
     const copy = this._heap.slice(this._half);
     copy.splice(index, 1);
+
     for (let index = this._half; index < this._half * 2; index++) {
       nextHeap[index] = copy[index - this._half] || 0;
     }
@@ -138,16 +202,15 @@ class PrefixIntervalTree {
       nextHeap[index] = nextHeap[2 * index] + nextHeap[2 * index + 1];
     }
 
-    this._maxUsefulLength = this._maxUsefulLength - 1;
+    this._actualSize = this._actualSize - 1;
     this._heap = nextHeap;
   }
 
   set(index: number, value: number) {
-    // if typeof index === 'undefined', then it will go into looooooooop
-    if (typeof index !== 'number') return;
+    if (typeof index !== 'number' || index < 0) return false;
     if (isNaN(index)) {
       console.warn('Passing a NaN value as interval tree index');
-      return;
+      return false;
     }
 
     while (index >= this._half) {
@@ -162,8 +225,8 @@ class PrefixIntervalTree {
       this._heap[node] = this._heap[2 * node] + this._heap[2 * node + 1];
     }
 
-    if (index + 1 > this._maxUsefulLength) {
-      this._maxUsefulLength = index + 1;
+    if (index + 1 > this._actualSize) {
+      this._actualSize = index + 1;
     }
 
     if (typeof this._onUpdateIntervalTree === 'function') {
@@ -173,15 +236,19 @@ class PrefixIntervalTree {
     if (typeof this._onUpdateItemLayout === 'function') {
       this._onUpdateItemLayout(index, value);
     }
+    return true;
   }
 
   getMaxUsefulLength() {
-    return this._maxUsefulLength;
+    return this.getActualSize();
+  }
+
+  getActualSize() {
+    return this._actualSize;
   }
 
   get(index: number) {
     // invariant(index >= 0 && index < this._size, 'Index out of range %s', index);
-
     const node = this._half + index;
     return this._heap[node];
   }
@@ -239,6 +306,7 @@ class PrefixIntervalTree {
 
   /**
    * Returns the sum get(begin) + get(begin + 1) + ... + get(end - 1).
+   * end length is not included
    */
   sum(begin: number, end: number) {
     // invariant(begin <= end, 'Begin must precede end');
@@ -246,8 +314,8 @@ class PrefixIntervalTree {
   }
 
   /**
-   * Returns the smallest i such that 0 <= i <= size and sumUntil(i) <= t, or
-   * -1 if no such i exists.
+   * return the biggest i, sumUntil(i) === t
+   * return the biggest i, subUntil(i) < t
    */
   greatestLowerBound(t: number) {
     if (t < 0) {
@@ -257,14 +325,9 @@ class PrefixIntervalTree {
     let node = 1;
     if (this._heap[node] < t) {
       // not use this._size；this._size always be a big value
-      return Math.max(this._maxUsefulLength - 1, 0);
+      return Math.max(this._actualSize - 1, 0);
     }
 
-    // 这种写法的结果就是，如果中间一个item的length为0的话，那么它会一直往右边查；
-    // 比如初始化的时候是[0, 0, 0, 0, 0, 0, 0, 0]；
-    // 你会发现node最后会是7，this._half为4；最终即使data没有数据，那么它的index算出来的也是
-    // 7 - 4 = 3；所以，考虑到会存在一些item length为0的情况，所以，这个其实是比较合理的方式，
-    // 拿右边的
     while (node < this._half) {
       const leftSum = this._heap[2 * node];
       if (t < leftSum) {
@@ -274,12 +337,13 @@ class PrefixIntervalTree {
         t -= leftSum;
       }
     }
-    return Math.min(node - this._half, this._maxUsefulLength - 1);
+
+    return Math.min(node - this._half, this._actualSize - 1);
   }
 
   /**
-   * Returns the smallest i such that 0 <= i <= size and sumUntil(i) < t, or
-   * -1 if no such i exists.
+   * Return the biggest i, subUntil(i) < t
+   * or -1 if no such i exists.
    */
   greatestStrictLowerBound(t: number) {
     if (t <= 0) {
@@ -288,7 +352,7 @@ class PrefixIntervalTree {
 
     let node = 1;
     if (this._heap[node] < t) {
-      return Math.max(this._maxUsefulLength - 1, 0);
+      return Math.max(this._actualSize - 1, 0);
     }
 
     while (node < this._half) {
@@ -301,7 +365,7 @@ class PrefixIntervalTree {
       }
     }
 
-    return Math.min(node - this._half, this._maxUsefulLength - 1);
+    return Math.min(node - this._half, this._actualSize - 1);
   }
 
   /**
@@ -311,28 +375,27 @@ class PrefixIntervalTree {
    * @returns
    *
    * pending issue:
-   * when item with length list [100, 100, 100, 100, 100].
-   * this.leastStrictUpperBound(330) = 3
-   * this.leastStrictUpperBound(400) = 3 (should be 4....)
+   * when item with length list [100, 0, 100, 0, 0, 100].
+   * then computeRange(100, 200) => { startIndex: 2, endIndex: 6 }
+   *
+   * item index in viewport will be [2, 3, 4, 5], index 6 is not
+   * included just like Array.slice(start, end)
+   *
    */
   computeRange(minOffset: number, maxOffset: number) {
     if (this.getHeap()[1] < minOffset) {
       return {
-        startIndex: this._maxUsefulLength - 1,
-        endIndex: this._maxUsefulLength - 1,
+        startIndex: this._actualSize,
+        endIndex: this._actualSize,
       };
     }
-    const startIndex = this.leastStrictUpperBound(minOffset);
-
-    // end的话，需要把index + 1，这样才能够把自个也加进去
-    const endIndex = Math.min(
-      this.leastStrictUpperBound(maxOffset),
-      Math.max(this._maxUsefulLength - 1, 0)
-    );
 
     return {
-      startIndex: endIndex >= 0 ? Math.max(startIndex, 0) : -1,
-      endIndex,
+      // the biggest item, value <= minOffset
+      startIndex: this.greatestLowerBound(minOffset),
+
+      // the smallest item, value > maxOffset
+      endIndex: this.leastStrictUpperBound(maxOffset),
     };
   }
 
@@ -341,15 +404,15 @@ class PrefixIntervalTree {
    * size + 1 if no such i exists.
    */
   leastUpperBound(t: number) {
-    return this.greatestLowerBound(t) + 1;
+    return this.greatestStrictLowerBound(t) + 1;
   }
 
   /**
-   * Returns the smallest i such that 0 <= i <= size and t < sumUntil(i), or
+   * Returns the smallest i, t < sumUntil(i), it should be used as range end
    * size + 1 if no such i exists.
    */
   leastStrictUpperBound(t: number) {
-    return this.greatestStrictLowerBound(t);
+    return this.greatestLowerBound(t) + 1;
   }
 }
 
