@@ -30,6 +30,12 @@ const intervalTree = new PrefixIntervalTree(10)
 
 Total interval tree array length is power of `2`, such as 8, 16, 32; and the input length value means the half size, which means `10` will result in `2^4 = 16` first, then patch on interval tree, it will be total `2 * 16 = 32`.
 
+## getHeap
+
+```ts
+getHeap(): number[]
+```
+
 ## getActualSize
 
 Basically, interval tree's size is this._half, they all have default `0` value. when you want to get the actual size which has been set with value, then call this method.
