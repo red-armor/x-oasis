@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.2
+
+### Patch Changes
+
+- 9380f09: trigger publish
+
 ## 0.2.1
 
 ### Patch Changes
