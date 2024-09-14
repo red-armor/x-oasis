@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.3
+
+### Patch Changes
+
+- 2316d33: fix corner case
+
 ## 0.2.2
 
 ### Patch Changes
