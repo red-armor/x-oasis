@@ -318,14 +318,14 @@ class PrefixIntervalTree {
    * return the biggest i, subUntil(i) < t
    */
   greatestLowerBound(t: number) {
-    if (t < 0) {
+    if (t < 0 || !this._actualSize) {
       return -1;
     }
 
     let node = 1;
     if (this._heap[node] < t) {
       // not use this._size；this._size always be a big value
-      return Math.max(this._actualSize - 1, 0);
+      return this._actualSize;
     }
 
     while (node < this._half) {
@@ -338,7 +338,7 @@ class PrefixIntervalTree {
       }
     }
 
-    return Math.min(node - this._half, this._actualSize - 1);
+    return Math.min(node - this._half, this._actualSize);
   }
 
   /**
@@ -346,13 +346,13 @@ class PrefixIntervalTree {
    * or -1 if no such i exists.
    */
   greatestStrictLowerBound(t: number) {
-    if (t <= 0) {
+    if (t <= 0 || !this._actualSize) {
       return -1;
     }
 
     let node = 1;
     if (this._heap[node] < t) {
-      return Math.max(this._actualSize - 1, 0);
+      return this._actualSize;
     }
 
     while (node < this._half) {
@@ -365,7 +365,7 @@ class PrefixIntervalTree {
       }
     }
 
-    return Math.min(node - this._half, this._actualSize - 1);
+    return Math.min(node - this._half, this._actualSize);
   }
 
   /**
@@ -404,7 +404,7 @@ class PrefixIntervalTree {
    * size + 1 if no such i exists.
    */
   leastUpperBound(t: number) {
-    return this.greatestStrictLowerBound(t) + 1;
+    return Math.min(this.greatestStrictLowerBound(t) + 1, this._actualSize);
   }
 
   /**
@@ -412,7 +412,7 @@ class PrefixIntervalTree {
    * size + 1 if no such i exists.
    */
   leastStrictUpperBound(t: number) {
-    return this.greatestLowerBound(t) + 1;
+    return Math.min(this.greatestLowerBound(t) + 1, this._actualSize);
   }
 }
 

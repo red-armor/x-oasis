@@ -180,6 +180,53 @@ describe('leastStrictUpperBound', () => {
     });
   });
 
+  it('computeRange -- 0 values', () => {
+    const intervalTree = new PrefixIntervalTree(10);
+    expect(intervalTree.getMaxUsefulLength()).toBe(0);
+    expect(intervalTree.greatestLowerBound(0)).toBe(-1);
+    expect(intervalTree.greatestLowerBound(1)).toBe(-1);
+
+    expect(intervalTree.computeRange(0, 200)).toEqual({
+      startIndex: -1,
+      endIndex: 0,
+    });
+    intervalTree.set(4, 10);
+    expect(intervalTree.getMaxUsefulLength()).toBe(5);
+    expect(intervalTree.computeRange(0, 200)).toEqual({
+      startIndex: 4,
+      endIndex: 5,
+    });
+  });
+
+  it('computeRange -- 0 values(set item)', () => {
+    const intervalTree = new PrefixIntervalTree(10);
+    intervalTree.set(0, 0);
+    intervalTree.set(1, 0);
+    intervalTree.set(2, 0);
+    intervalTree.set(3, 0);
+    intervalTree.set(4, 0);
+    intervalTree.set(5, 0);
+    expect(intervalTree.getHeap()).toEqual([
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0,
+    ]);
+
+    expect(intervalTree.getMaxUsefulLength()).toBe(6);
+    expect(intervalTree.greatestLowerBound(0)).toBe(6);
+    expect(intervalTree.greatestLowerBound(1)).toBe(6);
+
+    expect(intervalTree.computeRange(0, 200)).toEqual({
+      startIndex: 6,
+      endIndex: 6,
+    });
+    intervalTree.set(4, 10);
+    expect(intervalTree.getMaxUsefulLength()).toBe(6);
+    expect(intervalTree.computeRange(0, 200)).toEqual({
+      startIndex: 4,
+      endIndex: 6,
+    });
+  });
+
   it('computeRange', () => {
     const intervalTree = new PrefixIntervalTree(4);
     intervalTree.set(0, 100);
