@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.4
+
+### Patch Changes
+
+- 4562ec4: dry set
+
 ## 0.2.3
 
 ### Patch Changes
