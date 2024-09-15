@@ -20,6 +20,13 @@ function ceilLog2(x: number) {
   return y;
 }
 
+type OperationType = 'set' | 'remove';
+
+type Operation = {
+  type: OperationType;
+  value: any;
+};
+
 /**
  * A prefix interval tree stores an numeric array and the partial sums of that
  * array. It is optimized for updating the values of the array without
@@ -48,8 +55,16 @@ class PrefixIntervalTree {
   private _onUpdateItemLayout: Function;
   private _onUpdateIntervalTree: Function;
 
+  private _affectedIndicesMap: {
+    [key: string]: Operation;
+  } = {};
+  private _affectedMinimalIndex: number = undefined;
+  private _cachedSumUntilValues: {
+    [key: string]: number;
+  } = {};
+
   constructor(
-    xs: number[] | number,
+    xs: number[] | number = 10,
     opts?: {
       onUpdateItemLayout?: Function;
       onUpdateIntervalTree?: Function;
@@ -100,6 +115,7 @@ class PrefixIntervalTree {
 
   /**
    * the length should be 2
+   * it will cause calculation of
    */
   stretch() {
     const nextHeap = createArray(2 * this._half * 2);
@@ -120,14 +136,35 @@ class PrefixIntervalTree {
     this._heap = nextHeap;
   }
 
+  indexKey(index: number) {
+    return `${index}`;
+  }
+
+  resolveKeyIndex(key: string) {
+    return parseInt(key, 10);
+  }
+
   isValidIndex(index: number) {
     return typeof index === 'number' && index >= 0 && index < this._actualSize;
   }
 
-  reflowHeap(startIndex: number, endIndex = this._half * 2 - 2) {
-    const len = Math.log2(this._size);
+  reflowDirectParent(index: number) {
+    this.resetAffected();
+    let node = this._half + index;
 
-    Array.from({ length: len }, (v, i) => i).reduce(
+    node = parent(node);
+    for (; node !== 0; node = parent(node)) {
+      this._heap[node] = this._heap[2 * node] + this._heap[2 * node + 1];
+    }
+  }
+
+  // recalculate parent value from startIndex to endIndex
+  reflowHeap(_startIndex: number, endIndex = this._half * 2 - 2) {
+    this.resetAffected();
+    const depth = Math.log2(this._size);
+    const startIndex = _startIndex + this._half;
+
+    Array.from({ length: depth }, (v, i) => i).reduce(
       (acc) => {
         const { startIndex, endIndex } = acc;
         const _nextStart = parent(startIndex);
@@ -149,31 +186,40 @@ class PrefixIntervalTree {
     );
   }
 
+  /**
+   *
+   * @param index index to remove
+   * @returns
+   *
+   * update heap only, but not recalculate interval tree value
+   */
+  dryRemove(index: number) {
+    if (!this.isValidIndex(index)) return;
+    if (isNaN(index)) {
+      console.warn('Passing a NaN value as interval tree index');
+      return;
+    }
+
+    this._heap.splice(this._half + index, 1);
+    this._heap.push(0);
+    this._actualSize = this._actualSize - 1;
+
+    this.updateAffectedIndices(index, 'remove');
+  }
+
   remove(index: number) {
     // if typeof index === 'undefined', then it will go into looooooooop
 
-    this.batchRemove([index]);
+    this.removeIndices([index]);
   }
 
-  batchRemove(indices: number[]) {
+  removeIndices(indices: number[]) {
     indices.sort((a, b) => a - b);
 
-    indices.forEach((index) => {
-      if (!this.isValidIndex(index)) return;
-      if (isNaN(index)) {
-        console.warn('Passing a NaN value as interval tree index');
-        return;
-      }
+    indices.forEach((index) => this.dryRemove(index));
 
-      this._heap.splice(this._half + index, 1);
-      this._heap.push(0);
-      this._actualSize = this._actualSize - 1;
-    });
-
-    this.reflowHeap(indices[0] + this._half);
-    if (typeof this._onUpdateIntervalTree === 'function') {
-      this._onUpdateIntervalTree(this._heap);
-    }
+    this.reflowHeap(indices[0]);
+    this.onUpdateIntervalTree();
 
     if (typeof this._onUpdateItemLayout === 'function') {
       for (let idx = indices[0]; idx < this._half; idx++) {
@@ -206,7 +252,34 @@ class PrefixIntervalTree {
     this._heap = nextHeap;
   }
 
-  set(index: number, value: number) {
+  resetAffected() {
+    this._affectedIndicesMap = {};
+    this._affectedMinimalIndex = undefined;
+  }
+
+  updateAffectedIndices(index: number, type: OperationType, value?: number) {
+    if (typeof index === 'number') {
+      this._affectedMinimalIndex =
+        typeof this._affectedMinimalIndex === 'number'
+          ? Math.min(this._affectedMinimalIndex, index)
+          : index;
+      this._affectedIndicesMap[this.indexKey(index)] = {
+        value,
+        type,
+      };
+    }
+  }
+
+  onUpdateIntervalTree() {
+    // reset cached value
+    this._cachedSumUntilValues = {};
+
+    if (typeof this._onUpdateIntervalTree === 'function') {
+      this._onUpdateIntervalTree(this._heap);
+    }
+  }
+
+  drySet(index: number, value: number) {
     if (typeof index !== 'number' || index < 0) return false;
     if (isNaN(index)) {
       console.warn('Passing a NaN value as interval tree index');
@@ -217,26 +290,55 @@ class PrefixIntervalTree {
       this.stretch();
     }
 
-    let node = this._half + index;
+    const node = this._half + index;
     this._heap[node] = value;
 
-    node = parent(node);
-    for (; node !== 0; node = parent(node)) {
-      this._heap[node] = this._heap[2 * node] + this._heap[2 * node + 1];
-    }
+    this.updateAffectedIndices(index, 'set', value);
 
     if (index + 1 > this._actualSize) {
       this._actualSize = index + 1;
     }
+    return true;
+  }
 
-    if (typeof this._onUpdateIntervalTree === 'function') {
-      this._onUpdateIntervalTree(this._heap);
-    }
-
+  set(index: number, value: number) {
+    this.drySet(index, value);
+    this.reflowDirectParent(index);
+    this.onUpdateIntervalTree();
     if (typeof this._onUpdateItemLayout === 'function') {
       this._onUpdateItemLayout(index, value);
     }
     return true;
+  }
+
+  applyUpdate() {
+    if (typeof this._affectedMinimalIndex === 'number') {
+      const index = this._affectedMinimalIndex;
+
+      const keys = Object.keys(this._affectedIndicesMap);
+      const hasRemoveItem = keys.some(
+        (key) => this._affectedIndicesMap[key].type === 'remove'
+      );
+
+      if (hasRemoveItem) {
+        return this.reflowHeap(index);
+      }
+
+      const depth = Math.log2(this._size);
+      const itemLength = keys.length;
+
+      const reflowTimes = this._half - index - 1;
+
+      if (depth * itemLength > reflowTimes) {
+        return this.reflowHeap(index);
+      }
+
+      keys.forEach((key) => this.reflowDirectParent(this.resolveKeyIndex(key)));
+
+      this.onUpdateIntervalTree();
+
+      this.resetAffected();
+    }
   }
 
   getMaxUsefulLength() {
@@ -276,6 +378,8 @@ class PrefixIntervalTree {
   sumUntil(end: number) {
     // invariant(end >= 0 && end < this._size + 1, 'Index out of range %s', end);
 
+    if (this._cachedSumUntilValues[`${end}`] != null)
+      return this._cachedSumUntilValues[`${end}`];
     if (end <= 0) {
       return 0;
     }
