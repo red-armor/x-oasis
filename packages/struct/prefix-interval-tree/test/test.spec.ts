@@ -138,6 +138,93 @@ describe('leastStrictUpperBound', () => {
     expect(intervalTree.greatestStrictLowerBound(35)).toBe(1);
   });
 
+  it('dry set', () => {
+    const intervalTree = new PrefixIntervalTree(4);
+    intervalTree.drySet(0, 100);
+    intervalTree.drySet(1, 100);
+    intervalTree.drySet(2, 100);
+    intervalTree.drySet(3, 100);
+    intervalTree.drySet(4, 100);
+    intervalTree.drySet(5, 100);
+    intervalTree.drySet(6, 100);
+    intervalTree.drySet(7, 100);
+    intervalTree.drySet(8, 100);
+    intervalTree.drySet(9, 100);
+
+    // prettier-ignore
+    expect(intervalTree.getHeap()).toEqual([
+                                    0, 800, 
+                  800,                                   0, 
+            400,                 400,               0,          0, 
+         200,     200,      200,        200,     0,      0,    0,    0,
+      100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 0, 0, 0, 0, 0, 0,
+    ]);
+
+    intervalTree.applyUpdate();
+
+    // prettier-ignore
+    expect(intervalTree.getHeap()).toEqual([
+                               0, 1000, 
+                   800,                               200, 
+          400,               400,               200,          0, 
+      200,     200,      200,      200,     200,      0,    0,    0,
+      100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 0, 0, 0, 0, 0, 0,
+    ]);
+
+    intervalTree.drySet(12, 100);
+
+    intervalTree.drySet(14, 30);
+    // prettier-ignore
+    expect(intervalTree.getHeap()).toEqual([
+                                  0, 1000, 
+                      800,                               200, 
+              400,               400,               200,          0, 
+          200,     200,      200,      200,     200,      0,    0,    0,
+      100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 0, 0, 100, 0, 30, 0,
+    ]);
+
+    intervalTree.applyUpdate();
+
+    // prettier-ignore
+    expect(intervalTree.getHeap()).toEqual([
+                                    0, 1130, 
+                        800,                               330, 
+              400,               400,               200,           130, 
+          200,     200,      200,      200,     200,      0,    100,    30,
+      100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 0, 0, 100, 0, 30, 0,
+    ]);
+    expect(intervalTree.getActualSize()).toBe(15);
+
+    intervalTree.dryRemove(8);
+
+    // @ts-ignore
+    expect(intervalTree.getActualSize()).toBe(14);
+
+    intervalTree.applyUpdate();
+
+    // prettier-ignore
+    expect(intervalTree.getHeap()).toEqual([
+                                    0, 1030, 
+                        800,                              230, 
+            400,                  400,              200,          30, 
+        200,      200,      200,       200,     100,   100,    30,    0,
+      100, 100, 100, 100, 100, 100, 100, 100, 100, 0, 0, 100, 0, 30, 0, 0,
+    ]);
+    expect(intervalTree.getActualSize()).toBe(14);
+
+    intervalTree.drySet(2, 40);
+    intervalTree.applyUpdate();
+
+    // prettier-ignore
+    expect(intervalTree.getHeap()).toEqual([
+                                  0, 970, 
+                      740,                              230, 
+            340,                  400,              200,          30, 
+        200,      140,      200,       200,     100,   100,    30,    0,
+      100, 100, 40, 100, 100, 100, 100, 100, 100, 0, 0, 100, 0, 30, 0, 0,
+    ]);
+  });
+
   it('computeRange', () => {
     const intervalTree = new PrefixIntervalTree(4);
     intervalTree.set(0, 100);
@@ -206,9 +293,14 @@ describe('leastStrictUpperBound', () => {
     intervalTree.set(3, 0);
     intervalTree.set(4, 0);
     intervalTree.set(5, 0);
+
+    // prettier-ignore
     expect(intervalTree.getHeap()).toEqual([
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0,
+                           0, 0, 
+                0,                      0, 
+          0,            0,        0,          0, 
+        0,   0,     0,    0,   0,     0,   0,     0, 
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ]);
 
     expect(intervalTree.getMaxUsefulLength()).toBe(6);
@@ -235,8 +327,12 @@ describe('leastStrictUpperBound', () => {
     intervalTree.set(3, 0);
     intervalTree.set(4, 0);
     intervalTree.set(5, 100);
+    // prettier-ignore
     expect(intervalTree.getHeap()).toEqual([
-      0, 300, 200, 100, 100, 100, 100, 0, 100, 0, 100, 0, 0, 100, 0, 0,
+                0, 300, 
+            200,          100, 
+        100,    100,   100,    0, 
+      100, 0, 100, 0, 0, 100, 0, 0,
     ]);
     expect(intervalTree.computeRange(100, 200)).toEqual({
       startIndex: 2,
@@ -360,7 +456,7 @@ describe('testing remove heap index', () => {
     expect(intervalTree.getMaxUsefulLength()).toBe(7);
   });
 
-  it('batch remove', () => {
+  it('remove indices', () => {
     const intervalTree = new PrefixIntervalTree(4);
     intervalTree.set(0, 100);
     intervalTree.set(1, 100);
@@ -373,11 +469,15 @@ describe('testing remove heap index', () => {
     intervalTree.set(8, 100);
     intervalTree.set(9, 100);
 
-    intervalTree.batchRemove([3, 0, 7, 9]);
+    intervalTree.removeIndices([3, 0, 7, 9]);
 
+    // prettier-ignore
     expect(intervalTree.getHeap()).toEqual([
-      0, 700, 700, 0, 400, 300, 0, 0, 200, 200, 200, 100, 0, 0, 0, 0, 100, 100,
-      100, 100, 100, 100, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 700, 
+                        700,                          0, 
+              400,                300,          0,           0, 
+        200,      200,      200,      100,   0,    0,     0,   0, 
+      100, 100, 100, 100, 100, 100, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ]);
     expect(intervalTree.getHeap()[1]).toBe(700);
 
