@@ -25,6 +25,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@x-oasis/integer-buffer-set": "^0.1.35"
+    "@x-oasis/integer-buffer-set": "workspace:*"
   }
 }
