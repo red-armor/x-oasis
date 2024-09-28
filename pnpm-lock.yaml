@@ -343,17 +343,17 @@ importers:
   packages/struct/integer-buffer-set:
     dependencies:
       '@x-oasis/heap':
-        specifier: workspace:*
-        version: link:../heap
+        specifier: ^0.1.35
+        version: 0.1.35
       '@x-oasis/invariant':
-        specifier: workspace:^0.1.19
-        version: link:../../error/invariant
+        specifier: ^0.1.35
+        version: 0.1.35
       '@x-oasis/is-clamped':
-        specifier: workspace:^0.1.19
-        version: link:../../comparison/is-clamped
+        specifier: ^0.1.35
+        version: 0.1.35
       '@x-oasis/return-hook':
-        specifier: workspace:^0.1.19
-        version: link:../../misc/return-hook
+        specifier: ^0.1.35
+        version: 0.1.35
     devDependencies:
       tsdx:
         specifier: ^0.14.1
@@ -1552,6 +1552,18 @@ packages:
 
   '@vitest/utils@0.29.2':
     resolution: {integrity: sha512-F14/Uc+vCdclStS2KEoXJlOLAEyqRhnw0gM27iXw9bMTcyKRPJrQ+rlC6XZ125GIPvvKYMPpVxNhiou6PsEeYQ==}
+
+  '@x-oasis/heap@0.1.35':
+    resolution: {integrity: sha512-KyHhox7rnQNsydBAxNYQltbEFqVKODTupfTCI9qth4dPIwWh6tLtuGL6PBGFXzAPrB/4NMh186E6aE+zoeXBBg==}
+
+  '@x-oasis/invariant@0.1.35':
+    resolution: {integrity: sha512-E2VNNgMXAfmmHWqA29zkap0mpUi4tc3Kq21hq5UYS0IQcweZJvO+KeVCIf9ADAre8cW7Sx5yBLEP6aTlSm1dnw==}
+
+  '@x-oasis/is-clamped@0.1.35':
+    resolution: {integrity: sha512-9NKBqYefUnCpJrA4hc/2//jCjYLVCLrcAIraPH750+88fKjQg6ddXEImvV/+xhz050OJcm4oBq7KaBQo0RWxaw==}
+
+  '@x-oasis/return-hook@0.1.35':
+    resolution: {integrity: sha512-HDg0r86+/gBVkqtDgqrsvCSb8LykNhSpqb5dhEDdgP/ZRdT5FOeZz8XfXGa6Fze1XhbPgS0Dq6Ej2zJaS/FGlA==}
 
   JSONStream@1.3.5:
     resolution: {integrity: sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==}
@@ -6829,6 +6841,14 @@ snapshots:
       picocolors: 1.0.0
       pretty-format: 27.5.1
 
+  '@x-oasis/heap@0.1.35': {}
+
+  '@x-oasis/invariant@0.1.35': {}
+
+  '@x-oasis/is-clamped@0.1.35': {}
+
+  '@x-oasis/return-hook@0.1.35': {}
+
   JSONStream@1.3.5:
     dependencies:
       jsonparse: 1.3.1
@@ -8977,7 +8997,10 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:
