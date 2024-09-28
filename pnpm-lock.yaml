@@ -368,8 +368,8 @@ importers:
   packages/struct/recycler:
     dependencies:
       '@x-oasis/integer-buffer-set':
-        specifier: workspace:*
-        version: link:../integer-buffer-set
+        specifier: ^0.1.35
+        version: 0.1.35
     devDependencies:
       tsdx:
         specifier: ^0.14.1
@@ -1555,6 +1555,9 @@ packages:
 
   '@x-oasis/heap@0.1.35':
     resolution: {integrity: sha512-KyHhox7rnQNsydBAxNYQltbEFqVKODTupfTCI9qth4dPIwWh6tLtuGL6PBGFXzAPrB/4NMh186E6aE+zoeXBBg==}
+
+  '@x-oasis/integer-buffer-set@0.1.35':
+    resolution: {integrity: sha512-TUcJJkL7a99VnxBwlnwljNX8uLMQcUHA59KCn658mfyZYxcvJfTvVIRxdiAx739hRFNgpGBET6Fd1PbdKh27TQ==}
 
   '@x-oasis/invariant@0.1.35':
     resolution: {integrity: sha512-E2VNNgMXAfmmHWqA29zkap0mpUi4tc3Kq21hq5UYS0IQcweZJvO+KeVCIf9ADAre8cW7Sx5yBLEP6aTlSm1dnw==}
@@ -6842,6 +6845,13 @@ snapshots:
       pretty-format: 27.5.1
 
   '@x-oasis/heap@0.1.35': {}
+
+  '@x-oasis/integer-buffer-set@0.1.35':
+    dependencies:
+      '@x-oasis/heap': 0.1.35
+      '@x-oasis/invariant': 0.1.35
+      '@x-oasis/is-clamped': 0.1.35
+      '@x-oasis/return-hook': 0.1.35
 
   '@x-oasis/invariant@0.1.35': {}
 
