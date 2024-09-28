@@ -343,7 +343,7 @@ importers:
   packages/struct/integer-buffer-set:
     dependencies:
       '@x-oasis/heap':
-        specifier: workspace:^0.1.35
+        specifier: link:../heap
         version: link:../heap
       '@x-oasis/invariant':
         specifier: workspace:^0.1.19
@@ -8977,7 +8977,10 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:
