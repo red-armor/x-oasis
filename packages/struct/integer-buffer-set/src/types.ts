@@ -36,8 +36,8 @@ export type BufferResultToken = {
   recyclerKey: string;
 };
 
-export type BufferIndicesItem<T = any> = {
-  meta: T;
+export type BufferIndicesItem<Meta = any> = {
+  meta: Meta;
   targetIndex: number;
   recyclerKey: string;
 };

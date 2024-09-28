@@ -531,7 +531,7 @@ class IntegerBufferSet<Meta = any> {
       retry: false,
       fallback: false,
     }
-  ): Array<BufferIndicesItem<Meta>> {
+  ): BufferIndicesItem<Meta>[] {
     try {
       const { retry, fallback } = options;
       const { smallValues, largeValues } = this.createEmptyHeaps();
@@ -729,3 +729,5 @@ class IntegerBufferSet<Meta = any> {
 }
 
 export default IntegerBufferSet;
+
+export type IndicesItem<ItemMeta = any> = BufferIndicesItem<ItemMeta>;

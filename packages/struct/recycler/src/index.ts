@@ -1,5 +1,5 @@
-import IntegerBufferSet from '@x-oasis/integer-buffer-set';
-import { OnRecyclerProcess, RecyclerProps, SafeRange, ItemMeta } from './types';
+import IntegerBufferSet, { IndicesItem } from '@x-oasis/integer-buffer-set';
+import { OnRecyclerProcess, RecyclerProps, SafeRange } from './types';
 import {
   DEFAULT_RECYCLER_TYPE,
   RECYCLER_BUFFER_SIZE,
@@ -8,8 +8,8 @@ import {
 } from './common';
 export { OnRecyclerProcess, RecyclerProps };
 
-class Recycler {
-  private _queue: Array<IntegerBufferSet> = [];
+class Recycler<ItemMeta = any> {
+  private _queue: IntegerBufferSet<ItemMeta>[] = [];
 
   /**
    * start index
@@ -20,8 +20,8 @@ class Recycler {
    * buffer size, the oversize node will run into recycle strategy
    */
   private _recyclerBufferSize: number;
-  private _metaExtractor: (index: number) => any;
-  private _indexExtractor: (meta: any) => number;
+  private _metaExtractor: (index: number) => ItemMeta;
+  private _indexExtractor: (meta: ItemMeta) => number;
   private _getType: (index: number) => string;
   private _getMetaType: (meta: ItemMeta) => string;
 
@@ -60,14 +60,17 @@ class Recycler {
   }
 
   getIndices() {
-    return this._queue.reduce((acc, cur) => acc.concat(cur.getIndices()), []);
+    return this._queue.reduce<IndicesItem<ItemMeta>[]>(
+      (acc, cur) => acc.concat(cur.getIndices()),
+      []
+    );
   }
 
   addBuffer(type: string) {
     if (!type) return null;
     const index = this._queue.findIndex((buffer) => buffer.getType() === type);
     if (index !== -1) return this._queue[index];
-    const buffer = new IntegerBufferSet({
+    const buffer = new IntegerBufferSet<ItemMeta>({
       type,
       getMetaType: this._getMetaType,
       metaExtractor: this._metaExtractor,
@@ -82,6 +85,9 @@ class Recycler {
     return this.addBuffer(type || DEFAULT_RECYCLER_TYPE);
   }
 
+  /**
+   * should be invoked after getIndices...
+   */
   reset() {
     this.queue.forEach((buffer) => buffer.reset());
   }

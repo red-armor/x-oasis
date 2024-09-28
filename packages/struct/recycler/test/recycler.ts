@@ -49,7 +49,7 @@ export const basicSuite = (desc, data, fn?: any) => {
     });
 
     it('update indices', () => {
-      const recycler = new Recycler({
+      const recycler = new Recycler<string>({
         metaExtractor: (index) => data.values[index],
         indexExtractor: (meta) => {
           const index = data.values.findIndex((val) => val === meta);
