@@ -29,6 +29,6 @@
     "@x-oasis/invariant": "^0.1.35",
     "@x-oasis/is-clamped": "^0.1.35",
     "@x-oasis/return-hook": "^0.1.35",
-    "@x-oasis/heap": "workspace:*"
+    "@x-oasis/heap": "0.1.35"
   }
 }
