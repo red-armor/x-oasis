@@ -26,7 +26,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@x-oasis/heap": "link:../heap",
+    "@x-oasis/heap": "workspace:*",
     "@x-oasis/invariant": "workspace:^0.1.19",
     "@x-oasis/is-clamped": "workspace:^0.1.19",
     "@x-oasis/return-hook": "workspace:^0.1.19"
