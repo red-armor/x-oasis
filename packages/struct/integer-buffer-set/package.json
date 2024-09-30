@@ -17,6 +17,13 @@
     "test": "vitest",
     "compile": "tsc -p tsconfig.build.json"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
