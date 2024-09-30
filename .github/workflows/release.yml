@@ -44,10 +44,11 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install -r
+        run: pnpm install
 
       - name: Build Packages
-        run: pnpm turbo run build
+        # run: pnpm turbo run build
+        run: pnpm run build
 
       - name: Create Release Pull Request or Publish
         id: changesets
