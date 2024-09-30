@@ -9,7 +9,7 @@
   },
   "scripts": {
     "clean": "turbo clean",
-    "build": "turbo build",
+    "build": "pnpm run -r build",
     "test": "CI=true pnpm run -r test",
     "alpha": "bump --branch",
     "lint": "eslint --ext js,ts,tsx .",
