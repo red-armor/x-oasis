@@ -142,3 +142,4 @@ class Recycler<ItemMeta = any> {
 }
 
 export default Recycler;
+export { IndicesItem };
