@@ -1,6 +1,6 @@
 import Heap from '@x-oasis/heap';
-import isClamped from '@x-oasis/is-clamped';
 import invariant from '@x-oasis/invariant';
+import isClamped from '@x-oasis/is-clamped';
 import returnHook, { ReturnHook } from '@x-oasis/return-hook';
 import {
   HeapItem,
