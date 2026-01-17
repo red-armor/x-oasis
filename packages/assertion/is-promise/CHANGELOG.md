@@ -1,0 +1,17 @@
+# @x-oasis/is-promise
+
+## 0.1.37
+
+### Patch Changes
+
+- 8cb524c: trigger next
+- Updated dependencies [8cb524c]
+  - @x-oasis/to-string@0.1.37
+
+## 0.1.36
+
+### Patch Changes
+
+- 7c2a0ba: git add .
+- Updated dependencies [7c2a0ba]
+  - @x-oasis/to-string@0.1.36

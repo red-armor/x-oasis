@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/emitter",
+  "name": "@x-oasis/async-call-rpc",
   "version": "0.1.37",
-  "description": "emitter function",
+  "description": "each function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/emitter.esm.js",
+  "module": "dist/each.esm.js",
   "files": [
     "dist",
     "index.ts",
@@ -25,7 +25,11 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
-    "@x-oasis/is-object": "workspace:*",
-    "@x-oasis/disposable": "workspace:*"
+    "@x-oasis/is-promise": "workspace:*",
+    "@x-oasis/emitter": "workspace:*",
+    "@x-oasis/deferred": "workspace:*",
+    "@x-oasis/disposable": "workspace:*",
+    "@x-oasis/id": "workspace:*",
+    "@x-oasis/is-ascii": "workspace:*"
   }
 }

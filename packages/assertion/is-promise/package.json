@@ -1,15 +1,10 @@
 {
-  "name": "@x-oasis/emitter",
+  "name": "@x-oasis/is-promise",
   "version": "0.1.37",
-  "description": "emitter function",
+  "description": "is-promise function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/emitter.esm.js",
-  "files": [
-    "dist",
-    "index.ts",
-    "src"
-  ],
+  "module": "dist/is-promise.esm.js",
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
@@ -25,7 +20,6 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
-    "@x-oasis/is-object": "workspace:*",
-    "@x-oasis/disposable": "workspace:*"
+    "@x-oasis/to-string": "workspace:^0.1.37"
   }
 }

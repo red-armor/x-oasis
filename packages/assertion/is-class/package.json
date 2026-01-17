@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/emitter",
+  "name": "@x-oasis/is-class",
   "version": "0.1.37",
-  "description": "emitter function",
+  "description": "is-class function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/emitter.esm.js",
+  "module": "dist/is-class.esm.js",
   "files": [
     "dist",
     "index.ts",
@@ -23,9 +23,5 @@
   "license": "ISC",
   "devDependencies": {
     "tsdx": "^0.14.1"
-  },
-  "dependencies": {
-    "@x-oasis/is-object": "workspace:*",
-    "@x-oasis/disposable": "workspace:*"
   }
 }
