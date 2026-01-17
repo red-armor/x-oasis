@@ -63,7 +63,7 @@ importers:
   packages/assertion/is-empty:
     dependencies:
       '@x-oasis/to-string':
-        specifier: workspace:^0.1.36
+        specifier: workspace:^0.1.37
         version: link:../../proto/to-string
     devDependencies:
       tsdx:

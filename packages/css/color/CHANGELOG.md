@@ -1,5 +1,11 @@
 # @x-oasis/color
 
+## 0.1.41
+
+### Patch Changes
+
+- 8cb524c: trigger next
+
 ## 0.1.40
 
 ### Patch Changes
