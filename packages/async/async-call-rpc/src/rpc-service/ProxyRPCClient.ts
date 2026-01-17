@@ -44,38 +44,33 @@ class ProxyRPCClient {
                 },
                 [].concat(ports)
               );
-              return;
-            }
-
-            if (isEventMethod(fnName)) {
+            } else if (isEventMethod(fnName)) {
               this.channelProtocol.send({
                 requestPath: this.requestPath,
                 fnName,
                 args,
               });
-              return;
-            }
-
-            /**
-             * 主要是为了解决刚开始channel connected状态是待确定，而所有的rpc 原则上都是先
-             * 过isConnected的判断；但是想要确保是否通的，这个时候其实还是要发rpc确认的，
-             * 那么这个时候这个就不能够受 isConnected约束；否则你就一直没有请求能够发出去了。
-             */
-            if (isOptionsMethod(fnName)) {
+            } else if (
+              /**
+               * 主要是为了解决刚开始channel connected状态是待确定，而所有的rpc 原则上都是先
+               * 过isConnected的判断；但是想要确保是否通的，这个时候其实还是要发rpc确认的，
+               * 那么这个时候这个就不能够受 isConnected约束；否则你就一直没有请求能够发出去了。
+               */
+              isOptionsMethod(fnName)
+            ) {
               this.channelProtocol.send({
                 isOptionsRequest: true,
                 requestPath: this.requestPath,
                 fnName,
                 args,
               });
-              return;
+            } else {
+              this.channelProtocol.send({
+                requestPath: this.requestPath,
+                fnName,
+                args,
+              }).promise as T;
             }
-
-            return this.channelProtocol.send({
-              requestPath: this.requestPath,
-              fnName,
-              args,
-            }).promise as T;
           };
         },
       }

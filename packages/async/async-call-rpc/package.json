@@ -31,5 +31,8 @@
     "@x-oasis/disposable": "workspace:*",
     "@x-oasis/id": "workspace:*",
     "@x-oasis/is-ascii": "workspace:*"
+  },
+  "peerDependencies": {
+    "electron": ">=20.0.0"
   }
 }

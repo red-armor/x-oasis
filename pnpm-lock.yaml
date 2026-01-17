@@ -60,18 +60,6 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@16.18.14)
 
-  packages/assertion/is-ascii:
-    devDependencies:
-      tsdx:
-        specifier: ^0.14.1
-        version: 0.14.1(@types/babel__core@7.20.0)(@types/node@16.18.14)
-
-  packages/assertion/is-class:
-    devDependencies:
-      tsdx:
-        specifier: ^0.14.1
-        version: 0.14.1(@types/babel__core@7.20.0)(@types/node@16.18.14)
-
   packages/assertion/is-empty:
     dependencies:
       '@x-oasis/to-string':
@@ -110,16 +98,6 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@16.18.14)
 
-  packages/assertion/is-promise:
-    dependencies:
-      '@x-oasis/to-string':
-        specifier: workspace:^0.1.37
-        version: link:../../proto/to-string
-    devDependencies:
-      tsdx:
-        specifier: ^0.14.1
-        version: 0.14.1(@types/babel__core@7.20.0)(@types/node@16.18.14)
-
   packages/assertion/is-ref:
     dependencies:
       '@x-oasis/is-object':
@@ -129,31 +107,6 @@ importers:
       tsdx:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@16.18.14)
-
-  packages/async/async-call-rpc:
-    dependencies:
-      '@x-oasis/deferred':
-        specifier: workspace:*
-        version: link:../../promise/deferred
-      '@x-oasis/disposable':
-        specifier: workspace:*
-        version: link:../../event/disposable
-      '@x-oasis/emitter':
-        specifier: workspace:*
-        version: link:../../event/emitter
-      '@x-oasis/id':
-        specifier: workspace:*
-        version: link:../../misc/id
-      '@x-oasis/is-ascii':
-        specifier: workspace:*
-        version: link:../../assertion/is-ascii
-      '@x-oasis/is-promise':
-        specifier: workspace:*
-        version: link:../../assertion/is-promise
-    devDependencies:
-      tsdx:
-        specifier: ^0.14.1
-        version: 0.14.1(@types/babel__core@7.20.0)(@types/node@16.18.14)
 
   packages/comparison/clamp:
     devDependencies:
@@ -372,12 +325,6 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@16.18.14)
 
-  packages/misc/id:
-    devDependencies:
-      tsdx:
-        specifier: ^0.14.1
-        version: 0.14.1(@types/babel__core@7.20.0)(@types/node@16.18.14)
-
   packages/misc/noop:
     devDependencies:
       tsdx:
@@ -389,12 +336,6 @@ importers:
       tsdx:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@16.18.14)
-
-  packages/promise/deferred:
-    devDependencies:
-      tsdx:
-        specifier: ^0.14.1
-        version: 0.14.1(@types/babel__core@7.20.0)(@types/node@16.18.14)
 
   packages/proto/can-I-use-proxy:
     devDependencies:
@@ -6903,7 +6844,10 @@ snapshots:
       jest-runner: 25.5.4
       jest-runtime: 25.5.4
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   '@jest/transform@25.5.1':
     dependencies:
