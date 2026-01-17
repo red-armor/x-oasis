@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/is-empty",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "description": "is-empty function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -20,6 +20,6 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
-    "@x-oasis/to-string": "workspace:^0.1.19"
+    "@x-oasis/to-string": "workspace:^0.1.36"
   }
 }

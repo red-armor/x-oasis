@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.5
+
+### Patch Changes
+
+- 7c2a0ba: git add .
+
 ## 0.2.4
 
 ### Patch Changes

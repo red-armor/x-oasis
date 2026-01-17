@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/find-last-index",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "description": "find-last-index function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/each",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "description": "each function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

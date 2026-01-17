@@ -1,5 +1,13 @@
 # @x-oasis/recycler
 
+## 0.1.39
+
+### Patch Changes
+
+- 7c2a0ba: git add .
+- Updated dependencies [7c2a0ba]
+  - @x-oasis/integer-buffer-set@0.1.37
+
 ## 0.1.38
 
 ### Patch Changes
