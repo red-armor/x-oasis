@@ -1,5 +1,11 @@
 # @x-oasis/clamp
 
+## 0.1.37
+
+### Patch Changes
+
+- 8cb524c: trigger next
+
 ## 0.1.36
 
 ### Patch Changes

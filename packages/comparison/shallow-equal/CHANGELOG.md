@@ -1,5 +1,13 @@
 # @x-oasis/shallow-equal
 
+## 0.1.40
+
+### Patch Changes
+
+- 8cb524c: trigger next
+- Updated dependencies [8cb524c]
+  - @x-oasis/is@0.1.41
+
 ## 0.1.39
 
 ### Patch Changes

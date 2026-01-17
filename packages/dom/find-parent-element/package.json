@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/find-parent-element",
-  "version": "0.1.36",
+  "version": "0.1.37",
   "description": "find-parent-element function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.6
+
+### Patch Changes
+
+- 8cb524c: trigger next
+
 ## 0.2.5
 
 ### Patch Changes
