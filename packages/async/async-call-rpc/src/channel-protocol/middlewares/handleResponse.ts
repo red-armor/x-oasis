@@ -28,11 +28,11 @@ export const handleResponse =
       } else if (type === ResponseType.ReturnFail) {
         findDefer.reject(body[0]);
       } else findDefer.resolve(body[0]);
-      return;
-    }
-    const findListener = protocol.requestEvents.get(`${seqId}`);
+    } else {
+      const findListener = protocol.requestEvents.get(`${seqId}`);
 
-    if (findListener) {
-      findListener(...body);
+      if (findListener) {
+        findListener(...body);
+      }
     }
   };

@@ -61,6 +61,7 @@ export default class DeferredMessageChannelProtocol extends AbstractChannelProto
 
     const channel = new Channel({
       send: (...args) => {
+        // @ts-ignore
         this.port.postMessage(...args);
       },
       initListener: (emitter) => {

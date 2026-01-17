@@ -26,7 +26,7 @@ class ProxyRPCClient {
       {},
       {
         get: (target, key) => {
-          return (...args: any[]): T => {
+          return (...args: any[]) => {
             const fnName = key.toString();
             if (!this.channelProtocol) {
               throw new Error(
@@ -69,7 +69,8 @@ class ProxyRPCClient {
                 requestPath: this.requestPath,
                 fnName,
                 args,
-              }).promise as T;
+                // @ts-ignore
+              }).promise;
             }
           };
         },

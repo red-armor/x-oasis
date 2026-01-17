@@ -194,6 +194,7 @@ abstract class AbstractChannelProtocol
 
   runWithMiddlewares(middlewares: ClientMiddleware[], ...args: any[]) {
     runMiddlewares(
+      // @ts-ignore
       middlewares.map((m) => m(this)),
       args
     );
