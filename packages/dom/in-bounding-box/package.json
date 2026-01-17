@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/in-bounding-rect",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "description": "in-bounding-rect function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
