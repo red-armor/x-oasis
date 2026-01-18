@@ -24,6 +24,7 @@ import RPCService from '../endpoint/RPCService';
 import { prepareNormalData } from '../middlewares/prepareRequestData';
 import { updateSeqInfo } from '../middlewares/updateSeqInfo';
 import { normalizeMessageChannelRawMessage } from '../middlewares/normalize';
+import { handleRequest } from '../middlewares/handleRequest';
 
 abstract class AbstractChannelProtocol
   extends Disposable
@@ -43,6 +44,7 @@ abstract class AbstractChannelProtocol
   protected _onMessageMiddleware: ClientMiddleware[] = [
     normalizeMessageChannelRawMessage,
     deserialize,
+    handleRequest,
     handleResponse,
   ];
 
@@ -98,7 +100,6 @@ abstract class AbstractChannelProtocol
 
     this.applyOnMessageMiddleware(this._onMessageMiddleware);
     this.applySendMiddleware(this._senderMiddleware);
-    // this.on(this.onMessage.bind(this));
   }
 
   get service() {
@@ -235,10 +236,11 @@ abstract class AbstractChannelProtocol
   ): Deferred | void;
 
   makeRequest(...args: any[]) {
-    console.log('makde ', args, this.senderMiddleware.slice());
     const { returnValue } = runMiddlewares(this.senderMiddleware, args);
+    console.log('makeRequest', args, returnValue);
+
     if (returnValue) return returnValue;
-    this.send(args);
+    // this.send(args);
   }
 
   sendReply(...args: any[]) {
@@ -248,7 +250,6 @@ abstract class AbstractChannelProtocol
   }
 
   onMessage(...args: any[]) {
-    console.log('onMessage', args);
     runMiddlewares(this._onMessageMiddleware, args);
   }
 

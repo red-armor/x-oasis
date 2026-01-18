@@ -19,6 +19,9 @@ export const handleResponse =
     const seqId = header[1];
 
     const findDefer = protocol.ongoingRequests.get(`${seqId}`);
+
+    console.log('findDefer', findDefer, seqId, protocol.ongoingRequests);
+
     if (findDefer) {
       protocol.ongoingRequests.delete(`${seqId}`);
       if (type === ResponseType.PortSuccess) {
