@@ -21,6 +21,9 @@ import { resumeMiddlewares } from '../middlewares/utils';
 import { deserialize, serialize } from '../middlewares/buffer';
 import { handleResponse } from '../middlewares/handleResponse';
 import RPCService from '../endpoint/RPCService';
+import { prepareNormalData } from '../middlewares/prepareRequestData';
+import { updateSeqInfo } from '../middlewares/updateSeqInfo';
+import { normalizeMessageChannelRawMessage } from '../middlewares/normalize';
 
 abstract class AbstractChannelProtocol
   extends Disposable
@@ -38,11 +41,17 @@ abstract class AbstractChannelProtocol
 
   // decoder should comes first !!!!
   protected _onMessageMiddleware: ClientMiddleware[] = [
+    normalizeMessageChannelRawMessage,
     deserialize,
     handleResponse,
   ];
 
-  private _senderMiddleware: SenderMiddleware[] = [serialize, sendRequest];
+  private _senderMiddleware: SenderMiddleware[] = [
+    prepareNormalData,
+    updateSeqInfo,
+    serialize,
+    sendRequest,
+  ];
 
   private _readBuffer: ReadBaseBuffer;
 
@@ -89,7 +98,7 @@ abstract class AbstractChannelProtocol
 
     this.applyOnMessageMiddleware(this._onMessageMiddleware);
     this.applySendMiddleware(this._senderMiddleware);
-    this.on(this.onMessage.bind(this));
+    // this.on(this.onMessage.bind(this));
   }
 
   get service() {
@@ -137,6 +146,13 @@ abstract class AbstractChannelProtocol
     this.pendingSendEntries.add(entry);
   }
 
+  /**
+   *
+   * @param middlewares
+   * @returns
+   *
+   * 增加自定义的middleware，需要重写这个方法
+   */
   decorateSendMiddleware(middlewares: SenderMiddleware[]) {
     return middlewares;
   }
@@ -146,7 +162,9 @@ abstract class AbstractChannelProtocol
   }
 
   applyOnMessageMiddleware(fns: Function | Function[]) {
-    [].concat(fns).forEach((fn) => {
+    const copy = [].concat(fns);
+    this._onMessageMiddleware = [];
+    copy.forEach((fn) => {
       if (typeof fn === 'function') {
         this._onMessageMiddleware.push(fn(this));
       }
@@ -154,7 +172,10 @@ abstract class AbstractChannelProtocol
   }
 
   applySendMiddleware(fns: Function | Function[]) {
-    [].concat(fns).forEach((fn) => {
+    const copy = [].concat(fns);
+    this._senderMiddleware = [];
+
+    copy.forEach((fn) => {
       if (typeof fn === 'function') {
         this._senderMiddleware.push(fn(this));
       }
@@ -214,6 +235,7 @@ abstract class AbstractChannelProtocol
   ): Deferred | void;
 
   makeRequest(...args: any[]) {
+    console.log('makde ', args, this.senderMiddleware.slice());
     const { returnValue } = runMiddlewares(this.senderMiddleware, args);
     if (returnValue) return returnValue;
     this.send(args);
@@ -226,16 +248,17 @@ abstract class AbstractChannelProtocol
   }
 
   onMessage(...args: any[]) {
+    console.log('onMessage', args);
     runMiddlewares(this._onMessageMiddleware, args);
   }
 
-  runWithMiddlewares(middlewares: ClientMiddleware[], ...args: any[]) {
-    runMiddlewares(
-      // @ts-ignore
-      middlewares.map((m) => m(this)),
-      args
-    );
-  }
+  // runWithMiddlewares(middlewares: ClientMiddleware[], ...args: any[]) {
+  //   console.log('runWithMiddlewares', middlewares, args)
+  //   runMiddlewares(
+  //     middlewares.map((m) => m(this)),
+  //     args
+  //   );
+  // }
 }
 
 export default AbstractChannelProtocol;

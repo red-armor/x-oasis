@@ -19,14 +19,16 @@ class RPCService {
     const { channel, handlers, serviceHost } = options || {};
     this.servicePath = servicePath;
     this.serviceHost = serviceHost;
-    this.setChannel(channel);
+    if (channel) {
+      this.setChannel(channel);
+    }
     this.registerHandlers(handlers);
-    this.channel.onMessage(this.handleMessage.bind(this));
   }
 
   setChannel(channel: AbstractChannelProtocol) {
     this.channel = channel;
     this.channel.setService(this);
+    this.channel.on(this.handleMessage.bind(this));
   }
 
   registerHandlers(handlers: Record<string, (...args: any[]) => any>) {

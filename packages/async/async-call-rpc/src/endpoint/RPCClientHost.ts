@@ -1,4 +1,5 @@
 import ProxyRPCClient from './ProxyRPCClient';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
 class RPCClientHost {
   protected readonly hostPath: string;
@@ -7,8 +8,13 @@ class RPCClientHost {
 
   // handlersMap = new Map<ServiceHandlerPath, IService>();
 
-  registerClient(requestPath: string) {
-    const client = new ProxyRPCClient(requestPath);
+  registerClient(
+    requestPath: string,
+    options?: {
+      channel?: AbstractChannelProtocol;
+    }
+  ) {
+    const client = new ProxyRPCClient(requestPath, options);
     this.hostMap.set(requestPath, client);
     return client;
   }

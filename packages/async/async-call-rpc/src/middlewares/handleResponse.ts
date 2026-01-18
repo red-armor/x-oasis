@@ -10,6 +10,8 @@ export const handleResponse =
     const body = data[1];
     const type = header[0] as any;
 
+    console.log('handleResponse', message);
+
     if (Object.values(RequestType).includes(type)) {
       return message;
     }
