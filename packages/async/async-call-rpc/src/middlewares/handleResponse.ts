@@ -31,4 +31,5 @@ export const handleResponse =
         findListener(...body);
       }
     }
+    return null;
   };

@@ -1,4 +1,4 @@
-import AbstractChannelProtocol from '../AbstractChannelProtocol';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 import { ResponseType } from '../types';
 import RPCService from '../endpoint/RPCService';
 

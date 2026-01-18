@@ -3,11 +3,21 @@ import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 class ProxyRPCClient {
   readonly requestPath: string;
 
-  readonly channel: AbstractChannelProtocol;
+  private channel: AbstractChannelProtocol;
 
-  constructor(requestPath: string, channel: AbstractChannelProtocol) {
-    this.channel = channel;
+  constructor(
+    requestPath: string,
+    options?: {
+      channel?: AbstractChannelProtocol;
+    }
+  ) {
+    const { channel } = options || {};
     this.requestPath = requestPath;
+    this.setChannel(channel);
+  }
+
+  setChannel(channel: AbstractChannelProtocol) {
+    this.channel = channel;
   }
 
   createProxy<T = object>(): T {

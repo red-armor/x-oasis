@@ -6,7 +6,7 @@ import { isEventMethod } from '../common';
 export const handlePortRequest =
   (protocol: AbstractChannelProtocol) =>
   (message: DeserializedMessageOutput) => {
-    const serviceHost = protocol.serviceHost;
+    const serviceHost = protocol.service;
 
     const { data, event: messageEvent } = message;
     const header = data[0];
@@ -52,7 +52,7 @@ export const handlePortRequest =
         return message;
       }
 
-      const handler = serviceHost.getHandler(requestPath, methodName);
+      const handler = serviceHost.getHandler(methodName);
 
       // todo
       const result = Promise.resolve(handler?.(args));

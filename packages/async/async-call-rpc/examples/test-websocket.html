@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Client Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .status.connecting {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+        .status.connected {
+            background-color: #d4edda;
+            border: 1px solid #28a745;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+        }
+        code {
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .console-hint {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 WebSocket RPC 客户端测试</h1>
+
+    <div id="status" class="status connecting">
+        <strong>状态:</strong> 正在连接 WebSocket 服务器...
+    </div>
+
+    <div class="test-section">
+        <h3>📋 可用的服务器方法</h3>
+        <ul>
+            <li><code>server.echo(x)</code> - 回显传入的参数</li>
+            <li><code>server.now()</code> - 返回当前时间戳</li>
+        </ul>
+    </div>
+
+    <div class="console-hint">
+        <h3>💡 在浏览器控制台中测试</h3>
+        <p>打开浏览器开发者工具 (F12)，在控制台中输入以下命令：</p>
+        <pre><code>// 测试 echo 方法
+await server.echo("Hello!")
+
+// 测试 now 方法
+await server.now()
+
+// 测试复杂对象
+await server.echo({name: "test", value: 42})</code></pre>
+        <p><strong>提示:</strong> 也可以使用 <code>window.remote</code> 代替 <code>server</code></p>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 检查清单</h3>
+        <ul>
+            <li>✅ 确保 WebSocket 服务器正在运行 (<code>node node.websocket.server.js</code>)</li>
+            <li>✅ 打开浏览器控制台查看自动测试结果</li>
+            <li>✅ 在控制台中手动测试 RPC 调用</li>
+            <li>✅ 检查网络标签页中的 WebSocket 连接状态</li>
+        </ul>
+    </div>
+
+    <script type="module" src="./browser.websocket.client.js"></script>
+    <script>
+        // 监听连接状态
+        let statusEl = document.getElementById('status')
+
+        // 检查 server 对象是否可用
+        const checkServer = setInterval(() => {
+            if (window.server && typeof window.server.echo === 'function') {
+                clearInterval(checkServer)
+                statusEl.className = 'status connected'
+                statusEl.innerHTML = '<strong>状态:</strong> ✅ 已连接到 WebSocket 服务器 (ws://localhost:3456)'
+            }
+        }, 100)
+
+        // 10秒后如果还没连接，显示错误
+        setTimeout(() => {
+            if (statusEl.className === 'status connecting') {
+                statusEl.className = 'status error'
+                statusEl.innerHTML = '<strong>状态:</strong> ❌ 连接失败。请确保服务器正在运行: <code>node node.websocket.server.js</code>'
+            }
+        }, 10000)
+    </script>
+</body>
+</html>

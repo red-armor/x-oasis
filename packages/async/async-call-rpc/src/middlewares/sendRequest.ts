@@ -1,11 +1,11 @@
 import { SenderMiddlewareOutput, SendMiddlewareLifecycle } from '../types';
-import AbstractChannelProtocol from '../AbstractChannelProtocol';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
 export const sendRequest = (channelProtocol: AbstractChannelProtocol) => {
   const fn = (value: SenderMiddlewareOutput) => {
     const { data, transfer } = value;
-    if (transfer) channelProtocol.channel.send(data, transfer);
-    else channelProtocol.channel.send(data);
+    if (transfer) channelProtocol.send(data, transfer);
+    else channelProtocol.send(data);
 
     return value;
   };

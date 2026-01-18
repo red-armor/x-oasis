@@ -1,5 +1,4 @@
 import { IpcRenderer, UtilityProcess, WebContents } from 'electron';
-import MessageChannelProtocol from '../channel-protocol/MessageChannelProtocol';
 
 export interface ChannelPort {
   on(event: 'message', listener: (messageEvent: MessageEvent) => void): this;

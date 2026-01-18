@@ -9,10 +9,9 @@ import {
   ClientMiddleware,
   SenderMiddleware,
   RequestRawSequenceId,
-  AbstractChannelProtocolProps,
   PendingSendEntry,
 } from '../types';
-import { runMiddlewares } from '../middlewares';
+import { runMiddlewares, sendRequest } from '../middlewares';
 import ReadBuffer from '../buffer/ReadBuffer';
 import WriteBuffer from '../buffer/WriteBuffer';
 import ReadBaseBuffer from '../buffer/ReadBaseBuffer';
@@ -21,7 +20,6 @@ import { resumeMiddlewares } from '../middlewares/utils';
 
 import { deserialize, serialize } from '../middlewares/buffer';
 import { handleResponse } from '../middlewares/handleResponse';
-import { handleRequest } from '../middlewares/handleRequest';
 import RPCService from '../endpoint/RPCService';
 
 abstract class AbstractChannelProtocol
@@ -44,7 +42,7 @@ abstract class AbstractChannelProtocol
     handleResponse,
   ];
 
-  private _senderMiddleware: SenderMiddleware[] = [serialize, handleRequest];
+  private _senderMiddleware: SenderMiddleware[] = [serialize, sendRequest];
 
   private _readBuffer: ReadBaseBuffer;
 
@@ -72,9 +70,9 @@ abstract class AbstractChannelProtocol
 
   onDidDisconnected = this.onDidDisconnectedEvent.subscribe;
 
-  constructor(props: AbstractChannelProtocolProps) {
+  constructor(props?: any) {
     super();
-    const { description, masterProcessName, connected = true } = props;
+    const { description, masterProcessName, connected = true } = props || {};
     this._description = description;
     this._isConnected = connected;
     this._masterProcessName = masterProcessName;
@@ -221,10 +219,11 @@ abstract class AbstractChannelProtocol
     this.send(args);
   }
 
-  // sendReply(...args: any[]) {
-  //   // TODO: this.channel may be null when disconnect
-  //   this.channel?.send(...args);
-  // }
+  sendReply(...args: any[]) {
+    // TODO: this.channel may be null when disconnect
+    // this.channel?.send(...args);
+    this.send(...args);
+  }
 
   onMessage(...args: any[]) {
     runMiddlewares(this._onMessageMiddleware, args);

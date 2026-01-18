@@ -53,9 +53,9 @@ export type HostRequestEntryHeader = [
 export type HostRequestEntryBody = any;
 export type HostRequestEntry = [HostRequestEntryHeader, HostRequestEntryBody];
 
-export type SendingProps = {
-  requestPath?: string;
-  fnName?: string;
-  args?: any;
-  isOptionsRequest?: boolean;
-};
+// export type SendingProps = {
+//   requestPath?: string;
+//   fnName?: string;
+//   args?: any;
+//   isOptionsRequest?: boolean;
+// };

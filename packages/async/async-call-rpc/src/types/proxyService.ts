@@ -1,4 +1,4 @@
-import AbstractChannelProtocol from '../channel-protocol/AbstractChannelProtocol';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
 // export type IService = {
 //   [key: string]: Function

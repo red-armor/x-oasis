@@ -1,7 +1,7 @@
 import { createDeferred } from '@x-oasis/deferred';
 import { isEventMethod } from '../common';
 import { SenderMiddlewareOutput, SendMiddlewareLifecycle } from '../types';
-import AbstractChannelProtocol from '../AbstractChannelProtocol';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
 export const updateSeqInfo = (channelProtocol: AbstractChannelProtocol) => {
   const fn = (value: SenderMiddlewareOutput) => {
