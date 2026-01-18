@@ -22,12 +22,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "tsdx": "^0.14.1"
+    "tsdx": "^0.14.1",
+    "ws": "^8.19.0"
   },
   "dependencies": {
-    "@x-oasis/emitter": "workspace:*",
     "@x-oasis/deferred": "workspace:*",
     "@x-oasis/disposable": "workspace:*",
+    "@x-oasis/emitter": "workspace:*",
     "@x-oasis/id": "workspace:*",
     "@x-oasis/is-ascii": "workspace:*",
     "@x-oasis/is-promise": "workspace:*"

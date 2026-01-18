@@ -63,6 +63,7 @@
         <ul>
             <li><code>server.echo(x)</code> - 回显传入的参数</li>
             <li><code>server.now()</code> - 返回当前时间戳</li>
+            <li><code>server.add(a, b)</code> - 计算两个数字的和</li>
         </ul>
     </div>
 
@@ -74,6 +75,9 @@ await server.echo("Hello!")
 
 // 测试 now 方法
 await server.now()
+
+// 测试 add 方法
+await server.add(10, 20)
 
 // 测试复杂对象
 await server.echo({name: "test", value: 42})</code></pre>
@@ -94,11 +98,29 @@ await server.echo({name: "test", value: 42})</code></pre>
     <script>
         // 监听连接状态
         let statusEl = document.getElementById('status')
+        let connectionEstablished = false
+
+        // 监听 WebSocket 连接状态
+        window.addEventListener('websocket-open', () => {
+            connectionEstablished = true
+        })
+
+        window.addEventListener('websocket-error', () => {
+            if (!connectionEstablished) {
+                statusEl.className = 'status error'
+                statusEl.innerHTML = '<strong>状态:</strong> ❌ 连接失败<br>' +
+                    '请确保:<br>' +
+                    '1. 服务器正在运行: <code>node node.websocket.server.js</code><br>' +
+                    '2. 服务器监听在 ws://localhost:3456<br>' +
+                    '3. 检查浏览器控制台获取详细错误信息'
+            }
+        })
 
         // 检查 server 对象是否可用
         const checkServer = setInterval(() => {
             if (window.server && typeof window.server.echo === 'function') {
                 clearInterval(checkServer)
+                connectionEstablished = true
                 statusEl.className = 'status connected'
                 statusEl.innerHTML = '<strong>状态:</strong> ✅ 已连接到 WebSocket 服务器 (ws://localhost:3456)'
             }
@@ -106,9 +128,13 @@ await server.echo({name: "test", value: 42})</code></pre>
 
         // 10秒后如果还没连接，显示错误
         setTimeout(() => {
-            if (statusEl.className === 'status connecting') {
+            if (!connectionEstablished && statusEl.className === 'status connecting') {
                 statusEl.className = 'status error'
-                statusEl.innerHTML = '<strong>状态:</strong> ❌ 连接失败。请确保服务器正在运行: <code>node node.websocket.server.js</code>'
+                statusEl.innerHTML = '<strong>状态:</strong> ❌ 连接超时<br>' +
+                    '请确保:<br>' +
+                    '1. 服务器正在运行: <code>node node.websocket.server.js</code><br>' +
+                    '2. 服务器监听在 ws://localhost:3456<br>' +
+                    '3. 检查浏览器控制台获取详细错误信息'
             }
         }, 10000)
     </script>

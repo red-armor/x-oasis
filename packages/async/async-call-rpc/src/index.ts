@@ -5,6 +5,7 @@ import serviceHost from './endpoint/RPCServiceHost';
 
 export { default as MessageChannel } from './protocol/MessageChannel';
 export { default as WorkerChannel } from './protocol/WorkerChannel';
+export { default as WebSocketChannel } from './protocol/WebSocketChannel';
 
 export { ProxyRPCClient, RPCService, clientHost, serviceHost };
 
