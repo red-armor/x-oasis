@@ -15,7 +15,7 @@ export default class RPCMessageChannel
 
   constructor(options: {
     port: MessagePort;
-    sender: any;
+    sender?: any;
     targetOrigin?: string;
   }) {
     super();
@@ -23,14 +23,26 @@ export default class RPCMessageChannel
     this.port = port;
     this.targetOrigin = targetOrigin;
     this.sender = sender;
+    // MessagePort 需要调用 start() 才能开始接收消息（当使用 addEventListener 时）
+    if (this.port.start) {
+      this.port.start();
+    }
   }
 
-  on(listener: (event: MessageEvent) => void) {
-    this.port.onmessage = listener;
+  on(listener: (event: MessageEvent) => void): void | (() => void) {
+    const f = (ev: MessageEvent): void => {
+      listener(ev);
+    };
+    this.port.addEventListener('message', f);
+    return () => this.port.removeEventListener('message', f);
   }
 
-  send(message: any) {
-    this.sender.postMessage(message, this.targetOrigin, [this.port]);
+  send(message: any, transfer?: Transferable[]) {
+    if (transfer && transfer.length > 0) {
+      this.port.postMessage(message, transfer);
+    } else {
+      this.port.postMessage(message);
+    }
   }
 
   /**
