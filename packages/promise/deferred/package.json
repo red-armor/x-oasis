@@ -4,7 +4,7 @@
   "description": "emitter function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/emitter.esm.js",
+  "module": "dist/deferred.esm.js",
   "files": [
     "dist",
     "index.ts",
