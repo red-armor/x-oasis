@@ -206,12 +206,7 @@ abstract class AbstractChannelProtocol
     this.resumePendingEntry();
   }
 
-  // protected bindChannel(channel: Channel) {
-  //   this.channel = channel;
-  // }
-
   connect() {
-    // this.channel = channel;
     this.onDidConnectedEvent.fire();
   }
 
@@ -222,7 +217,6 @@ abstract class AbstractChannelProtocol
   }
 
   disconnect() {
-    // this.channel = null;
     this._isConnected = false;
     this.onDidDisconnectedEvent.fire();
   }
@@ -236,30 +230,18 @@ abstract class AbstractChannelProtocol
   ): Deferred | void;
 
   makeRequest(...args: any[]) {
+    //
     const { returnValue } = runMiddlewares(this.senderMiddleware, args);
-    console.log('makeRequest', args, returnValue);
-
     if (returnValue) return returnValue;
   }
 
   sendReply(...args: any[]) {
-    // TODO: this.channel may be null when disconnect
-    // this.channel?.send(...args);
     this.send(...args);
   }
 
   onMessage(...args: any[]) {
-    console.log('onMessage', args, this._onMessageMiddleware.slice());
     runMiddlewares(this._onMessageMiddleware, args);
   }
-
-  // runWithMiddlewares(middlewares: ClientMiddleware[], ...args: any[]) {
-  //   console.log('runWithMiddlewares', middlewares, args)
-  //   runMiddlewares(
-  //     middlewares.map((m) => m(this)),
-  //     args
-  //   );
-  // }
 }
 
 export default AbstractChannelProtocol;

@@ -10,8 +10,6 @@ export const handleResponse =
     const body = data[1];
     const type = header[0] as any;
 
-    console.log('handleResponse', message);
-
     if (Object.values(RequestType).includes(type)) {
       return message;
     }
@@ -19,8 +17,6 @@ export const handleResponse =
     const seqId = header[1];
 
     const findDefer = protocol.ongoingRequests.get(`${seqId}`);
-
-    console.log('findDefer', findDefer, seqId, protocol.ongoingRequests);
 
     if (findDefer) {
       protocol.ongoingRequests.delete(`${seqId}`);

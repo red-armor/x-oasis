@@ -1,7 +1,11 @@
 // import * as rpc from '../out/base.mjs'
 // import { WorkerChannel } from '../utils/web/worker.js'
 
-import { WorkerChannel, serviceHost } from '../dist/async-call-rpc.esm.js';
+import {
+  WorkerChannel,
+  serviceHost,
+  clientHost,
+} from '../dist/async-call-rpc.esm.js';
 
 // 使用 href 而不是 pathname，确保路径正确
 const workerUrl = new URL('./browser.worker-worker.js', import.meta.url).href;
@@ -32,15 +36,17 @@ const impl = {
 const service = serviceHost.registerService('test', impl);
 service.setChannel(channel);
 
-// setTimeout(() => {
-//   const client = clientHost.registerClient('test-worker', {
-//     channel,
-//   }).createProxy();
+setTimeout(() => {
+  const client = clientHost
+    .registerClient('test-worker', {
+      channel,
+    })
+    .createProxy();
 
-//   client.workerHello().then((result) => {
-//     console.log('[main] ✅ 成功调用 workerHello，收到结果:', result);
-//   });
-// }, 1000);
+  client.workerHello().then((result) => {
+    console.log('[main] ✅ 成功调用 workerHello，收到结果:', result);
+  });
+}, 1000);
 
 // 确保页面卸载时终止 Worker
 window.addEventListener('beforeunload', () => {

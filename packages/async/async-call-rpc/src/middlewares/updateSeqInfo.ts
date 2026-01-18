@@ -15,7 +15,6 @@ export const updateSeqInfo = (channelProtocol: AbstractChannelProtocol) => {
       channelProtocol.requestEvents.set(`${seqId}`, body[0]);
       data[1] = [];
     } else {
-      console.log('updateSeqInfo', seqId);
       const returnValue = createDeferred();
       channelProtocol.ongoingRequests.set(`${seqId}`, returnValue);
       value.returnValue = returnValue;
