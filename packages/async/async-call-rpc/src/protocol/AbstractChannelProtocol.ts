@@ -240,7 +240,6 @@ abstract class AbstractChannelProtocol
     console.log('makeRequest', args, returnValue);
 
     if (returnValue) return returnValue;
-    // this.send(args);
   }
 
   sendReply(...args: any[]) {
@@ -250,6 +249,7 @@ abstract class AbstractChannelProtocol
   }
 
   onMessage(...args: any[]) {
+    console.log('onMessage', args, this._onMessageMiddleware.slice());
     runMiddlewares(this._onMessageMiddleware, args);
   }
 
