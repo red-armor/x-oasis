@@ -1,13 +1,48 @@
 import isPromise from '@x-oasis/is-promise';
 import { ResponseType, DeserializedMessageOutput } from '../types';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
+import {
+  ErrorResponseMethodNotFound,
+  defaultErrorMapper,
+  ErrorResponseMapped,
+  makeRequest,
+  Request,
+  AsyncCallErrorDetail,
+} from '../utils/jsonrpc';
+import { JSONRPCErrorCode } from '../error';
+
+/**
+ * Create standardized error response body
+ */
+const createErrorResponseBody = (
+  error: unknown,
+  request?: Request
+): {
+  code: number;
+  message: string;
+  data?: AsyncCallErrorDetail;
+} => {
+  const mapper = defaultErrorMapper(
+    error instanceof Error ? error.stack : '',
+    JSONRPCErrorCode.InternalError
+  );
+
+  if (request) {
+    const errorResponse = ErrorResponseMapped(request, error, mapper);
+    return errorResponse.error;
+  }
+
+  // Fallback when no request context is available
+  const { code, message, data } = mapper(error, {} as Request);
+  return { code, message, data };
+};
 
 export const handleRequest =
   (protocol: AbstractChannelProtocol) =>
   (message: DeserializedMessageOutput) => {
     const service = protocol.service;
 
-    const { data, event: messageEvent } = message;
+    const { data } = message;
     const header = data[0];
 
     const body = data[1];
@@ -25,9 +60,24 @@ export const handleRequest =
     const methodName = header[3];
     const args = body[0];
 
+    // Create JSONRPC request object for error context
+    const jsonrpcRequest = makeRequest(seqId, methodName, args);
+
     const handler = service.getHandler(methodName);
 
-    const _result = handler?.(args);
+    // Check if method exists
+    if (!handler) {
+      const errorResponse = ErrorResponseMethodNotFound(seqId);
+      const responseHeader = [ResponseType.ReturnFail, seqId];
+      const responseBody = [errorResponse.error];
+
+      protocol.sendReply(
+        protocol.writeBuffer.encode([responseHeader, responseBody])
+      );
+      return message;
+    }
+
+    const _result = handler(args);
 
     // todo
     const result = Promise.resolve(_result);
@@ -45,7 +95,13 @@ export const handleRequest =
               responseBody,
             ]);
           } catch (err) {
-            sendData = protocol.writeBuffer.encode([responseHeader, []]);
+            // Encoding error - use standardized error format
+            const errorBody = createErrorResponseBody(err, jsonrpcRequest);
+            responseBody = [errorBody];
+            sendData = protocol.writeBuffer.encode([
+              responseHeader,
+              responseBody,
+            ]);
             console.error(
               `[handleRequest sendReply encode error ] ${requestPath} ${methodName}`,
               err
@@ -54,20 +110,11 @@ export const handleRequest =
 
           protocol.sendReply(sendData);
         },
-        (err: Error) => {
+        (err: unknown) => {
+          // Use standardized JSONRPC error format
+          const errorBody = createErrorResponseBody(err, jsonrpcRequest);
           const responseHeader = [ResponseType.ReturnFail, seqId];
-          const responseBody = [
-            {
-              message: err.message,
-              name: err.name,
-              // eslint-disable-next-line
-              stack: err.stack
-                ? err.stack.split
-                  ? err.stack.split('\n')
-                  : err.stack
-                : undefined,
-            },
-          ];
+          const responseBody = [errorBody];
 
           protocol.sendReply(
             protocol.writeBuffer.encode([responseHeader, responseBody])

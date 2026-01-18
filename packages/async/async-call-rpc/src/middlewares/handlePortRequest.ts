@@ -2,6 +2,12 @@ import isPromise from '@x-oasis/is-promise';
 import { ResponseType, DeserializedMessageOutput } from '../types';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 import { isEventMethod } from '../common';
+import {
+  defaultErrorMapper,
+  ErrorResponseMapped,
+  makeRequest,
+} from '../utils/jsonrpc';
+import { JSONRPCErrorCode } from '../error';
 
 export const handlePortRequest =
   (protocol: AbstractChannelProtocol) =>
@@ -54,6 +60,9 @@ export const handlePortRequest =
 
       const handler = serviceHost.getHandler(methodName);
 
+      // Create JSONRPC request object for error context
+      const jsonrpcRequest = makeRequest(seqId, methodName, args);
+
       // todo
       const result = Promise.resolve(handler?.(args));
 
@@ -70,7 +79,21 @@ export const handlePortRequest =
                 responseBody,
               ]);
             } catch (err) {
-              sendData = protocol.writeBuffer.encode([responseHeader, []]);
+              // Encoding error - use standardized error format
+              const mapper = defaultErrorMapper(
+                err instanceof Error ? err.stack : '',
+                JSONRPCErrorCode.InternalError
+              );
+              const errorResponse = ErrorResponseMapped(
+                jsonrpcRequest,
+                err,
+                mapper
+              );
+              responseBody = [errorResponse.error];
+              sendData = protocol.writeBuffer.encode([
+                responseHeader,
+                responseBody,
+              ]);
               console.error(
                 `[handleRequest sendReply encode error ] ${requestPath} ${methodName}`,
                 err
@@ -85,24 +108,23 @@ export const handlePortRequest =
 
             protocol.sendReply(sendData);
           },
-          (err: Error) => {
+          (err: unknown) => {
+            // Use standardized JSONRPC error format
+            const mapper = defaultErrorMapper(
+              err instanceof Error ? err.stack : '',
+              JSONRPCErrorCode.InternalError
+            );
+            const errorResponse = ErrorResponseMapped(
+              jsonrpcRequest,
+              err,
+              mapper
+            );
             const responseHeader = [ResponseType.ReturnFail, seqId];
-            const responseBody = [
-              {
-                message: err.message,
-                name: err.name,
-                // eslint-disable-next-line
-                stack: err.stack
-                  ? err.stack.split
-                    ? err.stack.split('\n')
-                    : err.stack
-                  : undefined,
-              },
-            ];
+            const responseBody = [errorResponse.error];
 
             if (messageEvent?.sender) {
               messageEvent.sender.send(
-                protocol.channelName,
+                (protocol as any).channelName,
                 protocol.writeBuffer.encode([responseHeader, responseBody])
               );
               return;
@@ -115,4 +137,5 @@ export const handlePortRequest =
         );
       }
     }
+    return message;
   };
