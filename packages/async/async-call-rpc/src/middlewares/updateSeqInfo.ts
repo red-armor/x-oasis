@@ -8,10 +8,10 @@ export const updateSeqInfo = (channelProtocol: AbstractChannelProtocol) => {
     const { data, seqId } = value;
     const header = data[0];
     const body = data[1];
-    const fnName = header[3];
+    const methodName = header[3];
 
     // 如果说是event method的话，需要将body重制一下
-    if (fnName && isEventMethod(fnName)) {
+    if (methodName && isEventMethod(methodName)) {
       channelProtocol.requestEvents.set(`${seqId}`, body[0]);
       data[1] = [];
     } else {

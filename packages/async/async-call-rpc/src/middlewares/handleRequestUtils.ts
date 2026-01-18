@@ -1,19 +1,20 @@
-import RPCServiceHost from '../endpoint/RPCServiceHost';
 import AbstractChannelProtocol from '../AbstractChannelProtocol';
 import { ResponseType } from '../types';
+import RPCService from '../endpoint/RPCService';
 
 export const handleAcquirePort = (props: {
   protocol: AbstractChannelProtocol;
-  serviceHost: RPCServiceHost;
+  // serviceHost: RPCServiceHost;
+  service: RPCService;
   requestPath: string;
-  fnName: string;
+  methodName: string;
   seqId: string;
   args: any[];
 }) => {
-  const { serviceHost, requestPath, fnName, protocol, seqId, args } = props;
+  const { service, requestPath, methodName, protocol, seqId, args } = props;
 
-  const handler = serviceHost.getHandler(requestPath, fnName);
-
+  // const handler = serviceHost.getHandler(requestPath, methodName);
+  const handler = service.getHandler(methodName);
   const port = handler?.(args);
 
   // 比如port process它监听的是message；你用process创建一个ProcessChannelProtocol
@@ -33,7 +34,7 @@ export const handleAcquirePort = (props: {
     responseHeader = [ResponseType.PortFail, seqId];
     sendData = protocol.writeBuffer.encode([responseHeader, []]);
     console.error(
-      `[handleRequest sendReply encode error ] ${requestPath} ${fnName}`,
+      `[handleRequest sendReply encode error ] ${requestPath} ${methodName}`,
       err
     );
   }

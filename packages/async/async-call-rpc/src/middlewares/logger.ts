@@ -1,4 +1,4 @@
-import AbstractChannelProtocol from '../AbstractChannelProtocol';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 import { NormalizedRawMessageOutput } from '../types';
 
 export const createSenderLogger =

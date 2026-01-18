@@ -9,7 +9,7 @@ export const handleDisconnectedRequest = (
 
     if (!isConnected && !value.isOptionsRequest) {
       protocol.addPendingSendEntry({
-        fnName: fn.displayName,
+        methodName: fn.displayName,
         lifecycle: SendMiddlewareLifecycle.Prepare,
         ...value,
         middlewareContext: {

@@ -43,6 +43,10 @@ class RPCService {
   registerHandler(methodName: string, handler: (...args: any[]) => any) {
     this.handlersMap.set(methodName, handler);
   }
+
+  getHandler(methodName: string) {
+    return this.handlersMap.get(methodName);
+  }
 }
 
 export default RPCService;

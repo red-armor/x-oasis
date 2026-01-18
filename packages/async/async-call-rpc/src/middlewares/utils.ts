@@ -13,7 +13,7 @@ export const resumeMiddlewares = (
 
   return middlewares.reduce((a: any, b: MiddlewareFunction) => {
     if (!b.lifecycle) return a;
-    if (a.lifecycle >= b.lifecycle && b.displayName === a.fnName) {
+    if (a.lifecycle >= b.lifecycle && b.displayName === a.methodName) {
       start = true;
     }
     if (!start) return a;

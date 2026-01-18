@@ -21,12 +21,12 @@ export const handlePortRequest =
 
     const seqId = header[1];
     const requestPath = header[2];
-    const fnName = header[3];
+    const methodName = header[3];
     const args = body[0];
 
     if (serviceHost) {
-      if (isEventMethod(fnName)) {
-        // const event = serviceHost.getHandler(requestPath, fnName)
+      if (isEventMethod(methodName)) {
+        // const event = serviceHost.getHandler(requestPath, methodName)
         // const fn = (...args: any[]) => {
         //   const responseHeader = [ResponseType.ReturnSuccess, seqId]
         //   let responseBody = []
@@ -36,7 +36,7 @@ export const handlePortRequest =
         //     sendData = protocol.writeBuffer.encode([responseHeader, responseBody])
         //   } catch (err) {
         //     sendData = protocol.writeBuffer.encode([responseHeader, []])
-        //     console.error(`[handleRequest sendReply encode error ] ${requestPath} ${fnName}`, err)
+        //     console.error(`[handleRequest sendReply encode error ] ${requestPath} ${methodName}`, err)
         //   }
 
         //   // TODO: temp; main <=> project renderer...
@@ -52,7 +52,7 @@ export const handlePortRequest =
         return message;
       }
 
-      const handler = serviceHost.getHandler(requestPath, fnName);
+      const handler = serviceHost.getHandler(requestPath, methodName);
 
       // todo
       const result = Promise.resolve(handler?.(args));
@@ -72,7 +72,7 @@ export const handlePortRequest =
             } catch (err) {
               sendData = protocol.writeBuffer.encode([responseHeader, []]);
               console.error(
-                `[handleRequest sendReply encode error ] ${requestPath} ${fnName}`,
+                `[handleRequest sendReply encode error ] ${requestPath} ${methodName}`,
                 err
               );
             }

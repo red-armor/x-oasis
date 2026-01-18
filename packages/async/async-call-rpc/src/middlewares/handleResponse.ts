@@ -1,5 +1,5 @@
 import { RequestType, ResponseType, DeserializedMessageOutput } from '../types';
-import AbstractChannelProtocol from '../AbstractChannelProtocol';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
 export const handleResponse =
   (protocol: AbstractChannelProtocol) =>

@@ -11,7 +11,7 @@ import { handleAcquirePort } from './handleRequestUtils';
 export const handleRequest =
   (protocol: AbstractChannelProtocol) =>
   (message: DeserializedMessageOutput) => {
-    const serviceHost = protocol.serviceHost;
+    const serviceHost = protocol.service;
 
     const { data, event: messageEvent, ports } = message;
     const header = data[0];
@@ -28,12 +28,14 @@ export const handleRequest =
 
     const seqId = header[1];
     const requestPath = header[2];
-    const fnName = header[3];
+    const methodName = header[3];
     const args = body[0];
 
+    const handler = serviceHost.getHandler(methodName);
+
     if (serviceHost) {
-      if (isEventMethod(fnName)) {
-        const event = serviceHost.getHandler(requestPath, fnName);
+      if (isEventMethod(methodName)) {
+        const event = serviceHost.getHandler(requestPath, methodName);
 
         const fn = (...args: any[]) => {
           const responseHeader = [ResponseType.ReturnSuccess, seqId];
@@ -48,7 +50,7 @@ export const handleRequest =
           } catch (err) {
             sendData = protocol.writeBuffer.encode([responseHeader, []]);
             console.error(
-              `[handleRequest sendReply encode error ] ${requestPath} ${fnName}`,
+              `[handleRequest sendReply encode error ] ${requestPath} ${methodName}`,
               err
             );
           }
@@ -69,19 +71,19 @@ export const handleRequest =
       /**
        * AssignPassingPort
        */
-      if (isAssignPassingPortMethod(fnName)) {
-        const handler = serviceHost.getHandler(requestPath, fnName);
+      if (isAssignPassingPortMethod(methodName)) {
+        const handler = serviceHost.getHandler(requestPath, methodName);
 
         if (handler) args ? handler(args, ports?.[0]) : handler(ports?.[0]);
         // no need send reply
         return;
       }
 
-      if (isAcquirePortMethod(fnName)) {
+      if (isAcquirePortMethod(methodName)) {
         const result = handleAcquirePort({
           protocol,
           serviceHost,
-          fnName,
+          methodName,
           seqId,
           args,
           requestPath,
@@ -95,7 +97,7 @@ export const handleRequest =
         return;
       }
 
-      const handler = serviceHost.getHandler(requestPath, fnName);
+      const handler = serviceHost.getHandler(requestPath, methodName);
 
       const _result = handler?.(args);
 
@@ -117,7 +119,7 @@ export const handleRequest =
             } catch (err) {
               sendData = protocol.writeBuffer.encode([responseHeader, []]);
               console.error(
-                `[handleRequest sendReply encode error ] ${requestPath} ${fnName}`,
+                `[handleRequest sendReply encode error ] ${requestPath} ${methodName}`,
                 err
               );
             }
