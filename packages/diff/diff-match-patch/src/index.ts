@@ -59,6 +59,26 @@ export class FileRestoreManager {
       originalRange.end
     );
 
+    // 获取当前 range 的内容（用于调试）
+    const currentRangeContent = currentContent.substring(
+      startOffset,
+      endOffset
+    );
+
+    // 调试信息
+    console.log('[restoreRange] Debug Info:');
+    console.log(`  startOffset: ${startOffset}, endOffset: ${endOffset}`);
+    console.log(
+      `  Current range content: ${JSON.stringify(currentRangeContent)}`
+    );
+    console.log(
+      `  Original range mapping: ${originalRange.start}-${originalRange.end}`
+    );
+    console.log(`  Will restore to: ${JSON.stringify(originalRangeContent)}`);
+    console.log(
+      `  Content will change: ${currentRangeContent !== originalRangeContent}`
+    );
+
     // 替换最新文件中指定 range 的内容
     const restoredContent =
       currentContent.substring(0, startOffset) +
@@ -81,8 +101,10 @@ export class FileRestoreManager {
     let originalStart: number | null = null;
     let originalEnd: number | null = null;
 
-    for (const [operation, text] of diffs) {
+    for (let i = 0; i < diffs.length; i++) {
+      const [operation, text] = diffs[i];
       const textLength = text.length;
+      const nextDiff = i < diffs.length - 1 ? diffs[i + 1] : null;
 
       if (operation === DIFF_EQUAL) {
         // 相等部分：两个文件的 offset 同步增加
@@ -106,6 +128,26 @@ export class FileRestoreManager {
         ) {
           const offsetInRange = currentEnd - rangeStart;
           originalEnd = originalOffset + offsetInRange;
+
+          // 特殊处理：如果 currentEnd 正好在 EQUAL 的结束位置，且下一个 diff 是 DELETE
+          // 需要包含被删除的内容，以便正确恢复
+          //
+          // 示例：
+          //   原始文件: "...禁用按钮</button>..."
+          //   最新文件: "...禁用</button>..."
+          //   diff: [EQUAL: "...禁用"], [DELETE: "按钮"], [EQUAL: "</button>..."]
+          //
+          //   如果用户选择最新文件的 offset 1512-1514（"禁用"），
+          //   应该恢复为原始文件的 offset 1512-1516（"禁用按钮"）
+          //
+          //   如果不包含 DELETE 的内容，只会恢复到 "禁用"，而不是 "禁用按钮"
+          if (
+            currentEnd === rangeEnd &&
+            nextDiff &&
+            nextDiff[0] === DIFF_DELETE
+          ) {
+            originalEnd = originalOffset + textLength + nextDiff[1].length;
+          }
         }
 
         currentOffset += textLength;
@@ -136,13 +178,21 @@ export class FileRestoreManager {
         // INSERT 不增加 originalOffset
       } else if (operation === DIFF_DELETE) {
         // 删除部分：只在原始文件中存在
-        // 如果 currentStart 或 currentEnd 在删除位置之前，需要调整
-        if (originalStart === null && currentStart <= currentOffset) {
-          // 如果 currentStart 在删除位置之前，映射到删除开始的位置
+        // 如果 currentStart 正好在删除位置之前，需要包含删除的内容
+        if (originalStart === null && currentStart === currentOffset) {
+          // currentStart 正好在删除位置，映射到删除开始的位置
+          originalStart = originalOffset;
+        } else if (originalStart === null && currentStart < currentOffset) {
+          // currentStart 在删除位置之前，映射到删除开始的位置
           originalStart = originalOffset;
         }
-        if (originalEnd === null && currentEnd <= currentOffset) {
-          // 如果 currentEnd 在删除位置之前，映射到删除开始的位置
+
+        // 如果 currentEnd 正好在删除位置之前，需要包含删除的内容
+        if (originalEnd === null && currentEnd === currentOffset) {
+          // currentEnd 正好在删除位置，需要包含整个删除的内容
+          originalEnd = originalOffset + textLength;
+        } else if (originalEnd === null && currentEnd < currentOffset) {
+          // currentEnd 在删除位置之前，映射到删除开始的位置
           originalEnd = originalOffset;
         }
 
@@ -179,6 +229,52 @@ export class FileRestoreManager {
    */
   updateOriginalContent(newOriginalContent: string): void {
     this.originalContent = newOriginalContent;
+  }
+
+  /**
+   * 调试方法：分析指定 range 的恢复情况
+   */
+  debugRestoreRange(
+    currentContent: string,
+    options: RestoreRangeOptions
+  ): {
+    hasChanges: boolean;
+    originalRange: { start: number; end: number };
+    currentRange: { start: number; end: number };
+    originalContent: string;
+    currentContent: string;
+    willChange: boolean;
+  } {
+    const { startOffset, endOffset } = options;
+
+    // 计算差异
+    const diffs = this.dmp.diff_main(this.originalContent, currentContent);
+    this.dmp.diff_cleanupSemantic(diffs);
+
+    // 找到映射
+    const originalRange = this.mapCurrentRangeToOriginal(
+      diffs,
+      startOffset,
+      endOffset
+    );
+
+    const originalRangeContent = this.originalContent.substring(
+      originalRange.start,
+      originalRange.end
+    );
+    const currentRangeContent = currentContent.substring(
+      startOffset,
+      endOffset
+    );
+
+    return {
+      hasChanges: this.originalContent !== currentContent,
+      originalRange,
+      currentRange: { start: startOffset, end: endOffset },
+      originalContent: originalRangeContent,
+      currentContent: currentRangeContent,
+      willChange: originalRangeContent !== currentRangeContent,
+    };
   }
 }
 

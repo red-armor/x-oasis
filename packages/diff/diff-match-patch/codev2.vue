@@ -33,7 +33,7 @@
     </Disclosure>
 
     <!-- Disabled button 示例，用于测试 click-select 兜底逻辑 -->
-    <button class="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed" disabled>禁用按钮</button>
+    <button class="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed" disabled>禁用</button>
   </div>
 </template>
 
