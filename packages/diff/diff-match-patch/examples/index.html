@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diff Match Patch - Restore Range Example</title>
+  <!-- 使用 importmap 映射模块依赖 -->
+  <script type="importmap">
+    {
+      "imports": {
+        "diff-match-patch": "https://cdn.jsdelivr.net/npm/diff-match-patch@1.0.5/index.js"
+      }
+    }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .file-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .file-panel {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .file-header {
+      background: #f8f8f8;
+      padding: 10px 15px;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .file-content {
+      padding: 15px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 400px;
+      overflow-y: auto;
+      background: #fff;
+    }
+
+    .diff-visualization {
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .diff-item {
+      margin-bottom: 8px;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+    }
+
+    .diff-equal {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .diff-insert {
+      background: #d4edda;
+      color: #155724;
+      border-left: 3px solid #28a745;
+    }
+
+    .diff-delete {
+      background: #f8d7da;
+      color: #721c24;
+      border-left: 3px solid #dc3545;
+    }
+
+    .diff-label {
+      display: inline-block;
+      font-weight: 600;
+      margin-right: 10px;
+      min-width: 60px;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 15px;
+      margin-bottom: 20px;
+      align-items: end;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .control-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+    }
+
+    .control-group input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .control-group input:focus {
+      outline: none;
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #357abd;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .result-panel {
+      border: 2px solid #4a90e2;
+      border-radius: 4px;
+      padding: 15px;
+      background: #f0f7ff;
+      margin-top: 20px;
+    }
+
+    .result-title {
+      font-weight: 600;
+      color: #4a90e2;
+      margin-bottom: 10px;
+    }
+
+    .result-content {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background: white;
+      padding: 15px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .highlight {
+      background: #fff3cd;
+      padding: 2px 4px;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+
+    .info-box {
+      background: #e7f3ff;
+      border-left: 4px solid #4a90e2;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .info-box strong {
+      color: #4a90e2;
+    }
+
+    .example-offsets {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .example-btn {
+      padding: 6px 12px;
+      background: #e7f3ff;
+      color: #4a90e2;
+      border: 1px solid #4a90e2;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .example-btn:hover {
+      background: #4a90e2;
+      color: white;
+    }
+  </style>
+  <script>
+    // 定义全局函数，确保在模块加载前可用
+    window.updateCharCount = function(id, count) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.textContent = count;
+      }
+    };
+
+    // 定义其他全局函数的占位符，模块脚本加载后会替换它们
+    window.updateDiff = function() {
+      // 占位符，模块加载后会替换
+    };
+
+    window.loadExampleFiles = function() {
+      // 占位符，模块加载后会替换
+    };
+
+    window.clearFiles = function() {
+      // 占位符，模块加载后会替换
+    };
+
+    window.restoreRange = function() {
+      // 占位符，模块加载后会替换
+    };
+
+    window.setOffset = function(start, end) {
+      // 占位符，模块加载后会替换
+    };
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Diff Match Patch - Restore Range</h1>
+    <p class="subtitle">可视化文件差异并恢复指定范围的内容到原始版本</p>
+
+    <div class="info-box">
+      <strong>使用说明：</strong>
+      <ul style="margin-left: 20px; margin-top: 8px;">
+        <li>左侧显示原始文件（code.vue），右侧显示修改后的文件（codev2.vue）</li>
+        <li>差异可视化区域显示两个文件之间的差异（绿色=新增，红色=删除，灰色=相同）</li>
+        <li>输入 offset range 并点击"恢复"按钮，将指定范围恢复到原始版本</li>
+        <li>可以使用下方的示例按钮快速测试不同的 offset range</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">文件输入</div>
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <button class="example-btn" onclick="loadExampleFiles()" style="background: #4a90e2; color: white; border: none;">加载示例文件</button>
+        <button class="example-btn" onclick="clearFiles()" style="background: #dc3545; color: white; border: none;">清空</button>
+      </div>
+      <div class="file-comparison">
+        <div class="file-panel">
+          <div class="file-header">
+            原始文件 (Original)
+            <span style="font-size: 11px; font-weight: normal; color: #666; margin-left: 10px;">字符数: <span id="originalCharCount">0</span></span>
+          </div>
+          <textarea
+            id="originalContent"
+            class="file-content"
+            style="resize: vertical; min-height: 200px; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;"
+            placeholder="请输入原始文件内容..."
+            oninput="updateCharCount('originalCharCount', this.value.length); updateDiff()"
+          ></textarea>
+        </div>
+        <div class="file-panel">
+          <div class="file-header">
+            修改后文件 (Current)
+            <span style="font-size: 11px; font-weight: normal; color: #666; margin-left: 10px;">字符数: <span id="currentCharCount">0</span></span>
+          </div>
+          <textarea
+            id="currentContent"
+            class="file-content"
+            style="resize: vertical; min-height: 200px; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;"
+            placeholder="请输入修改后的文件内容..."
+            oninput="updateCharCount('currentCharCount', this.value.length); updateDiff()"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">差异可视化</div>
+      <div class="diff-visualization" id="diffVisualization"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">恢复操作</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>起始 Offset (startOffset)</label>
+          <input type="number" id="startOffset" value="1512" min="0">
+        </div>
+        <div class="control-group">
+          <label>结束 Offset (endOffset)</label>
+          <input type="number" id="endOffset" value="1514" min="0">
+        </div>
+        <button onclick="restoreRange()">恢复</button>
+      </div>
+      <div class="example-offsets">
+        <span style="font-size: 12px; color: #666; margin-right: 10px;">快速示例：</span>
+        <button class="example-btn" onclick="setOffset(1512, 1514)">恢复 "禁用" → "禁用按钮"</button>
+        <button class="example-btn" onclick="setOffset(1416, 1512)">恢复整个按钮区域</button>
+        <button class="example-btn" onclick="setOffset(0, 100)">恢复前100个字符</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel" style="display: none;">
+      <div class="result-title">恢复结果</div>
+      <div class="result-content" id="resultContent"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 导入实际的包
+    import { FileRestoreManager } from '../dist/diff-match-patch.esm.js';
+    // diff-match-patch 会通过 importmap 自动解析
+    import { diff_match_patch } from 'diff-match-patch';
+
+    // 示例文件内容 - 使用 fetch 从实际文件加载
+    let exampleOriginalContent = '';
+    let exampleCurrentContent = '';
+
+    // 异步加载示例文件
+    async function loadExampleFilesFromDisk() {
+      try {
+        const [originalRes, currentRes] = await Promise.all([
+          fetch('../code.vue'),
+          fetch('../codev2.vue')
+        ]);
+
+        if (originalRes.ok && currentRes.ok) {
+          exampleOriginalContent = await originalRes.text();
+          exampleCurrentContent = await currentRes.text();
+        } else {
+          console.warn('无法加载示例文件，请手动输入内容或使用本地服务器运行');
+        }
+      } catch (error) {
+        console.warn('无法加载示例文件:', error);
+      }
+    }
+
+    // 初始化时尝试加载示例文件
+    loadExampleFilesFromDisk();
+
+    let manager = null;
+    const dmp = new diff_match_patch();
+
+    // 加载示例文件
+    window.loadExampleFiles = async function() {
+      // 如果还没有加载，先尝试加载
+      if (!exampleOriginalContent || !exampleCurrentContent) {
+        await loadExampleFilesFromDisk();
+      }
+
+      if (exampleOriginalContent && exampleCurrentContent) {
+        document.getElementById('originalContent').value = exampleOriginalContent;
+        document.getElementById('currentContent').value = exampleCurrentContent;
+        updateCharCount('originalCharCount', exampleOriginalContent.length);
+        updateCharCount('currentCharCount', exampleCurrentContent.length);
+        updateDiff();
+      } else {
+        alert('无法加载示例文件。请确保使用本地服务器运行（如 python -m http.server），或手动输入文件内容。');
+      }
+    };
+
+    // 清空文件
+    window.clearFiles = function() {
+      document.getElementById('originalContent').value = '';
+      document.getElementById('currentContent').value = '';
+      updateCharCount('originalCharCount', 0);
+      updateCharCount('currentCharCount', 0);
+      document.getElementById('diffVisualization').innerHTML = '';
+      document.getElementById('resultPanel').style.display = 'none';
+      manager = null;
+    };
+
+    // 更新差异显示
+    window.updateDiff = function() {
+      const originalContent = document.getElementById('originalContent').value;
+      const currentContent = document.getElementById('currentContent').value;
+
+      if (!originalContent || !currentContent) {
+        document.getElementById('diffVisualization').innerHTML = '<div style="color: #999; padding: 20px; text-align: center;">请输入两个文件的内容以查看差异</div>';
+        manager = null;
+        return;
+      }
+
+      // 创建或更新 FileRestoreManager 实例
+      manager = new FileRestoreManager(originalContent);
+
+      // 计算并显示差异
+      const diffs = dmp.diff_main(originalContent, currentContent);
+      dmp.diff_cleanupSemantic(diffs);
+
+      const diffContainer = document.getElementById('diffVisualization');
+      diffContainer.innerHTML = '';
+
+      diffs.forEach(([operation, text]) => {
+        const div = document.createElement('div');
+        div.className = 'diff-item';
+
+        let className = 'diff-equal';
+        let label = 'EQUAL';
+
+        if (operation === 1) {
+          className = 'diff-insert';
+          label = 'INSERT';
+        } else if (operation === -1) {
+          className = 'diff-delete';
+          label = 'DELETE';
+        }
+
+        div.className = `diff-item ${className}`;
+        const preview = text.length > 100 ? text.substring(0, 100) + '...' : text;
+        div.innerHTML = `<span class="diff-label">${label}</span>${escapeHtml(preview)} <span style="color: #999; font-size: 11px;">(${text.length} chars)</span>`;
+        diffContainer.appendChild(div);
+      });
+    };
+
+    // 使用实际的 FileRestoreManager
+    window.restoreRange = function() {
+      if (!manager) {
+        alert('请先输入文件内容');
+        return;
+      }
+
+      const startOffset = parseInt(document.getElementById('startOffset').value);
+      const endOffset = parseInt(document.getElementById('endOffset').value);
+      const currentContent = document.getElementById('currentContent').value;
+
+      if (!currentContent) {
+        alert('请先输入修改后的文件内容');
+        return;
+      }
+
+      try {
+        // 使用实际的包进行恢复
+        const restoredContent = manager.restoreRange(currentContent, {
+          startOffset,
+          endOffset
+        });
+
+        // 使用 debugRestoreRange 获取详细信息
+        const debugInfo = manager.debugRestoreRange(currentContent, {
+          startOffset,
+          endOffset
+        });
+
+        // 显示结果
+        const resultPanel = document.getElementById('resultPanel');
+        const resultContent = document.getElementById('resultContent');
+
+        resultPanel.style.display = 'block';
+
+        let resultHtml = '<div style="margin-bottom: 15px;"><strong>调试信息：</strong></div>';
+        resultHtml += `<div style="margin-bottom: 10px;">起始 Offset: ${startOffset}, 结束 Offset: ${endOffset}</div>`;
+        resultHtml += `<div style="margin-bottom: 10px;">当前范围内容: <span class="highlight">${escapeHtml(debugInfo.currentContent)}</span></div>`;
+        resultHtml += `<div style="margin-bottom: 10px;">原始范围映射: ${debugInfo.originalRange.start}-${debugInfo.originalRange.end}</div>`;
+        resultHtml += `<div style="margin-bottom: 10px;">将恢复为: <span class="highlight">${escapeHtml(debugInfo.originalContent)}</span></div>`;
+        resultHtml += `<div style="margin-bottom: 15px;">内容将改变: ${debugInfo.willChange ? '是' : '否'}</div>`;
+        resultHtml += '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd;"><strong>恢复后的完整文件：</strong></div>';
+        resultHtml += `<div style="margin-top: 10px;">${escapeHtml(restoredContent)}</div>`;
+
+        resultContent.innerHTML = resultHtml;
+
+        // 滚动到结果区域
+        resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (error) {
+        alert('错误: ' + error.message);
+        console.error(error);
+      }
+    };
+
+    window.setOffset = function(start, end) {
+      document.getElementById('startOffset').value = start;
+      document.getElementById('endOffset').value = end;
+      restoreRange();
+    };
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 初始化
+    console.log('Diff visualization loaded');
+
+    // 如果用户已经输入了内容，自动更新差异
+    const originalInput = document.getElementById('originalContent');
+    const currentInput = document.getElementById('currentContent');
+
+    // 监听输入变化（已经在 textarea 的 oninput 中处理）
+
+    // 页面加载完成后，如果用户想加载示例，可以点击按钮
+  </script>
+</body>
+</html>
