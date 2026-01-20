@@ -14,6 +14,17 @@ npm install @x-oasis/diff-match-patch
 pnpm add @x-oasis/diff-match-patch
 ```
 
+## 在线示例
+
+查看 [交互式示例](./examples/index.html) 来可视化地了解如何使用这个库。示例包含：
+
+- 文件差异的可视化显示
+- 交互式的 offset range 恢复功能
+- 详细的调试信息展示
+- 多个预设的测试场景
+
+直接在浏览器中打开 `examples/index.html` 即可使用。
+
 ## 使用方法
 
 ### 使用类方式
