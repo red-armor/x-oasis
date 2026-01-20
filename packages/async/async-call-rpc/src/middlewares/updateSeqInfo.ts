@@ -3,6 +3,13 @@ import { isEventMethod } from '../common';
 import { SenderMiddlewareOutput, SendMiddlewareLifecycle } from '../types';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
+/**
+ *
+ * @param channelProtocol
+ * @returns
+ *
+ * Add how to handle the request and response
+ */
 export const updateSeqInfo = (channelProtocol: AbstractChannelProtocol) => {
   const fn = (value: SenderMiddlewareOutput) => {
     const { data, seqId } = value;
