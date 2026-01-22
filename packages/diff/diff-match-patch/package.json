@@ -16,10 +16,10 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "diff-match-patch": "^1.0.5"
-  },
   "devDependencies": {
     "tsdx": "^0.14.1"
+  },
+  "dependencies": {
+    "diff-match-patch": "^1.0.5"
   }
 }

@@ -1,5 +1,5 @@
 
-<template>
+<templabe>
   <div class="space-y-6">
     <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
       <HomeIcon class="h-6 w-6 text-indigo-600" /> 欢迎
