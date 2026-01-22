@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FileRestoreManager } from '@x-oasis/diff-match-patch';
-import { DiffView } from '@git-diff-view/react';
+import { DiffView, DiffModeEnum } from '@git-diff-view/react';
 import { generateDiffFile, DiffFile } from '@git-diff-view/file';
+import '@git-diff-view/react/styles/diff-view.css';
 import './index.css';
 
 // 示例文件内容
@@ -107,6 +108,9 @@ const App: React.FC = () => {
   const originalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [diffFile, setDiffFile] = useState<DiffFile | null>(null);
+  const [diffViewMode, setDiffViewMode] = useState<DiffModeEnum>(
+    DiffModeEnum.Unified
+  );
 
   // 使用 @git-diff-view/file 生成 diff 文件
   useEffect(() => {
@@ -125,7 +129,9 @@ const App: React.FC = () => {
         'vue'
       );
       file.init();
+      // 构建 split 和 unified diff lines 以支持两种视图模式
       file.buildSplitDiffLines();
+      file.buildUnifiedDiffLines();
       setDiffFile(file);
     } catch (error) {
       console.error('Error generating diff file:', error);
@@ -175,7 +181,49 @@ const App: React.FC = () => {
       </div>
 
       <div className="section">
-        <div className="section-title">文件对比</div>
+        <div
+          className="section-title"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span>文件对比</span>
+          {diffFile && (
+            <div style={{ display: 'flex', gap: '10px', fontSize: '14px' }}>
+              <button
+                onClick={() => setDiffViewMode(DiffModeEnum.Split)}
+                style={{
+                  padding: '4px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  background:
+                    diffViewMode === DiffModeEnum.Split ? '#0366d6' : '#fff',
+                  color: diffViewMode === DiffModeEnum.Split ? '#fff' : '#333',
+                  cursor: 'pointer',
+                }}
+              >
+                并排视图
+              </button>
+              <button
+                onClick={() => setDiffViewMode(DiffModeEnum.Unified)}
+                style={{
+                  padding: '4px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  background:
+                    diffViewMode === DiffModeEnum.Unified ? '#0366d6' : '#fff',
+                  color:
+                    diffViewMode === DiffModeEnum.Unified ? '#fff' : '#333',
+                  cursor: 'pointer',
+                }}
+              >
+                统一视图
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* 使用 @git-diff-view/react 显示差异 */}
         <div
@@ -188,7 +236,11 @@ const App: React.FC = () => {
           }}
         >
           {diffFile ? (
-            <DiffView diffFile={diffFile} />
+            <DiffView
+              diffFile={diffFile}
+              diffViewMode={diffViewMode}
+              diffViewHighlight={true}
+            />
           ) : originalContent === currentContent ? (
             <div
               style={{ padding: '20px', textAlign: 'center', color: '#666' }}
