@@ -4,31 +4,47 @@
 
 ## 运行示例
 
-### 方法 1: 直接在浏览器中打开
+这是一个基于 Vite + React 的项目。
 
-直接在浏览器中打开 `index.html` 文件即可。
+### 安装依赖
 
-### 方法 2: 使用本地服务器
-
-如果你使用 Python:
+在项目根目录运行：
 
 ```bash
-# Python 3
-python -m http.server 8000
-
-# Python 2
-python -m SimpleHTTPServer 8000
+pnpm install
 ```
 
-然后访问 `http://localhost:8000`
+### 启动开发服务器
 
-如果你使用 Node.js:
+在 `examples` 目录下运行：
 
 ```bash
-npx http-server -p 8000
+cd packages/diff/diff-match-patch/examples
+pnpm install
+pnpm dev
 ```
 
-然后访问 `http://localhost:8000`
+或者从项目根目录运行：
+
+```bash
+pnpm install
+cd packages/diff/diff-match-patch/examples
+pnpm dev
+```
+
+开发服务器将在 `http://localhost:3000` 启动，并自动在浏览器中打开。
+
+### 构建生产版本
+
+```bash
+pnpm build
+```
+
+### 预览生产构建
+
+```bash
+pnpm preview
+```
 
 ## 功能说明
 
@@ -62,6 +78,9 @@ npx http-server -p 8000
 ## 技术实现
 
 示例使用：
-- `diff-match-patch` (通过 CDN 引入)
-- 纯 JavaScript 实现 `FileRestoreManager` 的核心逻辑
-- 无需构建步骤，可直接在浏览器中运行
+- **Vite**: 快速的前端构建工具
+- **React**: UI 框架
+- **TypeScript**: 类型安全
+- **@x-oasis/diff-match-patch**: 核心库，提供 `FileRestoreManager` 类
+- **diff-match-patch**: 差异计算库
+- **@git-diff-view/react**: 差异可视化组件（样式）
