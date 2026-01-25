@@ -1,0 +1,24 @@
+{
+  "name": "@x-oasis/virtual-keyboard",
+  "version": "0.1.34",
+  "description": "virtual-keyboard function",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/virtual-keyboard.esm.js",
+  "files": [
+    "dist",
+    "index.ts",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdx build --tsconfig tsconfig.build.json",
+    "clean": "rimraf ./dist",
+    "test": "vitest",
+    "compile": "tsc -p tsconfig.build.json"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tsdx": "^0.14.1"
+  }
+}
