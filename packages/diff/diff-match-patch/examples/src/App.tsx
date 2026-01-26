@@ -97,6 +97,18 @@ const App: React.FC = () => {
     }
   };
 
+  // 切换原始文件和修改后的文件内容
+  const handleSwapFiles = () => {
+    const temp = originalContent;
+    setOriginalContent(currentContent);
+    setCurrentContent(temp);
+    // 重置 offset 和恢复结果
+    setStartOffset(0);
+    setEndOffset(0);
+    setRestoredContent('');
+    setDebugInfo(null);
+  };
+
   // 计算指定行号在新文件中的offset范围
   const getOffsetRangeFromLineNumber = (
     lineNumber: number
@@ -488,7 +500,7 @@ const App: React.FC = () => {
         </div>
 
         {/* 可编辑的文件内容区域 */}
-        <div className="file-comparison">
+        <div className="file-comparison" style={{ position: 'relative' }}>
           <div className="file-panel">
             <div className="file-header">原始文件 (code.vue) - 可编辑</div>
             <textarea
@@ -498,6 +510,42 @@ const App: React.FC = () => {
               onChange={(e) => setOriginalContent(e.target.value)}
               spellCheck={false}
             />
+          </div>
+
+          {/* 切换按钮 */}
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10,
+            }}
+          >
+            <button
+              onClick={handleSwapFiles}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#0366d6',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#0256c2';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#0366d6';
+              }}
+              title="切换原始文件和修改后的文件内容"
+            >
+              ⇄ 切换
+            </button>
           </div>
 
           <div className="file-panel">
