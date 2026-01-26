@@ -6,7 +6,7 @@ import '@git-diff-view/react/styles/diff-view.css';
 import './index.css';
 
 // 示例文件内容
-const ORIGINAL_FILE = `\n<templabe>
+const ORIGINAL_FILE = `<template>
   <div class="space-y-6">
     <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
       <HomeIcon class="h-6 w-6 text-indigo-600" /> 欢迎
@@ -52,7 +52,7 @@ import { Switch, Disclosure, DisclosureButton, DisclosurePanel } from '@headless
 const enabled = ref(true);
 </script>`;
 
-const CURRENT_FILE = `\n<template>
+const CURRENT_FILE = `<template>
   <div class="space-y-6">
     <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
       <HomeIcon class="h-6 w-6 text-indigo-600" /> 欢迎
@@ -112,29 +112,68 @@ const App: React.FC = () => {
     DiffModeEnum.Unified
   );
 
-  // 使用 @git-diff-view/file 生成 diff 文件
+  // 使用 file diff mode
   useEffect(() => {
-    if (originalContent === currentContent) {
+    // 确保内容不为空且是字符串类型
+    const oldContent =
+      typeof originalContent === 'string'
+        ? originalContent
+        : String(originalContent || '');
+    const newContent =
+      typeof currentContent === 'string'
+        ? currentContent
+        : String(currentContent || '');
+
+    if (oldContent === newContent) {
+      setDiffFile(null);
+      return;
+    }
+
+    // 验证内容不为空
+    if (!oldContent && !newContent) {
       setDiffFile(null);
       return;
     }
 
     try {
+      console.log('Generating diff file with:', {
+        oldContentLength: oldContent.length,
+        newContentLength: newContent.length,
+        oldContentType: typeof oldContent,
+        newContentType: typeof newContent,
+      });
+
       const file = generateDiffFile(
         'code.vue',
-        originalContent,
+        oldContent,
         'codev2.vue',
-        currentContent,
+        newContent,
         'vue',
         'vue'
       );
+
+      // 初始化并构建 diff lines
       file.init();
-      // 构建 split 和 unified diff lines 以支持两种视图模式
       file.buildSplitDiffLines();
       file.buildUnifiedDiffLines();
+
+      // 确保所有 hunks 都展开
+      file.onAllExpand();
+
+      console.log('DiffFile generated:', file);
+      console.log('Hunks:', file.hunks);
+      console.log('Unified diff lines:', file.unifiedDiffLines?.length);
+      console.log('Split diff lines:', file.splitDiffLines?.length);
+
       setDiffFile(file);
     } catch (error) {
       console.error('Error generating diff file:', error);
+      console.error('Error details:', {
+        oldContent: oldContent?.substring(0, 100),
+        newContent: newContent?.substring(0, 100),
+        oldContentType: typeof oldContent,
+        newContentType: typeof newContent,
+      });
       setDiffFile(null);
     }
   }, [originalContent, currentContent]);
