@@ -26,3 +26,25 @@ export type SendingProps = {
   isOptionsRequest?: boolean;
   transfer?: MessagePort[];
 };
+
+/**
+ * Channel protocol configuration options
+ */
+export type AbstractChannelProtocolProps = {
+  description?: string;
+  masterProcessName?: string;
+  connected?: boolean;
+  /**
+   * Serialization format for buffer encoding/decoding
+   * @default 'json'
+   */
+  serializationFormat?: string;
+  /**
+   * Custom read buffer instance (overrides serializationFormat)
+   */
+  readBuffer?: any;
+  /**
+   * Custom write buffer instance (overrides serializationFormat)
+   */
+  writeBuffer?: any;
+};

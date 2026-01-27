@@ -31,7 +31,8 @@ export type SenderMiddlewareOutput = {
 };
 
 export type PendingSendEntry = SenderMiddlewareOutput & {
-  fnName: string;
+  // fnName: string;
+  methodName: string;
   lifecycle: SendMiddlewareLifecycle;
   middlewareContext: MiddlewareContext;
 };

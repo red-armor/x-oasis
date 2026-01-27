@@ -1,15 +1,17 @@
 import AbstractChannelProtocol from './AbstractChannelProtocol';
-import ReadBuffer from '../buffer/ReadBuffer';
-import WriteBuffer from '../buffer/WriteBuffer';
-import { SenderMiddleware, ClientMiddleware } from '../types';
+import {
+  SenderMiddleware,
+  ClientMiddleware,
+  AbstractChannelProtocolProps,
+} from '../types';
 import { normalizeWebSocketRawMessage } from '../middlewares/normalize';
 
 export default class WebSocketChannel extends AbstractChannelProtocol {
   private socket: WebSocket;
   readonly name: string;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000;
+  private reconnectAttempts: number;
+  private maxReconnectAttempts: number;
+  private reconnectDelay: number;
 
   /**
    * @param socket Pass the WebSocket instance (client-side) or WebSocket connection (server-side).
@@ -22,14 +24,29 @@ export default class WebSocketChannel extends AbstractChannelProtocol {
       maxReconnectAttempts?: number;
       reconnectDelay?: number;
       connected?: boolean;
-    }
+    } & AbstractChannelProtocolProps
   ) {
-    super({ connected: options?.connected ?? false });
-    const { name } = options || {};
+    // super() must be the first statement - extract options inline using IIFE
+    const opts = options || {};
+    const {
+      name,
+      maxReconnectAttempts,
+      reconnectDelay,
+      connected,
+      ...protocolOptions
+    } = opts;
+
+    super({
+      connected: connected ?? false,
+      ...protocolOptions,
+    });
+
+    // Now we can assign to instance properties
     this.socket = socket;
     this.name = name || 'websocket';
-    this.maxReconnectAttempts = options?.maxReconnectAttempts ?? 5;
-    this.reconnectDelay = options?.reconnectDelay ?? 1000;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = maxReconnectAttempts ?? 5;
+    this.reconnectDelay = reconnectDelay ?? 1000;
 
     // Set up WebSocket event handlers
     this.setupSocketHandlers();
@@ -115,15 +132,14 @@ export default class WebSocketChannel extends AbstractChannelProtocol {
   }
 
   /**
-   * 可以通过重写这个方法，来使用不同的读取buffer
+   * Inherits buffer getters from AbstractChannelProtocol
+   * Uses BufferFactory with configured serialization format
+   *
+   * To use a different format, pass serializationFormat in constructor:
+   * new WebSocketChannel(socket, { serializationFormat: 'msgpack' })
+   *
+   * Or override these getters if you need custom buffer logic
    */
-  get readBuffer() {
-    return new ReadBuffer();
-  }
-
-  get writeBuffer() {
-    return new WriteBuffer();
-  }
 
   decorateSendMiddleware(middlewares: SenderMiddleware[]) {
     return middlewares;

@@ -10,9 +10,24 @@ export enum DataType {
   Int = 6,
 }
 
+/**
+ * JSON-based read buffer implementation
+ * Default deserializer using JSON.parse
+ */
 export default class ReadBuffer extends ReadBaseBuffer {
-  decode(data: any) {
-    return JSON.parse(data);
+  decode(data: string | ArrayBuffer | Uint8Array): any {
+    // Handle binary input (convert to string first)
+    if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
+      const decoder = new TextDecoder();
+      const text = decoder.decode(data);
+      return JSON.parse(text);
+    }
+    // Handle string input
+    return JSON.parse(data as string);
+  }
+
+  getFormat(): string {
+    return 'json';
   }
 }
 

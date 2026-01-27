@@ -10,12 +10,13 @@ import {
   SenderMiddleware,
   RequestRawSequenceId,
   PendingSendEntry,
+  AbstractChannelProtocolProps,
 } from '../types';
 import { runMiddlewares, sendRequest } from '../middlewares';
-import ReadBuffer from '../buffer/ReadBuffer';
-import WriteBuffer from '../buffer/WriteBuffer';
 import ReadBaseBuffer from '../buffer/ReadBaseBuffer';
 import WriteBaseBuffer from '../buffer/WriteBaseBuffer';
+import { BufferFactory } from '../buffer/BufferFactory';
+import { SerializationFormat } from '../buffer/SerializationFormat';
 import { resumeMiddlewares } from '../middlewares/utils';
 
 import { deserialize, serialize } from '../middlewares/buffer';
@@ -55,9 +56,11 @@ abstract class AbstractChannelProtocol
     sendRequest,
   ];
 
-  private _readBuffer: ReadBaseBuffer;
+  private _readBuffer: ReadBaseBuffer | null = null;
 
-  private _writeBuffer: WriteBaseBuffer;
+  private _writeBuffer: WriteBaseBuffer | null = null;
+
+  private _serializationFormat: string;
 
   private _isConnected = true;
 
@@ -81,12 +84,30 @@ abstract class AbstractChannelProtocol
 
   onDidDisconnected = this.onDidDisconnectedEvent.subscribe;
 
-  constructor(props?: any) {
+  constructor(props?: AbstractChannelProtocolProps) {
     super();
-    const { description, masterProcessName, connected = true } = props || {};
+    const {
+      description,
+      masterProcessName,
+      connected = true,
+      serializationFormat = SerializationFormat.JSON,
+      readBuffer,
+      writeBuffer,
+    } = props || {};
+
     this._description = description;
     this._isConnected = connected;
     this._masterProcessName = masterProcessName;
+    this._serializationFormat = serializationFormat;
+
+    // 如果提供了自定义 buffer，直接使用
+    if (readBuffer) {
+      this._readBuffer = readBuffer;
+    }
+    if (writeBuffer) {
+      this._writeBuffer = writeBuffer;
+    }
+
     // 需要创建，否则创建'message'监听时，会出现混乱
     this._key = generateRandomKey();
     this.registerDisposable(this.onDidConnected(this.didConnected.bind(this)));
@@ -115,18 +136,93 @@ abstract class AbstractChannelProtocol
   }
 
   /**
-   * 如果已经存在，那么直接返回；否则创建一个；假如说继承了AbstractChannelProtocol，那么需要重写这个方法
+   * Get or create read buffer instance
+   * Uses lazy initialization with caching for performance
+   *
+   * Priority:
+   * 1. Custom buffer provided in constructor
+   * 2. Cached instance
+   * 3. Create new instance using BufferFactory with configured format
+   *
+   * Subclasses can override this method to provide custom buffer logic
    */
-  get readBuffer() {
-    if (this._readBuffer) return this._readBuffer;
-    this._readBuffer = new ReadBuffer();
+  get readBuffer(): ReadBaseBuffer {
+    if (this._readBuffer) {
+      return this._readBuffer;
+    }
+
+    // Try to create using BufferFactory
+    try {
+      this._readBuffer = BufferFactory.createReadBuffer(
+        this._serializationFormat
+      );
+    } catch (error) {
+      // Fallback to JSON if configured format is not available
+      console.warn(
+        `[AbstractChannelProtocol] Failed to create read buffer with format "${this._serializationFormat}", falling back to JSON.`,
+        error
+      );
+      this._readBuffer = BufferFactory.createReadBuffer(
+        SerializationFormat.JSON
+      );
+    }
+
     return this._readBuffer;
   }
 
-  get writeBuffer() {
-    if (this._writeBuffer) return this._writeBuffer;
-    this._writeBuffer = new WriteBuffer();
+  /**
+   * Get or create write buffer instance
+   * Uses lazy initialization with caching for performance
+   *
+   * Priority:
+   * 1. Custom buffer provided in constructor
+   * 2. Cached instance
+   * 3. Create new instance using BufferFactory with configured format
+   *
+   * Subclasses can override this method to provide custom buffer logic
+   */
+  get writeBuffer(): WriteBaseBuffer {
+    if (this._writeBuffer) {
+      return this._writeBuffer;
+    }
+
+    // Try to create using BufferFactory
+    try {
+      this._writeBuffer = BufferFactory.createWriteBuffer(
+        this._serializationFormat
+      );
+    } catch (error) {
+      // Fallback to JSON if configured format is not available
+      console.warn(
+        `[AbstractChannelProtocol] Failed to create write buffer with format "${this._serializationFormat}", falling back to JSON.`,
+        error
+      );
+      this._writeBuffer = BufferFactory.createWriteBuffer(
+        SerializationFormat.JSON
+      );
+    }
+
     return this._writeBuffer;
+  }
+
+  /**
+   * Get the configured serialization format
+   */
+  get serializationFormat(): string {
+    return this._serializationFormat;
+  }
+
+  /**
+   * Set serialization format (will recreate buffers on next access)
+   * Note: This will clear cached buffers, new instances will be created on next access
+   */
+  setSerializationFormat(format: string): void {
+    if (this._serializationFormat !== format) {
+      this._serializationFormat = format;
+      // Clear cached buffers to force recreation with new format
+      this._readBuffer = null;
+      this._writeBuffer = null;
+    }
   }
 
   // start from 1
@@ -187,11 +283,11 @@ abstract class AbstractChannelProtocol
     return this._isConnected;
   }
 
-  send(...args: any[]) {
+  send(..._args: any[]) {
     throw new Error('send method is not implemented');
   }
 
-  on(...args: any[]) {
+  on(..._args: any[]) {
     throw new Error('onMessage method is not implemented');
   }
 

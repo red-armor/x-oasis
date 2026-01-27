@@ -1,4 +1,5 @@
 import { IpcRenderer, UtilityProcess, WebContents } from 'electron';
+import { AbstractChannelProtocolProps as BaseAbstractChannelProtocolProps } from './channel';
 
 export interface ChannelPort {
   on(event: 'message', listener: (messageEvent: MessageEvent) => void): this;
@@ -31,11 +32,11 @@ export type SenderMiddleware = (
   channel?: MessageChannelProtocol
 ) => (data: SenderEntry) => SenderEntry;
 
-export type AbstractChannelProtocolProps = {
-  // serviceHost?: RPCServiceHost;
-  connected?: boolean;
-  description?: string;
-  masterProcessName?: string;
+/**
+ * Extended AbstractChannelProtocolProps for message channel protocols
+ * Includes additional middleware configuration options
+ */
+export type AbstractChannelProtocolProps = BaseAbstractChannelProtocolProps & {
   clientMiddlewares?: ClientMiddleware[];
   senderMiddlewares?: SenderMiddleware[];
 };

@@ -1,4 +1,5 @@
 import AbstractChannelProtocol from './AbstractChannelProtocol';
+import { AbstractChannelProtocolProps } from '../types/channel';
 
 export default class WorkerChannel extends AbstractChannelProtocol {
   private worker: any;
@@ -6,16 +7,19 @@ export default class WorkerChannel extends AbstractChannelProtocol {
 
   /**
    * @param worker Pass the Worker in the main thread.
+   * @param options Configuration options including serialization format
    */
   constructor(
     worker: any,
     options?: {
       name?: string;
-    }
+    } & AbstractChannelProtocolProps
   ) {
-    super();
+    // Extract Worker-specific options and pass the rest to parent
+    const { name, ...protocolOptions } = options || {};
+    super(protocolOptions);
     this.worker = worker;
-    this.name = options?.name || 'worker';
+    this.name = name || 'worker';
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
