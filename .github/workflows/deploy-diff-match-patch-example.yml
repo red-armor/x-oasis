@@ -1,0 +1,144 @@
+name: Deploy Examples to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/**/examples/**'
+      - 'packages/**/src/**'
+      - '.github/workflows/deploy-diff-match-patch-example.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build packages
+        run: pnpm run build
+
+      - name: Create deployment directory
+        run: mkdir -p .github-pages
+
+      - name: Build diff-match-patch example
+        working-directory: packages/diff/diff-match-patch/examples
+        env:
+          GITHUB_PAGES: 'true'
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_PAGES_PATH: 'diff-match-patch'
+        run: |
+          if [ -f "package.json" ] && [ -f "vite.config.ts" ]; then
+            pnpm install
+            pnpm build
+            mkdir -p ../../../../.github-pages/diff-match-patch
+            cp -r dist/* ../../../../.github-pages/diff-match-patch/
+          fi
+
+      # 可以在这里添加更多示例项目的构建步骤
+      # - name: Build another-example
+      #   working-directory: packages/another/example
+      #   env:
+      #     GITHUB_PAGES: 'true'
+      #     GITHUB_REPOSITORY: ${{ github.repository }}
+      #     GITHUB_PAGES_PATH: 'another-example'
+      #   run: |
+      #     if [ -f "package.json" ]; then
+      #       pnpm install
+      #       pnpm build
+      #       mkdir -p ../../../../.github-pages/another-example
+      #       cp -r dist/* ../../../../.github-pages/another-example/
+      #     fi
+
+      - name: Create index page
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          cat > .github-pages/index.html << EOF
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>x-oasis Examples</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                max-width: 800px;
+                margin: 50px auto;
+                padding: 20px;
+                line-height: 1.6;
+                background: #f5f5f5;
+              }
+              .container {
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+              h1 { color: #333; margin-top: 0; }
+              ul { list-style: none; padding: 0; }
+              li { margin: 15px 0; }
+              a {
+                display: inline-block;
+                padding: 12px 24px;
+                background: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: background 0.2s;
+              }
+              a:hover { background: #0056b3; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>x-oasis Examples</h1>
+              <ul>
+                <li><a href="/${REPO_NAME}/diff-match-patch/">diff-match-patch</a></li>
+              </ul>
+            </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .github-pages
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
