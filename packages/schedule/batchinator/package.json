@@ -18,5 +18,9 @@
   "license": "ISC",
   "devDependencies": {
     "tsdx": "^0.14.1"
+  },
+  "dependencies": {
+    "@x-oasis/debounce": "workspace:*",
+    "@x-oasis/default-boolean-value": "workspace:*"
   }
 }

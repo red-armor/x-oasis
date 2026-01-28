@@ -1,13 +1,7 @@
-// Helper function
-const defaultBooleanValue = (value: boolean | undefined, defaultValue: boolean): boolean => {
-  return value !== undefined ? value : defaultValue;
-};
+import debounce from '@x-oasis/debounce';
+import defaultBooleanValue from '@x-oasis/default-boolean-value';
 
 // https://github.com/facebook/react-native/blob/main/Libraries/Interaction/Batchinator.js
-
-type TaskHandle = {
-  cancel: () => void;
-};
 
 type BatchinatorOptions = {
   leading?: boolean;
@@ -20,11 +14,12 @@ type BatchinatorOptions = {
  */
 class Batchinator {
   readonly _delayMS: number;
-  private _args: any[] | null;
   private _callback: (...args: any[]) => void;
-  private _taskHandle: TaskHandle | null;
+  private _debounced: ReturnType<typeof debounce>;
   private _leading: boolean;
   private _trailing: boolean;
+  private _isScheduled = false;
+  private _storedArgs: any[] | null = null;
 
   constructor(
     cb: (...args: any[]) => void,
@@ -33,10 +28,25 @@ class Batchinator {
   ) {
     this._callback = cb;
     this._delayMS = delayMS;
-    this._taskHandle = null;
-    this._args = null;
     this._leading = defaultBooleanValue(options?.leading, false);
     this._trailing = defaultBooleanValue(options?.trailing, true);
+
+    // Create a debounced function that wraps our callback
+    // The key difference from debounce: if already scheduled, schedule() only updates args
+    // We handle this by tracking _isScheduled and only calling debounce on first schedule
+    this._debounced = debounce(
+      () => {
+        this._isScheduled = false;
+        if (this._storedArgs !== null) {
+          this._callback(...this._storedArgs);
+        }
+      },
+      delayMS,
+      {
+        leading: this._leading,
+        trailing: this._trailing,
+      }
+    );
   }
 
   /**
@@ -52,16 +62,15 @@ class Batchinator {
     }
   ): void {
     const { abort = false } = options;
-    if (this._taskHandle) {
-      this._taskHandle.cancel();
-      this._taskHandle = null;
-    }
-    if (
-      typeof this._callback === 'function' &&
-      !abort &&
-      this._args !== null
-    ) {
-      this._callback.apply(this, this._args);
+    if (abort) {
+      this._debounced.cancel();
+      this._isScheduled = false;
+      this._storedArgs = null;
+    } else {
+      // Execute with current args if any
+      if (this._storedArgs !== null) {
+        this._debounced.flush();
+      }
     }
   }
 
@@ -69,7 +78,7 @@ class Batchinator {
    * Check if a task is currently scheduled
    */
   inSchedule(): boolean {
-    return this._taskHandle !== null;
+    return this._isScheduled;
   }
 
   /**
@@ -78,15 +87,10 @@ class Batchinator {
    */
   flush(...args: any[]): void {
     if (args.length > 0) {
-      this._args = args;
+      this._storedArgs = args;
     }
-    if (this._taskHandle) {
-      this._taskHandle.cancel();
-      this._taskHandle = null;
-    }
-    if (this._args !== null) {
-      this._callback.apply(this, this._args);
-    }
+    this._debounced.flush();
+    this._isScheduled = false;
   }
 
   /**
@@ -94,42 +98,28 @@ class Batchinator {
    * @param args - Arguments to pass to the callback
    */
   schedule(...args: any[]): void {
-    this._args = args;
+    this._storedArgs = args;
 
-    // If already scheduled, just update args and return
-    if (this._taskHandle) {
+    // If already scheduled, just update args and return (don't reset timer)
+    // This is the key difference from debounce
+    if (this._isScheduled) {
       return;
     }
 
-    // Handler for timeout completion
-    const handler = (): void => {
-      this._taskHandle = null;
-      if (this._trailing && this._args !== null) {
-        this._callback.apply(this, this._args);
-      }
-    };
-
-    // If no delay, execute immediately based on leading/trailing
+    // Handle zero delay case - execute immediately based on leading/trailing
     if (!this._delayMS) {
       if (this._leading) {
-        this._callback.apply(this, this._args);
+        this._callback(...this._storedArgs);
       } else if (this._trailing) {
-        handler();
+        // For zero delay with trailing, execute immediately
+        this._callback(...this._storedArgs);
       }
       return;
     }
 
-    // Execute immediately if leading is enabled
-    if (this._leading) {
-      this._callback.apply(this, this._args);
-    }
-
-    // Schedule trailing execution
-    const timeoutHandle = setTimeout(() => {
-      handler();
-    }, this._delayMS);
-
-    this._taskHandle = { cancel: () => clearTimeout(timeoutHandle) };
+    // First call - mark as scheduled and call debounce
+    this._isScheduled = true;
+    this._debounced();
   }
 }
 

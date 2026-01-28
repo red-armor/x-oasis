@@ -1,28 +1,64 @@
-type TaskHandler = {
-  cancel: () => void;
-};
+import debounce from '@x-oasis/debounce';
 
 /**
  * BatchinateLast - Executes the callback with the last arguments after a delay.
  * If schedule is called multiple times within the delay period, only the last
  * call's arguments will be used when the callback executes.
  */
+type TaskHandler = {
+  cancel: () => void;
+};
+
 class BatchinateLast {
   readonly _delayMS: number;
-  private _args: any[] | null;
   private _callback: (...args: any[]) => void;
-  private _clockTime: number;
-  private _lastTime: number;
-  private _taskHandler: TaskHandler | null;
+  private _debounced: ReturnType<typeof debounce>;
+  private _storedArgs: any[] | null = null;
+  private _isScheduled = false;
+  private _clockTime = 0;
+  private _lastTime = 0;
+  private _rescheduleHandler: TaskHandler | null = null;
 
   constructor(cb: (...args: any[]) => void, delayMS: number) {
     this._callback = cb;
     this._delayMS = delayMS;
-    this._taskHandler = null;
-    this._args = null;
-    this._clockTime = 0;
-    this._lastTime = 0;
-    this.handler = this.handler.bind(this);
+
+    // Helper function to handle execution and potential rescheduling
+    const executeAndReschedule = (): void => {
+      const savedClockTime = this._clockTime;
+      this._isScheduled = false;
+      if (this._rescheduleHandler) {
+        this._rescheduleHandler.cancel();
+        this._rescheduleHandler = null;
+      }
+
+      if (this._storedArgs !== null) {
+        this._callback(...this._storedArgs);
+      }
+
+      // Check if there were new calls during execution
+      // If lastTime was updated (clockTime !== lastTime), reschedule
+      if (this._delayMS && savedClockTime !== this._lastTime) {
+        const now = Date.now();
+        const elapsedTime = now - this._lastTime;
+        const timeoutTime = Math.max(this._delayMS - elapsedTime, 0);
+        this._clockTime = now;
+
+        // Reschedule with remaining time
+        const timeoutHandle = setTimeout(() => {
+          executeAndReschedule();
+        }, timeoutTime);
+        this._rescheduleHandler = { cancel: () => clearTimeout(timeoutHandle) };
+        this._isScheduled = true;
+      }
+    };
+
+    // Create a debounced function
+    // Special behavior: if new calls occur during execution, reschedule
+    this._debounced = debounce(executeAndReschedule, delayMS, {
+      leading: false,
+      trailing: true,
+    });
   }
 
   /**
@@ -38,12 +74,19 @@ class BatchinateLast {
     }
   ): void {
     const { abort = false } = options;
-    if (this._taskHandler) {
-      this._taskHandler.cancel();
-      this._taskHandler = null;
-    }
-    if (typeof this._callback === 'function' && !abort && this._args !== null) {
-      this._callback.apply(this, this._args);
+    if (abort) {
+      this._debounced.cancel();
+      if (this._rescheduleHandler) {
+        this._rescheduleHandler.cancel();
+        this._rescheduleHandler = null;
+      }
+      this._isScheduled = false;
+      this._storedArgs = null;
+    } else {
+      // Execute with current args if any
+      if (this._storedArgs !== null) {
+        this._debounced.flush();
+      }
     }
   }
 
@@ -51,7 +94,7 @@ class BatchinateLast {
    * Check if a task is currently scheduled
    */
   inSchedule(): boolean {
-    return this._taskHandler !== null;
+    return this._isScheduled || this._rescheduleHandler !== null;
   }
 
   /**
@@ -60,38 +103,14 @@ class BatchinateLast {
    */
   flush(...args: any[]): void {
     if (args.length > 0) {
-      this._args = args;
+      this._storedArgs = args;
     }
-    if (this._taskHandler) {
-      this._taskHandler.cancel();
-      this._taskHandler = null;
+    this._debounced.flush();
+    if (this._rescheduleHandler) {
+      this._rescheduleHandler.cancel();
+      this._rescheduleHandler = null;
     }
-    if (this._args !== null) {
-      this._callback.apply(this, this._args);
-    }
-  }
-
-  private handler(): void {
-    if (this._taskHandler) {
-      this._taskHandler.cancel();
-      this._taskHandler = null;
-    }
-
-    if (this._args !== null) {
-      this._callback.apply(this, this._args);
-    }
-
-    // If there were new calls during execution, schedule another execution
-    if (this._delayMS && this._clockTime !== this._lastTime) {
-      const elapsedTime = Date.now() - this._lastTime;
-      const timeoutTime = Math.max(this._delayMS - elapsedTime, 0);
-      this._clockTime = Date.now();
-      const timeoutHandler = setTimeout(() => {
-        this.handler();
-      }, timeoutTime);
-
-      this._taskHandler = { cancel: () => clearTimeout(timeoutHandler) };
-    }
+    this._isScheduled = false;
   }
 
   /**
@@ -100,28 +119,27 @@ class BatchinateLast {
    * @param args - Arguments to pass to the callback
    */
   schedule(...args: any[]): void {
-    this._args = args;
+    this._storedArgs = args;
     const now = Date.now();
     this._lastTime = now;
 
-    // If already scheduled, just update args and return
-    if (this._taskHandler) {
-      return;
-    }
-
-    // If no delay, execute immediately
+    // Handle zero delay case - execute immediately
     if (!this._delayMS) {
-      this.handler();
+      if (this._storedArgs !== null) {
+        this._callback(...this._storedArgs);
+      }
       return;
     }
 
-    // Schedule execution
-    this._clockTime = now;
-    const timeoutHandler = setTimeout(() => {
-      this.handler();
-    }, this._delayMS);
+    // If already scheduled, just update args and return (don't reset timer)
+    if (this._isScheduled) {
+      return;
+    }
 
-    this._taskHandler = { cancel: () => clearTimeout(timeoutHandler) };
+    // First call - mark as scheduled and call debounce
+    this._isScheduled = true;
+    this._clockTime = now;
+    this._debounced();
   }
 }
 
