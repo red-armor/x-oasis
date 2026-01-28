@@ -119,7 +119,7 @@ test('debounce with maxWait', () => {
 test('debounce preserves this context', () => {
   const obj = {
     value: 42,
-    fn: function (this: any, arg: number) {
+    fn(this: any, arg: number) {
       return this.value + arg;
     },
   };

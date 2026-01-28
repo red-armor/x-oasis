@@ -20,7 +20,6 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
-    "@x-oasis/default-boolean-value": "workspace:*",
-    "@x-oasis/default-number-value": "workspace:*"
+    "@x-oasis/default-boolean-value": "workspace:*"
   }
 }
