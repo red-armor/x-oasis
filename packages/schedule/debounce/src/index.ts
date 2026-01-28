@@ -1,16 +1,20 @@
-// Helper function
+// Helper functions
 const defaultBooleanValue = (value: boolean | undefined, defaultValue: boolean): boolean => {
   return value !== undefined ? value : defaultValue;
 };
 
+const defaultNumberValue = (value: number | undefined, defaultValue: number): number => {
+  return value !== undefined && value !== null ? value : defaultValue;
+};
+
 /**
- * Options for throttle function
- * @see https://lodash.com/docs/#throttle
+ * Options for debounce function
+ * @see https://lodash.com/docs/#debounce
  */
-export type ThrottleOptions = {
+export type DebounceOptions = {
   /**
    * Specify invoking on the leading edge of the timeout.
-   * @default true
+   * @default false
    */
   leading?: boolean;
   /**
@@ -18,59 +22,73 @@ export type ThrottleOptions = {
    * @default true
    */
   trailing?: boolean;
+  /**
+   * The maximum time `func` is allowed to be delayed before it's invoked.
+   */
+  maxWait?: number;
 };
 
 /**
- * Creates a throttled function that only invokes `func` at most once per every `wait` milliseconds.
+ * Creates a debounced function that delays invoking `func` until after `wait` milliseconds
+ * have elapsed since the last time the debounced function was invoked.
  *
- * The throttled function comes with a `cancel` method to cancel delayed `func` invocations
+ * The debounced function comes with a `cancel` method to cancel delayed `func` invocations
  * and a `flush` method to immediately invoke them.
  *
- * @param func - The function to throttle
- * @param wait - The number of milliseconds to throttle invocations to
+ * @param func - The function to debounce
+ * @param wait - The number of milliseconds to delay
  * @param options - The options object
- * @returns Returns the new throttled function
+ * @returns Returns the new debounced function
  *
  * @example
  * ```typescript
- * // Avoid excessively updating the position while scrolling.
- * const throttled = throttle(updatePosition, 100);
- * window.addEventListener('scroll', throttled);
+ * // Avoid costly calculations while the window size is in flux.
+ * const debounced = debounce(calculateLayout, 150);
+ * window.addEventListener('resize', debounced);
  *
- * // Cancel the trailing throttled invocation.
- * throttled.cancel();
+ * // Cancel the trailing debounced invocation.
+ * debounced.cancel();
  *
- * // Flush the trailing throttled invocation.
- * throttled.flush();
+ * // Flush the trailing debounced invocation.
+ * debounced.flush();
  * ```
  *
  * @example
  * ```typescript
- * // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
- * const throttled = throttle(renewToken, 300000, {
+ * // Invoke `sendMail` when clicked, debouncing subsequent calls.
+ * const debounced = debounce(sendMail, 300, {
+ *   'leading': true,
  *   'trailing': false
  * });
  * ```
  *
- * @see https://lodash.com/docs/#throttle
+ * @example
+ * ```typescript
+ * // Ensure `batchLog` is invoked at most once per 250ms.
+ * const debounced = debounce(batchLog, 250, { maxWait: 1000 });
+ * ```
+ *
+ * @see https://lodash.com/docs/#debounce
  */
-export default function throttle(
+export default function debounce(
   func: (...args: any[]) => any,
-  wait = 0,
-  options?: ThrottleOptions
+  wait: number,
+  options?: DebounceOptions
 ): ((...args: any[]) => any) & {
   cancel: () => void;
   flush: () => void;
 } {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let maxWaitId: ReturnType<typeof setTimeout> | null = null;
+  let lastCallTime = 0;
+  let lastInvokeTime = 0;
   let lastArgs: any[] | null = null;
   let lastContext: any = null;
-  let lastCallTime: number = 0;
-  let lastInvokeTime: number = 0;
   let result: any;
 
-  const leading = defaultBooleanValue(options?.leading, true);
+  const leading = defaultBooleanValue(options?.leading, false);
   const trailing = defaultBooleanValue(options?.trailing, true);
+  const maxWait = defaultNumberValue(options?.maxWait, 0);
 
   const invokeFunc = (time: number): any => {
     const args = lastArgs;
@@ -97,7 +115,9 @@ export default function throttle(
     const timeSinceLastInvoke = time - lastInvokeTime;
     const timeWaiting = wait - timeSinceLastCall;
 
-    return Math.min(timeWaiting, wait - timeSinceLastInvoke);
+    return maxWait
+      ? Math.min(timeWaiting, maxWait - timeSinceLastInvoke)
+      : timeWaiting;
   };
 
   const shouldInvoke = (time: number): boolean => {
@@ -105,13 +125,13 @@ export default function throttle(
     const timeSinceLastInvoke = time - lastInvokeTime;
 
     // Either this is the first call, activity has stopped and we're at the
-    // trailing edge, or the system time has gone backwards and we're treating
-    // it as the trailing edge.
+    // trailing edge, the system time has gone backwards and we're treating
+    // it as the trailing edge, or we've hit the `maxWait` limit.
     return (
       lastCallTime === 0 ||
       timeSinceLastCall >= wait ||
       timeSinceLastCall < 0 ||
-      (timeSinceLastInvoke !== 0 && timeSinceLastInvoke >= wait)
+      (maxWait && timeSinceLastInvoke >= maxWait)
     );
   };
 
@@ -141,17 +161,21 @@ export default function throttle(
     if (timeoutId !== null) {
       clearTimeout(timeoutId);
     }
+    if (maxWaitId !== null) {
+      clearTimeout(maxWaitId);
+    }
     lastInvokeTime = 0;
     lastArgs = null;
     lastContext = null;
     timeoutId = null;
+    maxWaitId = null;
   };
 
   const flush = (): any => {
     return timeoutId === null ? result : trailingEdge(Date.now());
   };
 
-  const throttled = function (this: any, ...args: any[]): any {
+  const debounced = function (this: any, ...args: any[]): any {
     const time = Date.now();
     const isInvoking = shouldInvoke(time);
 
@@ -163,17 +187,31 @@ export default function throttle(
       if (timeoutId === null) {
         return leadingEdge(lastCallTime);
       }
+      if (maxWait) {
+        // Handle invocations in a tight loop.
+        timeoutId = setTimeout(timerExpired, wait);
+        return invokeFunc(lastCallTime);
+      }
     }
     if (timeoutId === null) {
       timeoutId = setTimeout(timerExpired, wait);
+    }
+
+    // Handle maxWait
+    if (maxWait && !maxWaitId) {
+      maxWaitId = setTimeout(() => {
+        if (shouldInvoke(Date.now())) {
+          flush();
+        }
+      }, maxWait);
     }
 
     return result;
   };
 
   // Attach cancel and flush methods
-  (throttled as any).cancel = cancel;
-  (throttled as any).flush = flush;
+  (debounced as any).cancel = cancel;
+  (debounced as any).flush = flush;
 
-  return throttled as any;
+  return debounced as any;
 }
