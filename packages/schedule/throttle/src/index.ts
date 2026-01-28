@@ -1,5 +1,8 @@
 // Helper function
-const defaultBooleanValue = (value: boolean | undefined, defaultValue: boolean): boolean => {
+const defaultBooleanValue = (
+  value: boolean | undefined,
+  defaultValue: boolean
+): boolean => {
   return value !== undefined ? value : defaultValue;
 };
 
@@ -65,8 +68,11 @@ export default function throttle(
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let lastArgs: any[] | null = null;
   let lastContext: any = null;
-  let lastCallTime: number = 0;
-  let lastInvokeTime: number = 0;
+  // the last call time is the time when the last call was made (throttled function is called)
+  let lastCallTime = 0;
+  // the last invoke time is the time when the last invocation was made (func is called)
+  let lastInvokeTime = 0;
+  // the result is the result of the last invocation
   let result: any;
 
   const leading = defaultBooleanValue(options?.leading, true);
@@ -80,7 +86,7 @@ export default function throttle(
     lastContext = null;
     lastInvokeTime = time;
 
-    return func.apply(thisArg, args!);
+    return func.apply(thisArg, args ?? []);
   };
 
   const leadingEdge = (time: number): any => {
@@ -95,23 +101,24 @@ export default function throttle(
   const remainingWait = (time: number): number => {
     const timeSinceLastCall = time - lastCallTime;
     const timeSinceLastInvoke = time - lastInvokeTime;
-    const timeWaiting = wait - timeSinceLastCall;
 
-    return Math.min(timeWaiting, wait - timeSinceLastInvoke);
+    return Math.min(wait - timeSinceLastCall, wait - timeSinceLastInvoke);
   };
 
   const shouldInvoke = (time: number): boolean => {
     const timeSinceLastCall = time - lastCallTime;
     const timeSinceLastInvoke = time - lastInvokeTime;
 
-    // Either this is the first call, activity has stopped and we're at the
-    // trailing edge, or the system time has gone backwards and we're treating
-    // it as the trailing edge.
+    // Determine if the function should be invoked based on:
+    // 1. lastCallTime === 0: First call ever (no previous call recorded)
+    // 2. timeSinceLastCall >= wait: Enough time has passed since last call
+    // 3. timeSinceLastCall < 0: System time went backwards (edge case handling)
+    // 4. timeSinceLastInvoke !== 0 && timeSinceLastInvoke >= wait: Enough time has passed since last invocation
     return (
-      lastCallTime === 0 ||
-      timeSinceLastCall >= wait ||
-      timeSinceLastCall < 0 ||
-      (timeSinceLastInvoke !== 0 && timeSinceLastInvoke >= wait)
+      lastCallTime === 0 || // First call
+      timeSinceLastCall >= wait || // Enough time since last call
+      timeSinceLastCall < 0 || // System time went backwards
+      (timeSinceLastInvoke !== 0 && timeSinceLastInvoke >= wait) // Enough time since last invocation
     );
   };
 

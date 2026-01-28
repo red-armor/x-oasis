@@ -106,7 +106,7 @@ test('throttle flush', () => {
 test('throttle preserves this context', () => {
   const obj = {
     value: 42,
-    fn: function (this: any, arg: number) {
+    fn(this: any, arg: number) {
       return this.value + arg;
     },
   };
@@ -131,9 +131,13 @@ test('throttle multiple calls within wait period', () => {
   expect(fn).toHaveBeenCalledTimes(1); // Still only called once
 
   vi.advanceTimersByTime(50);
-  throttled(3);
   // After 100ms total, should execute immediately with latest args
   expect(fn).toHaveBeenCalledTimes(2);
+  expect(fn).toHaveBeenCalledWith(2);
+
+  vi.advanceTimersByTime(50);
+  throttled(3);
+  expect(fn).toHaveBeenCalledTimes(3);
   expect(fn).toHaveBeenCalledWith(3);
 });
 

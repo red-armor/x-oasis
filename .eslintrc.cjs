@@ -33,5 +33,11 @@ module.exports = {
         'import/no-default-export': 'off',
       },
     },
+    {
+      files: ['packages/schedule/**/*.ts'],
+      rules: {
+        '@typescript-eslint/no-this-alias': 'off',
+      },
+    },
   ],
 }
