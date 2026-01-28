@@ -34,7 +34,7 @@ module.exports = {
       },
     },
     {
-      files: ['packages/schedule/**/*.ts'],
+      files: ['**/packages/schedule/**/*.ts'],
       rules: {
         '@typescript-eslint/no-this-alias': 'off',
       },
