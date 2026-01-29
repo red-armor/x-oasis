@@ -1,5 +1,11 @@
 # diff-match-patch-example
 
+## 0.1.4
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+
 ## 0.1.3
 
 ### Patch Changes

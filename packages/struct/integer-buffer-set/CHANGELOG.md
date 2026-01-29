@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.1.42
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+- Updated dependencies [0ddda70]
+  - @x-oasis/is-clamped@0.1.41
+  - @x-oasis/invariant@0.1.41
+  - @x-oasis/return-hook@0.1.41
+  - @x-oasis/heap@0.1.41
+
 ## 0.1.41
 
 ### Patch Changes

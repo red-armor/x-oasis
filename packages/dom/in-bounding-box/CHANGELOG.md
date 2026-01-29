@@ -1,5 +1,11 @@
 # @x-oasis/in-bounding-rect
 
+## 0.1.41
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+
 ## 0.1.40
 
 ### Patch Changes

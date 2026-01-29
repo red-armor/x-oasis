@@ -1,5 +1,13 @@
 # @x-oasis/diff-match-patch
 
+## 0.1.4
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+- Updated dependencies [0ddda70]
+  - @x-oasis/log@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
