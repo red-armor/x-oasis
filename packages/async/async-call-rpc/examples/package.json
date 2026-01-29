@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/async-call-rpc-examples",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "async-call-rpc": "file:.."

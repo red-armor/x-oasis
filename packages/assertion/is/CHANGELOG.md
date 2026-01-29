@@ -1,5 +1,11 @@
 # @x-oasis/is
 
+## 0.1.42
+
+### Patch Changes
+
+- f1aae14: bump version
+
 ## 0.1.41
 
 ### Patch Changes

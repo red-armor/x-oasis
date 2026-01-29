@@ -1,5 +1,13 @@
 # @x-oasis/shallow-equal
 
+## 0.1.41
+
+### Patch Changes
+
+- f1aae14: bump version
+- Updated dependencies [f1aae14]
+  - @x-oasis/is@0.1.42
+
 ## 0.1.40
 
 ### Patch Changes

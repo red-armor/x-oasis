@@ -75,7 +75,7 @@ importers:
   packages/assertion/is-empty:
     dependencies:
       '@x-oasis/to-string':
-        specifier: workspace:^0.1.37
+        specifier: workspace:^0.1.38
         version: link:../../proto/to-string
     devDependencies:
       tsdx:
@@ -113,7 +113,7 @@ importers:
   packages/assertion/is-promise:
     dependencies:
       '@x-oasis/to-string':
-        specifier: workspace:^0.1.37
+        specifier: workspace:^0.1.38
         version: link:../../proto/to-string
     devDependencies:
       tsdx:
@@ -9969,7 +9969,10 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:

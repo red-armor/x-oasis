@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/diff-match-patch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Restore file content to original version based on offset range",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

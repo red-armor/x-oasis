@@ -1,4 +1,4 @@
-# @x-oasis/async-call-rpc
+# @x-oasis/async-call-rpc-misc
 
 ## 0.1.38
 
@@ -12,15 +12,3 @@
   - @x-oasis/emitter@0.1.38
   - @x-oasis/id@0.1.38
   - @x-oasis/deferred@0.1.38
-
-## 0.1.37
-
-### Patch Changes
-
-- 8cb524c: trigger next
-
-## 0.1.36
-
-### Patch Changes
-
-- 7c2a0ba: git add .
