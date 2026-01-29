@@ -1,5 +1,14 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.9
+
+### Patch Changes
+
+- bf3f705: bump
+- 1cd9ae3: bump
+- 0699388: bump
+- 9ef6a8f: fix: log package.json
+
 ## 0.2.8
 
 ### Patch Changes

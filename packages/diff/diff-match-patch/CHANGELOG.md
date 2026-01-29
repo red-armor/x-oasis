@@ -1,5 +1,19 @@
 # @x-oasis/diff-match-patch
 
+## 0.1.3
+
+### Patch Changes
+
+- bf3f705: bump
+- 1cd9ae3: bump
+- 0699388: bump
+- 9ef6a8f: fix: log package.json
+- Updated dependencies [bf3f705]
+- Updated dependencies [1cd9ae3]
+- Updated dependencies [0699388]
+- Updated dependencies [9ef6a8f]
+  - @x-oasis/log@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes

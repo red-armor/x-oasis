@@ -1,5 +1,19 @@
 # @x-oasis/shallow-equal
 
+## 0.1.43
+
+### Patch Changes
+
+- bf3f705: bump
+- 1cd9ae3: bump
+- 0699388: bump
+- 9ef6a8f: fix: log package.json
+- Updated dependencies [bf3f705]
+- Updated dependencies [1cd9ae3]
+- Updated dependencies [0699388]
+- Updated dependencies [9ef6a8f]
+  - @x-oasis/is@0.1.44
+
 ## 0.1.42
 
 ### Patch Changes
