@@ -1,5 +1,11 @@
 # @x-oasis/unique-array-object
 
+## 0.1.38
+
+### Patch Changes
+
+- f1aae14: bump version
+
 ## 0.1.37
 
 ### Patch Changes

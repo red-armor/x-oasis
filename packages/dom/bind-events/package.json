@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/bind-events",
-  "version": "0.1.37",
+  "version": "0.1.38",
   "description": "bind-events function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/debounce",
-  "version": "0.1.37",
+  "version": "0.1.38",
   "description": "debounce function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

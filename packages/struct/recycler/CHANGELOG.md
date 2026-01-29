@@ -1,5 +1,13 @@
 # @x-oasis/recycler
 
+## 0.1.41
+
+### Patch Changes
+
+- f1aae14: bump version
+- Updated dependencies [f1aae14]
+  - @x-oasis/integer-buffer-set@0.1.39
+
 ## 0.1.40
 
 ### Patch Changes

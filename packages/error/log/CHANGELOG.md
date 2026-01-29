@@ -1,5 +1,11 @@
 # @x-oasis/log
 
+## 0.1.1
+
+### Patch Changes
+
+- f1aae14: bump version
+
 ## 0.1.0
 
 ### Initial Release

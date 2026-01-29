@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.1.39
+
+### Patch Changes
+
+- f1aae14: bump version
+- Updated dependencies [f1aae14]
+  - @x-oasis/is-clamped@0.1.38
+  - @x-oasis/invariant@0.1.38
+  - @x-oasis/return-hook@0.1.38
+  - @x-oasis/heap@0.1.38
+
 ## 0.1.38
 
 ### Patch Changes

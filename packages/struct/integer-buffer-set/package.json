@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/integer-buffer-set",
-  "version": "0.1.38",
+  "version": "0.1.39",
   "description": "IntegerBufferSet function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

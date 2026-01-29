@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.7
+
+### Patch Changes
+
+- f1aae14: bump version
+
 ## 0.2.6
 
 ### Patch Changes
