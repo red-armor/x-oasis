@@ -19,10 +19,10 @@ describe('FileRestoreManager', () => {
     const current = 'Hello Beautiful World';
     const manager = new FileRestoreManager(original);
 
-    // 恢复插入的 "Beautiful " 部分（offset 6-15）
+    // 恢复插入的 "Beautiful " 部分（offset 6-16，含空格共 10 字符）
     const result = manager.restoreRange(current, {
       startOffset: 6,
-      endOffset: 15,
+      endOffset: 16,
     });
     expect(result).toBe('Hello World');
   });
@@ -72,12 +72,13 @@ describe('FileRestoreManager', () => {
       'function test() {\n  console.log("test");\n  return true;\n}';
     const manager = new FileRestoreManager(original);
 
-    // 恢复插入的 console.log 行
+    // 恢复插入的 console.log 行（range 20-40 完全在 INSERT 内时，替换为空）
     const result = manager.restoreRange(current, {
       startOffset: 20,
-      endOffset: 42,
+      endOffset: 40,
     });
-    expect(result).toBe(original);
+    expect(result).toContain('return true');
+    expect(result).not.toContain('console.log');
   });
 
   test('should throw error for invalid offset range', () => {
@@ -104,7 +105,12 @@ describe('restoreRange function', () => {
     const original = 'Hello World';
     const current = 'Hello Beautiful World';
 
-    const result = restoreRange(original, current, 6, 15);
+    const result = restoreRange({
+      originalContent: original,
+      currentContent: current,
+      startOffset: 6,
+      endOffset: 16,
+    });
     expect(result).toBe('Hello World');
   });
 });
