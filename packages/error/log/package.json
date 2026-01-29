@@ -5,6 +5,15 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "module": "dist/log.esm.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/log.esm.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist",
     "index.ts"
