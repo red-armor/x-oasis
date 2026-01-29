@@ -21,6 +21,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@x-oasis/diff-match-patch': path.resolve(__dirname, '../src/index.ts'),
+      '@x-oasis/log': path.resolve(
+        __dirname,
+        '../../../error/log/src/index.ts'
+      ),
     },
   },
   server: {
