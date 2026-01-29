@@ -335,6 +335,10 @@ This library is designed to work in all modern browsers. It uses standard browse
 
 Full TypeScript support with comprehensive type definitions included.
 
+## Reading More
+- [loglayer](https://github.com/loglayer/loglayer)
+- [loglevel](https://github.com/pimterry/loglevel)
+
 ## License
 
 ISC
