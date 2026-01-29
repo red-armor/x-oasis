@@ -1,5 +1,14 @@
 # @x-oasis/emitter
 
+## 0.1.41
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+- Updated dependencies [0ddda70]
+  - @x-oasis/is-object@0.1.41
+  - @x-oasis/disposable@0.1.41
+
 ## 0.1.40
 
 ### Patch Changes

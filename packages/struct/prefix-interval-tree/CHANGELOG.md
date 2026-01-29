@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.10
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+
 ## 0.2.9
 
 ### Patch Changes

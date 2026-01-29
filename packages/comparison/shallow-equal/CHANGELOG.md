@@ -1,5 +1,13 @@
 # @x-oasis/shallow-equal
 
+## 0.1.44
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+- Updated dependencies [0ddda70]
+  - @x-oasis/is@0.1.45
+
 ## 0.1.43
 
 ### Patch Changes

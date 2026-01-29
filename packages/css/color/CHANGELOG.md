@@ -1,5 +1,11 @@
 # @x-oasis/color
 
+## 0.1.45
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+
 ## 0.1.44
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @x-oasis/async-call-rpc-examples
 
+## 0.0.4
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+
 ## 0.0.3
 
 ### Patch Changes

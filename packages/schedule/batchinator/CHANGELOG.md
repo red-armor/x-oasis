@@ -1,5 +1,14 @@
 # @x-oasis/batchinator
 
+## 0.1.41
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+- Updated dependencies [0ddda70]
+  - @x-oasis/default-boolean-value@0.1.41
+  - @x-oasis/debounce@0.1.41
+
 ## 0.1.40
 
 ### Patch Changes

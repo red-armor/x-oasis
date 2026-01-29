@@ -1,5 +1,11 @@
 # @x-oasis/di
 
+## 0.1.2
+
+### Patch Changes
+
+- 0ddda70: fix: diff example
+
 ## 0.1.1
 
 ### Patch Changes
