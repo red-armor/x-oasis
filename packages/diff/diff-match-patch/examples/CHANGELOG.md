@@ -1,5 +1,14 @@
 # diff-match-patch-example
 
+## 0.1.3
+
+### Patch Changes
+
+- bf3f705: bump
+- 1cd9ae3: bump
+- 0699388: bump
+- 9ef6a8f: fix: log package.json
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @x-oasis/disposable
 
+## 0.1.40
+
+### Patch Changes
+
+- bf3f705: bump
+- 1cd9ae3: bump
+- 0699388: bump
+- 9ef6a8f: fix: log package.json
+- Updated dependencies [bf3f705]
+- Updated dependencies [1cd9ae3]
+- Updated dependencies [0699388]
+- Updated dependencies [9ef6a8f]
+  - @x-oasis/is-object@0.1.40
+
 ## 0.1.39
 
 ### Patch Changes

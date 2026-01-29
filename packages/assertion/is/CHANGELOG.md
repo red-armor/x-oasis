@@ -1,5 +1,14 @@
 # @x-oasis/is
 
+## 0.1.44
+
+### Patch Changes
+
+- bf3f705: bump
+- 1cd9ae3: bump
+- 0699388: bump
+- 9ef6a8f: fix: log package.json
+
 ## 0.1.43
 
 ### Patch Changes
