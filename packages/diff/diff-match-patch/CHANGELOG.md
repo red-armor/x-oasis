@@ -1,5 +1,13 @@
 # @x-oasis/diff-match-patch
 
+## 0.1.2
+
+### Patch Changes
+
+- f7326fb: bump diff
+- Updated dependencies [f7326fb]
+  - @x-oasis/log@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

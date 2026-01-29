@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.1.40
+
+### Patch Changes
+
+- f7326fb: bump diff
+- Updated dependencies [f7326fb]
+  - @x-oasis/is-clamped@0.1.39
+  - @x-oasis/invariant@0.1.39
+  - @x-oasis/return-hook@0.1.39
+  - @x-oasis/heap@0.1.39
+
 ## 0.1.39
 
 ### Patch Changes

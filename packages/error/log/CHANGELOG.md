@@ -1,5 +1,11 @@
 # @x-oasis/log
 
+## 0.1.2
+
+### Patch Changes
+
+- f7326fb: bump diff
+
 ## 0.1.1
 
 ### Patch Changes

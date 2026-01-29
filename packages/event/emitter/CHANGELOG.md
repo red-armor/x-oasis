@@ -1,5 +1,14 @@
 # @x-oasis/emitter
 
+## 0.1.39
+
+### Patch Changes
+
+- f7326fb: bump diff
+- Updated dependencies [f7326fb]
+  - @x-oasis/is-object@0.1.39
+  - @x-oasis/disposable@0.1.39
+
 ## 0.1.38
 
 ### Patch Changes
