@@ -1,4 +1,7 @@
+import { log } from '@x-oasis/log';
 import { diff_match_patch } from 'diff-match-patch';
+
+const debugLog = log.withPrefix('[diff-match-patch]');
 
 const DIFF_DELETE = -1;
 const DIFF_INSERT = 1;
@@ -20,6 +23,9 @@ export class FileRestoreManager {
   constructor(originalContent: string) {
     this.originalContent = originalContent;
     this.dmp = new diff_match_patch();
+    debugLog.debug('FileRestoreManager created', {
+      originalLength: originalContent.length,
+    });
   }
 
   /**
@@ -30,6 +36,12 @@ export class FileRestoreManager {
    */
   restoreRange(currentContent: string, options: RestoreRangeOptions): string {
     const { startOffset, endOffset } = options;
+
+    debugLog.debug('restoreRange called', {
+      startOffset,
+      endOffset,
+      currentLength: currentContent.length,
+    });
 
     if (startOffset < 0 || endOffset < 0 || startOffset > endOffset) {
       throw new Error('Invalid offset range');
@@ -45,6 +57,11 @@ export class FileRestoreManager {
     // 计算差异
     const diffs = this.dmp.diff_main(this.originalContent, currentContent);
     this.dmp.diff_cleanupSemantic(diffs);
+
+    debugLog.debug('diffs computed', {
+      diffCount: diffs.length,
+      hasChanges: diffs.some(([op]) => op !== DIFF_EQUAL),
+    });
 
     // 找到最新文件中 startOffset 和 endOffset 对应的原始文件中的位置
     const originalRange = this.mapCurrentRangeToOriginal(
@@ -65,25 +82,37 @@ export class FileRestoreManager {
       endOffset
     );
 
-    // 调试信息
-    console.log('[restoreRange] Debug Info:');
-    console.log(`  startOffset: ${startOffset}, endOffset: ${endOffset}`);
-    console.log(
-      `  Current range content: ${JSON.stringify(currentRangeContent)}`
-    );
-    console.log(
-      `  Original range mapping: ${originalRange.start}-${originalRange.end}`
-    );
-    console.log(`  Will restore to: ${JSON.stringify(originalRangeContent)}`);
-    console.log(
-      `  Content will change: ${currentRangeContent !== originalRangeContent}`
-    );
+    const contentWillChange = currentRangeContent !== originalRangeContent;
+    debugLog.debug('range mapping resolved', {
+      startOffset,
+      endOffset,
+      originalRange: { start: originalRange.start, end: originalRange.end },
+      currentRangePreview:
+        currentRangeContent.length > 80
+          ? `${currentRangeContent.slice(0, 40)}...${currentRangeContent.slice(
+              -40
+            )}`
+          : currentRangeContent,
+      originalRangePreview:
+        originalRangeContent.length > 80
+          ? `${originalRangeContent.slice(
+              0,
+              40
+            )}...${originalRangeContent.slice(-40)}`
+          : originalRangeContent,
+      contentWillChange,
+    });
 
     // 替换最新文件中指定 range 的内容
     const restoredContent =
       currentContent.substring(0, startOffset) +
       originalRangeContent +
       currentContent.substring(endOffset);
+
+    debugLog.debug('restoreRange done', {
+      restoredLength: restoredContent.length,
+      contentChanged: contentWillChange,
+    });
 
     return restoredContent;
   }
@@ -96,6 +125,12 @@ export class FileRestoreManager {
     currentStart: number,
     currentEnd: number
   ): { start: number; end: number } {
+    debugLog.debug('mapCurrentRangeToOriginal called', {
+      currentStart,
+      currentEnd,
+      diffCount: diffs.length,
+    });
+
     let currentOffset = 0; // 当前在最新文件中的 offset
     let originalOffset = 0; // 当前在原始文件中的 offset
     let originalStart: number | null = null;
@@ -214,7 +249,9 @@ export class FileRestoreManager {
       originalEnd = originalOffset;
     }
 
-    return { start: originalStart, end: originalEnd };
+    const result = { start: originalStart, end: originalEnd };
+    debugLog.debug('mapCurrentRangeToOriginal result', result);
+    return result;
   }
 
   /**
@@ -247,6 +284,12 @@ export class FileRestoreManager {
   } {
     const { startOffset, endOffset } = options;
 
+    debugLog.debug('debugRestoreRange called', {
+      startOffset,
+      endOffset,
+      currentLength: currentContent.length,
+    });
+
     // 计算差异
     const diffs = this.dmp.diff_main(this.originalContent, currentContent);
     this.dmp.diff_cleanupSemantic(diffs);
@@ -267,7 +310,7 @@ export class FileRestoreManager {
       endOffset
     );
 
-    return {
+    const result = {
       hasChanges: this.originalContent !== currentContent,
       originalRange,
       currentRange: { start: startOffset, end: endOffset },
@@ -275,6 +318,13 @@ export class FileRestoreManager {
       currentContent: currentRangeContent,
       willChange: originalRangeContent !== currentRangeContent,
     };
+    debugLog.debug('debugRestoreRange result', {
+      hasChanges: result.hasChanges,
+      willChange: result.willChange,
+      originalRange: result.originalRange,
+      currentRange: result.currentRange,
+    });
+    return result;
   }
 }
 
@@ -288,6 +338,12 @@ export function restoreRange(options: {
   endOffset: number;
 }): string {
   const { originalContent, currentContent, startOffset, endOffset } = options;
+  debugLog.debug('restoreRange (standalone) called', {
+    startOffset,
+    endOffset,
+    originalLength: originalContent.length,
+    currentLength: currentContent.length,
+  });
   const manager = new FileRestoreManager(originalContent);
   return manager.restoreRange(currentContent, { startOffset, endOffset });
 }

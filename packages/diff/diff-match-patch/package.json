@@ -20,6 +20,7 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
+    "@x-oasis/log": "workspace:*",
     "diff-match-patch": "^1.0.5"
   }
 }
