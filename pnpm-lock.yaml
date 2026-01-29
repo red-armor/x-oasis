@@ -396,6 +396,12 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
 
+  packages/ioc/di:
+    devDependencies:
+      tsdx:
+        specifier: ^0.14.1
+        version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
+
   packages/misc/capitalize:
     devDependencies:
       tsdx:
@@ -9972,10 +9978,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:
