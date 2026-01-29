@@ -1,7 +1,7 @@
-import { log } from '@x-oasis/log';
+import { Logger } from '@x-oasis/log';
 import { diff_match_patch } from 'diff-match-patch';
 
-const debugLog = log.withPrefix('[diff-match-patch]');
+const debugLogger = new Logger({ defaultPrefix: '[diff-match-patch]' });
 
 const DIFF_DELETE = -1;
 const DIFF_INSERT = 1;
@@ -23,7 +23,7 @@ export class FileRestoreManager {
   constructor(originalContent: string) {
     this.originalContent = originalContent;
     this.dmp = new diff_match_patch();
-    debugLog.debug('FileRestoreManager created', {
+    debugLogger.debug('FileRestoreManager created', {
       originalLength: originalContent.length,
     });
   }
@@ -37,7 +37,7 @@ export class FileRestoreManager {
   restoreRange(currentContent: string, options: RestoreRangeOptions): string {
     const { startOffset, endOffset } = options;
 
-    debugLog.debug('restoreRange called', {
+    debugLogger.debug('restoreRange called', {
       startOffset,
       endOffset,
       currentLength: currentContent.length,
@@ -58,7 +58,7 @@ export class FileRestoreManager {
     const diffs = this.dmp.diff_main(this.originalContent, currentContent);
     this.dmp.diff_cleanupSemantic(diffs);
 
-    debugLog.debug('diffs computed', {
+    debugLogger.debug('diffs computed', {
       diffCount: diffs.length,
       hasChanges: diffs.some(([op]) => op !== DIFF_EQUAL),
     });
@@ -83,7 +83,7 @@ export class FileRestoreManager {
     );
 
     const contentWillChange = currentRangeContent !== originalRangeContent;
-    debugLog.debug('range mapping resolved', {
+    debugLogger.debug('range mapping resolved', {
       startOffset,
       endOffset,
       originalRange: { start: originalRange.start, end: originalRange.end },
@@ -109,7 +109,7 @@ export class FileRestoreManager {
       originalRangeContent +
       currentContent.substring(endOffset);
 
-    debugLog.debug('restoreRange done', {
+    debugLogger.debug('restoreRange done', {
       restoredLength: restoredContent.length,
       contentChanged: contentWillChange,
     });
@@ -125,7 +125,7 @@ export class FileRestoreManager {
     currentStart: number,
     currentEnd: number
   ): { start: number; end: number } {
-    debugLog.debug('mapCurrentRangeToOriginal called', {
+    debugLogger.debug('mapCurrentRangeToOriginal called', {
       currentStart,
       currentEnd,
       diffCount: diffs.length,
@@ -250,7 +250,7 @@ export class FileRestoreManager {
     }
 
     const result = { start: originalStart, end: originalEnd };
-    debugLog.debug('mapCurrentRangeToOriginal result', result);
+    debugLogger.debug('mapCurrentRangeToOriginal result', result);
     return result;
   }
 
@@ -284,7 +284,7 @@ export class FileRestoreManager {
   } {
     const { startOffset, endOffset } = options;
 
-    debugLog.debug('debugRestoreRange called', {
+    debugLogger.debug('debugRestoreRange called', {
       startOffset,
       endOffset,
       currentLength: currentContent.length,
@@ -318,7 +318,7 @@ export class FileRestoreManager {
       currentContent: currentRangeContent,
       willChange: originalRangeContent !== currentRangeContent,
     };
-    debugLog.debug('debugRestoreRange result', {
+    debugLogger.debug('debugRestoreRange result', {
       hasChanges: result.hasChanges,
       willChange: result.willChange,
       originalRange: result.originalRange,
@@ -338,7 +338,7 @@ export function restoreRange(options: {
   endOffset: number;
 }): string {
   const { originalContent, currentContent, startOffset, endOffset } = options;
-  debugLog.debug('restoreRange (standalone) called', {
+  debugLogger.debug('restoreRange (standalone) called', {
     startOffset,
     endOffset,
     originalLength: originalContent.length,

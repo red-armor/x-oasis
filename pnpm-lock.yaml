@@ -234,6 +234,9 @@ importers:
 
   packages/diff/diff-match-patch:
     dependencies:
+      '@x-oasis/log':
+        specifier: workspace:*
+        version: link:../../error/log
       diff-match-patch:
         specifier: ^1.0.5
         version: 1.0.5
