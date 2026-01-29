@@ -5,6 +5,10 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "module": "dist/log.esm.js",
+  "files": [
+    "dist",
+    "index.ts"
+  ],
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
