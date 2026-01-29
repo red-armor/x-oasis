@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.8
+
+### Patch Changes
+
+- f7326fb: bump diff
+
 ## 0.2.7
 
 ### Patch Changes

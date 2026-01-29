@@ -1,5 +1,13 @@
 # @x-oasis/recycler
 
+## 0.1.42
+
+### Patch Changes
+
+- f7326fb: bump diff
+- Updated dependencies [f7326fb]
+  - @x-oasis/integer-buffer-set@0.1.40
+
 ## 0.1.41
 
 ### Patch Changes
