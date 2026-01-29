@@ -281,12 +281,13 @@ export class FileRestoreManager {
 /**
  * 便捷函数：直接恢复指定 range 的内容
  */
-export function restoreRange(
-  originalContent: string,
-  currentContent: string,
-  startOffset: number,
-  endOffset: number
-): string {
+export function restoreRange(options: {
+  originalContent: string;
+  currentContent: string;
+  startOffset: number;
+  endOffset: number;
+}): string {
+  const { originalContent, currentContent, startOffset, endOffset } = options;
   const manager = new FileRestoreManager(originalContent);
   return manager.restoreRange(currentContent, { startOffset, endOffset });
 }
