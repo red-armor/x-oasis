@@ -46,3 +46,9 @@ $ pnpm test
 
 - `IMessageChannel`: 是最基本的，需要外部进行实现的
 - `AbstractChannelProtocol`: 这个是应用context消费的；它是所有Channel的一个抽象；里面包含了handleMessage, middlewares 等一系列能力。
+
+## Name Conventions
+
+- `call`: 
+- `get`:
+- `listen`:
