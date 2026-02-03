@@ -20,7 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      workflows: write
       id-token: write
     # env:
     #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
