@@ -1,5 +1,22 @@
 # @x-oasis/async-call-rpc
 
+## 0.1.42
+
+### Patch Changes
+
+- 6a82ef2: bump version
+- f7a393b: bump diff range
+- b666c87: bump next
+- Updated dependencies [6a82ef2]
+- Updated dependencies [f7a393b]
+- Updated dependencies [b666c87]
+  - @x-oasis/is-ascii@0.1.42
+  - @x-oasis/is-promise@0.1.42
+  - @x-oasis/disposable@0.1.42
+  - @x-oasis/emitter@0.1.42
+  - @x-oasis/id@0.1.42
+  - @x-oasis/deferred@0.1.42
+
 ## 0.1.41
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @x-oasis/is
 
+## 0.1.46
+
+### Patch Changes
+
+- 6a82ef2: bump version
+- f7a393b: bump diff range
+- b666c87: bump next
+
 ## 0.1.45
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/is-class",
-  "version": "0.1.41",
+  "version": "0.1.42",
   "description": "is-class function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

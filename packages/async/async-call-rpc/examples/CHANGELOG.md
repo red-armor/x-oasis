@@ -1,5 +1,13 @@
 # @x-oasis/async-call-rpc-examples
 
+## 0.0.5
+
+### Patch Changes
+
+- 6a82ef2: bump version
+- f7a393b: bump diff range
+- b666c87: bump next
+
 ## 0.0.4
 
 ### Patch Changes

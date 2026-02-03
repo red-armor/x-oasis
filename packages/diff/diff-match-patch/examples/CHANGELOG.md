@@ -1,5 +1,13 @@
 # diff-match-patch-example
 
+## 0.1.5
+
+### Patch Changes
+
+- 6a82ef2: bump version
+- f7a393b: bump diff range
+- b666c87: bump next
+
 ## 0.1.4
 
 ### Patch Changes

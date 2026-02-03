@@ -1,5 +1,17 @@
 # @x-oasis/diff-match-patch
 
+## 0.1.5
+
+### Patch Changes
+
+- 6a82ef2: bump version
+- f7a393b: bump diff range
+- b666c87: bump next
+- Updated dependencies [6a82ef2]
+- Updated dependencies [f7a393b]
+- Updated dependencies [b666c87]
+  - @x-oasis/log@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

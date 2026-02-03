@@ -1,5 +1,17 @@
 # @x-oasis/each
 
+## 0.1.42
+
+### Patch Changes
+
+- 6a82ef2: bump version
+- f7a393b: bump diff range
+- b666c87: bump next
+- Updated dependencies [6a82ef2]
+- Updated dependencies [f7a393b]
+- Updated dependencies [b666c87]
+  - @x-oasis/is-object@0.1.42
+
 ## 0.1.41
 
 ### Patch Changes

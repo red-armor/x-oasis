@@ -1,5 +1,13 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.2.11
+
+### Patch Changes
+
+- 6a82ef2: bump version
+- f7a393b: bump diff range
+- b666c87: bump next
+
 ## 0.2.10
 
 ### Patch Changes
