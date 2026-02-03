@@ -58,34 +58,6 @@ jobs:
             cp -r dist/* ../../../../.github-pages/diff-match-patch/
           fi
 
-      - name: Build map-diff-range example
-        working-directory: packages/diff/map-diff-range/examples
-        env:
-          GITHUB_PAGES: 'true'
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_PAGES_PATH: 'map-diff-range'
-        run: |
-          if [ -f "package.json" ] && [ -f "vite.config.ts" ]; then
-            pnpm install
-            pnpm build
-            mkdir -p ../../../../.github-pages/map-diff-range
-            cp -r dist/* ../../../../.github-pages/map-diff-range/
-          fi
-
-      - name: Build html-fragment-diff example
-        working-directory: packages/diff/html-fragment-diff/examples
-        env:
-          GITHUB_PAGES: 'true'
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_PAGES_PATH: 'html-fragment-diff'
-        run: |
-          if [ -f "package.json" ] && [ -f "vite.config.ts" ]; then
-            pnpm install
-            pnpm build
-            mkdir -p ../../../../.github-pages/html-fragment-diff
-            cp -r dist/* ../../../../.github-pages/html-fragment-diff/
-          fi
-
       # 可以在这里添加更多示例项目的构建步骤
       # - name: Build another-example
       #   working-directory: packages/another/example
@@ -146,8 +118,6 @@ jobs:
               <h1>x-oasis Examples</h1>
               <ul>
                 <li><a href="/${REPO_NAME}/diff-match-patch/">diff-match-patch</a></li>
-                <li><a href="/${REPO_NAME}/map-diff-range/">map-diff-range</a></li>
-                <li><a href="/${REPO_NAME}/html-fragment-diff/">html-fragment-diff</a></li>
               </ul>
             </div>
           </body>
