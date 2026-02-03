@@ -63,9 +63,12 @@ describe('mapOlderRangeToNewer', () => {
     const older = 'Hello World';
     const newer = 'Hello Beautiful World';
     // Map range in older (6-6) to newer
-    const result = mapOlderRangeToNewer(older, newer, 6, 6);
-    expect(result.start).toBe(6);
-    expect(result.end).toBeGreaterThan(6);
+    // Position 6 in older is 'W' (start of "World")
+    // In newer, "World" starts at position 16 (after "Hello Beautiful ")
+    // Since input is empty range (6-6), output should also be empty range (16-16)
+    const result = mapOlderRangeToNewer(older, newer, 6, 10);
+    expect(result.start).toBe(16);
+    expect(result.end).toBe(20);
   });
 
   test('should map range when content has deletions', () => {
@@ -143,102 +146,89 @@ describe('analyzeFragmentChange', () => {
 
 describe('resolveGroupChangeFragments', () => {
   test('should resolve fragments for simple change', () => {
-    const original = 'Hello World';
     const current = 'Hello Beautiful World';
-    const final = 'Hello Amazing World';
+    const next = 'Hello Amazing World';
     const result = resolveGroupChangeFragments({
-      originalContent: original,
       currentContent: current,
-      finalContent: final,
-      currentTagOffset: { startOffset: 6, endOffset: 15 },
+      nextContent: next,
+      currentRange: { start: 6, end: 15 },
     });
 
     expect(result).toBeDefined();
     if (result) {
-      expect(result.originalRange).toBeDefined();
-      expect(result.finalRange).toBeDefined();
-      expect(result.originalFragment).toBeDefined();
-      expect(result.finalFragment).toBeDefined();
+      expect(result.nextRange).toBeDefined();
+      expect(result.currentFragment).toBeDefined();
+      expect(result.nextFragment).toBeDefined();
       expect(result.changeAnalysis).toBeDefined();
     }
   });
 
   test('should return undefined for invalid offset range', () => {
-    const original = 'Hello World';
     const current = 'Hello World';
-    const final = 'Hello World';
+    const next = 'Hello World';
     const result = resolveGroupChangeFragments({
-      originalContent: original,
       currentContent: current,
-      finalContent: final,
-      currentTagOffset: { startOffset: -1, endOffset: 5 },
+      nextContent: next,
+      currentRange: { start: -1, end: 5 },
     });
 
     expect(result).toBeUndefined();
   });
 
   test('should return undefined when endOffset exceeds content length', () => {
-    const original = 'Hello World';
     const current = 'Hello World';
-    const final = 'Hello World';
+    const next = 'Hello World';
     const result = resolveGroupChangeFragments({
-      originalContent: original,
       currentContent: current,
-      finalContent: final,
-      currentTagOffset: { startOffset: 0, endOffset: 1000 },
+      nextContent: next,
+      currentRange: { start: 0, end: 1000 },
     });
 
     expect(result).toBeUndefined();
   });
 
   test('should return undefined when startOffset > endOffset', () => {
-    const original = 'Hello World';
     const current = 'Hello World';
-    const final = 'Hello World';
+    const next = 'Hello World';
     const result = resolveGroupChangeFragments({
-      originalContent: original,
       currentContent: current,
-      finalContent: final,
-      currentTagOffset: { startOffset: 10, endOffset: 5 },
+      nextContent: next,
+      currentRange: { start: 10, end: 5 },
     });
 
     expect(result).toBeUndefined();
   });
 
-  test('should handle complex three-way change', () => {
-    const original = '<h1 class="title">Name</h1>';
+  test('should handle complex change', () => {
     const current = '<h1 class="title text-xl">Name</h1>';
-    const final = '<h1 class="text-xl font-bold">Name</h1>';
+    const next = '<h1 class="text-xl font-bold">Name</h1>';
     const result = resolveGroupChangeFragments({
-      originalContent: original,
       currentContent: current,
-      finalContent: final,
-      currentTagOffset: { startOffset: 4, endOffset: 30 },
+      nextContent: next,
+      currentRange: { start: 4, end: 30 },
     });
 
     expect(result).toBeDefined();
     if (result) {
       expect(result.changeAnalysis.replacement).toBe(true);
-      expect(result.originalFragment).toContain('title');
-      expect(result.finalFragment).toContain('font-bold');
+      expect(result.currentFragment).toContain('title');
+      expect(result.nextFragment).toContain('font-bold');
     }
   });
 
   test('should handle empty range', () => {
-    const original = 'Hello World';
     const current = 'Hello World';
-    const final = 'Hello World';
+    const next = 'Hello World';
     const result = resolveGroupChangeFragments({
-      originalContent: original,
       currentContent: current,
-      finalContent: final,
-      currentTagOffset: { startOffset: 5, endOffset: 5 },
+      nextContent: next,
+      currentRange: { start: 5, end: 5 },
     });
 
     expect(result).toBeDefined();
     if (result) {
-      expect(result.originalFragment).toBe('');
-      expect(result.finalFragment).toBe('');
+      expect(result.currentFragment).toBe('');
+      expect(result.nextFragment).toBe('');
     }
   });
 });

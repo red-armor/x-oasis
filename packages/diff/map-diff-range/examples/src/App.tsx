@@ -3,13 +3,10 @@ import { resolveGroupChangeFragments } from '@x-oasis/map-diff-range';
 import './index.css';
 
 const App: React.FC = () => {
-  const [originalContent, setOriginalContent] = useState(
-    '<h1 class="text-[--color-text-title] text-2xl font-bold">姓名3333444</h1>'
-  );
   const [currentContent, setCurrentContent] = useState(
     '<h1 class="text-[--color-text-title] text-2xl font-bold">姓名3333444</h1>'
   );
-  const [finalContent, setFinalContent] = useState(
+  const [nextContent, setNextContent] = useState(
     '<h1 class="text-2xl font-bold text-[--color-primary-pressing]">姓名3</h1>'
   );
   const [startOffset, setStartOffset] = useState<number>(244);
@@ -21,10 +18,9 @@ const App: React.FC = () => {
     setError(null);
     try {
       const analysis = resolveGroupChangeFragments({
-        originalContent,
         currentContent,
-        finalContent,
-        currentTagOffset: { startOffset, endOffset },
+        nextContent,
+        currentRange: { start: startOffset, end: endOffset },
       });
 
       if (analysis) {
@@ -53,35 +49,22 @@ const App: React.FC = () => {
     <div className="container">
       <h1>Map Diff Range - Range Mapping and Change Analysis</h1>
       <p className="subtitle">
-        在 originalContent / currentContent / finalContent 之间映射
-        range，并分析片段级变更
+        在 currentContent 和 nextContent 之间映射 range，并分析片段级变更
       </p>
 
       <div className="info-box">
         <strong>使用说明：</strong>
         <ul style={{ marginTop: '8px', marginLeft: '20px' }}>
-          <li>输入三个文件内容：原始内容、当前内容、最终内容</li>
-          <li>输入当前文件中发生变更的 range（startOffset 和 endOffset）</li>
+          <li>输入两个文件内容：当前内容、下一个内容</li>
+          <li>输入当前文件中需要映射的 range（startOffset 和 endOffset）</li>
           <li>点击"分析变更"查看映射结果和变更分析</li>
-          <li>
-            系统会自动计算 originalRange 和 finalRange，并分析片段间的变更
-          </li>
+          <li>系统会自动计算 nextRange，并分析片段间的变更</li>
         </ul>
       </div>
 
       <div className="section">
         <div className="section-title">文件内容输入</div>
         <div className="file-comparison">
-          <div className="file-panel">
-            <div className="file-header">原始内容 (originalContent)</div>
-            <textarea
-              className="file-content"
-              value={originalContent}
-              onChange={(e) => setOriginalContent(e.target.value)}
-              spellCheck={false}
-              placeholder="输入原始文件内容..."
-            />
-          </div>
           <div className="file-panel">
             <div className="file-header">当前内容 (currentContent)</div>
             <textarea
@@ -93,13 +76,13 @@ const App: React.FC = () => {
             />
           </div>
           <div className="file-panel">
-            <div className="file-header">最终内容 (finalContent)</div>
+            <div className="file-header">下一个内容 (nextContent)</div>
             <textarea
               className="file-content"
-              value={finalContent}
-              onChange={(e) => setFinalContent(e.target.value)}
+              value={nextContent}
+              onChange={(e) => setNextContent(e.target.value)}
               spellCheck={false}
-              placeholder="输入最终文件内容..."
+              placeholder="输入下一个文件内容..."
             />
           </div>
         </div>
@@ -145,28 +128,22 @@ const App: React.FC = () => {
               <strong>Range 映射</strong>
               <div className="analysis-value">
                 <div>
-                  Original Range:{' '}
+                  Next Range:{' '}
                   <span className="range-info">
-                    [{result.originalRange.start}, {result.originalRange.end}]
-                  </span>
-                </div>
-                <div style={{ marginTop: '5px' }}>
-                  Final Range:{' '}
-                  <span className="range-info">
-                    [{result.finalRange.start}, {result.finalRange.end}]
+                    [{result.nextRange.start}, {result.nextRange.end}]
                   </span>
                 </div>
               </div>
             </div>
 
             <div className="analysis-item">
-              <strong>原始片段 (originalFragment)</strong>
-              <div className="analysis-value">{result.originalFragment}</div>
+              <strong>当前片段 (currentFragment)</strong>
+              <div className="analysis-value">{result.currentFragment}</div>
             </div>
 
             <div className="analysis-item">
-              <strong>最终片段 (finalFragment)</strong>
-              <div className="analysis-value">{result.finalFragment}</div>
+              <strong>下一个片段 (nextFragment)</strong>
+              <div className="analysis-value">{result.nextFragment}</div>
             </div>
 
             <div className="analysis-item">
@@ -241,9 +218,8 @@ const App: React.FC = () => {
           <button
             className="example-btn"
             onClick={() => {
-              setOriginalContent('<h1 class="title">Name</h1>');
               setCurrentContent('<h1 class="title text-xl">Name</h1>');
-              setFinalContent('<h1 class="text-xl font-bold">Name</h1>');
+              setNextContent('<h1 class="text-xl font-bold">Name</h1>');
               setStartOffset(4);
               setEndOffset(30);
             }}
@@ -253,9 +229,8 @@ const App: React.FC = () => {
           <button
             className="example-btn"
             onClick={() => {
-              setOriginalContent('Hello World');
               setCurrentContent('Hello Beautiful World');
-              setFinalContent('Hello Amazing World');
+              setNextContent('Hello Amazing World');
               setStartOffset(6);
               setEndOffset(15);
             }}
@@ -265,9 +240,8 @@ const App: React.FC = () => {
           <button
             className="example-btn"
             onClick={() => {
-              setOriginalContent('The quick brown fox');
               setCurrentContent('The fast brown fox');
-              setFinalContent('The slow brown fox');
+              setNextContent('The slow brown fox');
               setStartOffset(4);
               setEndOffset(8);
             }}

@@ -1,12 +1,12 @@
 # @x-oasis/map-diff-range
 
-基于 diff-match-patch 的 range 映射与变更分析工具，用于在 originalContent / currentContent / finalContent 之间映射 range，并分析片段级变更。
+基于 diff-match-patch 的 range 映射与变更分析工具，用于在 currentContent 和 nextContent 之间映射 range，并分析片段级变更。
 
 ## 功能
 
 - **Range 映射**：在新旧内容之间双向映射 offset range
 - **变更分析**：分析两段片段之间的变更类型（equal、onlyDeletion、onlyInsertion、replacement）
-- **三路对比**：支持 originalContent → currentContent → finalContent 的三路变更解析
+- **内容映射**：根据 currentContent 和 currentRange，找到 nextContent 对应的 range
 - **语义化描述**：自动生成简短的变更摘要
 
 ## 安装
@@ -21,7 +21,7 @@ pnpm add @x-oasis/map-diff-range
 
 查看 [交互式示例](./examples/index.html) 来可视化地了解如何使用这个库。示例包含：
 
-- 三路文件内容输入（originalContent、currentContent、finalContent）
+- 文件内容输入（currentContent、nextContent）
 - 交互式的 offset range 映射功能
 - 详细的变更分析展示
 - 多个预设的测试场景
@@ -60,29 +60,26 @@ console.log(analysis.summary); // "新增: Beautiful "
 console.log(analysis.diffs); // [[0, "Hello "], [1, "Beautiful "], [0, "World"]]
 ```
 
-### 三路变更解析
+### Range 映射与变更分析
 
 ```typescript
 import { resolveGroupChangeFragments } from '@x-oasis/map-diff-range';
 
-const original = '<h1 class="title">Name</h1>';
 const current = '<h1 class="title text-xl">Name</h1>';
-const final = '<h1 class="text-xl font-bold">Name</h1>';
+const next = '<h1 class="text-xl font-bold">Name</h1>';
 
 const result = resolveGroupChangeFragments({
-  originalContent: original,
   currentContent: current,
-  finalContent: final,
-  currentTagOffset: { startOffset: 4, endOffset: 30 },
+  nextContent: next,
+  currentRange: { start: 4, end: 30 },
 });
 
 if (result) {
-  console.log(result.originalRange); // { start: 4, end: 30 }
-  console.log(result.finalRange); // { start: 4, end: 35 }
-  console.log(result.originalFragment); // 'class="title">Name</h1>'
-  console.log(result.finalFragment); // 'class="text-xl font-bold">Name</h1>'
+  console.log(result.nextRange); // { start: 4, end: 35 }
+  console.log(result.currentFragment); // 'class="title text-xl">Name</h1>'
+  console.log(result.nextFragment); // 'class="text-xl font-bold">Name</h1>'
   console.log(result.changeAnalysis.replacement); // true
-  console.log(result.changeAnalysis.summary); // "替换: title → text-xl font-bold"
+  console.log(result.changeAnalysis.summary); // "替换: title  → font-bold"
 }
 ```
 
@@ -173,63 +170,56 @@ function analyzeFragmentChange(
 
 ### resolveGroupChangeFragments
 
-解析「当前文件中变更 range」对应的原始片段与最终片段，并分析二者之间的变更。
+根据当前内容和 range，找到下一个内容对应的 range，并分析二者之间的变更。
 
 ```typescript
 function resolveGroupChangeFragments(options: {
-  originalContent: string;
   currentContent: string;
-  finalContent: string;
-  currentTagOffset: { startOffset: number; endOffset: number };
+  nextContent: string;
+  currentRange: Range;
 }): {
-  originalRange: Range;
-  finalRange: Range;
-  originalFragment: string;
-  finalFragment: string;
+  nextRange: Range;
+  currentFragment: string;
+  nextFragment: string;
   changeAnalysis: FragmentChangeAnalysis;
 } | undefined
 ```
 
 **参数：**
-- `options.originalContent`: 最初文件内容
 - `options.currentContent`: 当前文件内容
-- `options.finalContent`: 变更后的文件内容
-- `options.currentTagOffset`: 当前文件中变更发生的 range（startOffset/endOffset）
+- `options.nextContent`: 下一个文件内容
+- `options.currentRange`: 当前文件中需要映射的 range
 
-**返回：** 映射得到的 original/final range、对应片段、以及片段级变更分析；若无法解析则返回 `undefined`
+**返回：** 映射得到的 nextRange、对应片段、以及片段级变更分析；若无法解析则返回 `undefined`
 
 ## 示例场景
 
 ### 场景 1: Class 属性变更
 
 ```typescript
-const original = '<h1 class="title">Name</h1>';
 const current = '<h1 class="title text-xl">Name</h1>';
-const final = '<h1 class="text-xl font-bold">Name</h1>';
+const next = '<h1 class="text-xl font-bold">Name</h1>';
 
 const result = resolveGroupChangeFragments({
-  originalContent: original,
   currentContent: current,
-  finalContent: final,
-  currentTagOffset: { startOffset: 4, endOffset: 30 },
+  nextContent: next,
+  currentRange: { start: 4, end: 30 },
 });
 
 // result.changeAnalysis.replacement === true
-// result.changeAnalysis.summary === "替换: title → text-xl font-bold"
+// result.changeAnalysis.summary === "替换: title  → font-bold"
 ```
 
 ### 场景 2: 文本替换
 
 ```typescript
-const original = 'Hello World';
 const current = 'Hello Beautiful World';
-const final = 'Hello Amazing World';
+const next = 'Hello Amazing World';
 
 const result = resolveGroupChangeFragments({
-  originalContent: original,
   currentContent: current,
-  finalContent: final,
-  currentTagOffset: { startOffset: 6, endOffset: 15 },
+  nextContent: next,
+  currentRange: { start: 6, end: 15 },
 });
 
 // result.changeAnalysis.replacement === true
@@ -239,25 +229,33 @@ const result = resolveGroupChangeFragments({
 ### 场景 3: 仅删除
 
 ```typescript
-const original = 'Hello Beautiful World';
 const current = 'Hello Beautiful World';
-const final = 'Hello World';
+const next = 'Hello World';
 
-const analysis = analyzeFragmentChange(original, final);
-// analysis.onlyDeletion === true
-// analysis.summary === "删除: Beautiful "
+const result = resolveGroupChangeFragments({
+  currentContent: current,
+  nextContent: next,
+  currentRange: { start: 6, end: 15 },
+});
+
+// result.changeAnalysis.onlyDeletion === true
+// result.changeAnalysis.summary === "删除: Beautiful "
 ```
 
 ### 场景 4: 仅新增
 
 ```typescript
-const original = 'Hello World';
 const current = 'Hello World';
-const final = 'Hello Beautiful World';
+const next = 'Hello Beautiful World';
 
-const analysis = analyzeFragmentChange(original, final);
-// analysis.onlyInsertion === true
-// analysis.summary === "新增: Beautiful "
+const result = resolveGroupChangeFragments({
+  currentContent: current,
+  nextContent: next,
+  currentRange: { start: 6, end: 6 },
+});
+
+// result.changeAnalysis.onlyInsertion === true
+// result.changeAnalysis.summary === "新增: Beautiful "
 ```
 
 ## 错误处理

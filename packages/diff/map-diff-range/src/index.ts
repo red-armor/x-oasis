@@ -298,33 +298,29 @@ function formatSnippet(s: string, maxLen = 40): string {
 }
 
 /**
- * 解析「当前文件中变更 range」对应的原始片段与最终片段，并分析二者之间的变更
- * 用于 sketch 等场景：originalContent → currentContent → finalContent，currentTagOffset 为 currentContent 上发生变更的 range
+ * 根据当前内容和 range，找到下一个内容对应的 range
+ * 用于将 currentContent 中的 range 映射到 nextContent 中对应的 range
  *
- * @param options.originalContent 最初文件内容
  * @param options.currentContent 当前文件内容
- * @param options.finalContent 变更后的文件内容
- * @param options.currentTagOffset 当前文件中变更发生的 range（startOffset/endOffset）
- * @returns 映射得到的 original/final range、对应片段、以及片段级变更分析；若无法解析则返回 undefined
+ * @param options.nextContent 下一个文件内容
+ * @param options.currentRange 当前文件中需要映射的 range
+ * @returns 映射得到的 nextRange、对应片段、以及片段级变更分析；若无法解析则返回 undefined
  */
 export function resolveGroupChangeFragments(options: {
-  originalContent: string;
   currentContent: string;
-  finalContent: string;
-  currentTagOffset: { startOffset: number; endOffset: number };
+  nextContent: string;
+  currentRange: Range;
 }):
   | {
-      originalRange: Range;
-      finalRange: Range;
-      originalFragment: string;
-      finalFragment: string;
+      nextRange: Range;
+      currentFragment: string;
+      nextFragment: string;
       changeAnalysis: FragmentChangeAnalysis;
     }
   | undefined {
-  const { originalContent, currentContent, finalContent, currentTagOffset } =
-    options;
+  const { currentContent, nextContent, currentRange } = options;
 
-  const { startOffset, endOffset } = currentTagOffset;
+  const { start: startOffset, end: endOffset } = currentRange;
 
   if (
     startOffset < 0 ||
@@ -335,35 +331,22 @@ export function resolveGroupChangeFragments(options: {
     return undefined;
   }
 
-  const originalRange = mapNewerRangeToOlder(
-    originalContent,
+  const nextRange = mapOlderRangeToNewer(
     currentContent,
-    startOffset,
-    endOffset
-  );
-  const finalRange = mapOlderRangeToNewer(
-    currentContent,
-    finalContent,
+    nextContent,
     startOffset,
     endOffset
   );
 
-  const originalFragment = originalContent.substring(
-    originalRange.start,
-    originalRange.end
-  );
-  const finalFragment = finalContent.substring(
-    finalRange.start,
-    finalRange.end
-  );
+  const currentFragment = currentContent.substring(startOffset, endOffset);
+  const nextFragment = nextContent.substring(nextRange.start, nextRange.end);
 
-  const changeAnalysis = analyzeFragmentChange(originalFragment, finalFragment);
+  const changeAnalysis = analyzeFragmentChange(currentFragment, nextFragment);
 
   return {
-    originalRange,
-    finalRange,
-    originalFragment,
-    finalFragment,
+    nextRange,
+    currentFragment,
+    nextFragment,
     changeAnalysis,
   };
 }
