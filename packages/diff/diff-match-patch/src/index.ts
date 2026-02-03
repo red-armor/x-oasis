@@ -330,6 +330,11 @@ export class FileRestoreManager {
 
 /**
  * 便捷函数：直接恢复指定 range 的内容
+ * @param options.originalContent 原始文件内容
+ * @param options.currentContent 最新文件内容
+ * @param options.startOffset 开始偏移（基于最新文件）
+ * @param options.endOffset 结束偏移（基于最新文件）
+ * @returns 恢复后的文件内容
  */
 export function restoreRange(options: {
   originalContent: string;
