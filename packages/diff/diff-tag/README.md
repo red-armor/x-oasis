@@ -266,3 +266,8 @@ Lint is clean for the changed files. Remaining tsc errors come from other files.
 **结论**：
 - 若目标就是**直接拿到「class 多了啥、少了啥、文本变更」的语义化结构**，并给 Sketch 等业务用，**目前基于 parse5 的自研方案**更贴需求，社区库没有现成的「一模一样」的 API。
 - 若你愿意**先拿 diff 操作序列再聚合**，可以引入 **diff-dom**，在 `htmlFragmentDiff.ts` 里用 diff-dom 的 diff 结果，写一小段逻辑把 `replaceAttribute('class', ...)` 等转成 `classAdded` / `classRemoved` 和文本变更，这样能少维护一点「自己解析 + 对比」的代码，但要注意 **LGPL-3.0** 的合规使用。
+
+
+
+
+
