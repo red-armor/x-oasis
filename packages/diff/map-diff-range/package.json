@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/map-diff-range",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Range mapping and change analysis tool based on diff-match-patch",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
