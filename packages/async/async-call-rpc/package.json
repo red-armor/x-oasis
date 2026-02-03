@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/async-call-rpc",
-  "version": "0.1.41",
+  "version": "0.2.0",
   "description": "async-call-rpc function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
