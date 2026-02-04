@@ -1,5 +1,14 @@
 # @x-oasis/emitter
 
+## 0.2.2
+
+### Patch Changes
+
+- fbf782d: fix html diff
+- Updated dependencies [fbf782d]
+  - @x-oasis/is-object@0.2.2
+  - @x-oasis/disposable@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes

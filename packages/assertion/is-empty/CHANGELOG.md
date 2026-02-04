@@ -1,5 +1,13 @@
 # @x-oasis/is-empty
 
+## 0.2.2
+
+### Patch Changes
+
+- fbf782d: fix html diff
+- Updated dependencies [fbf782d]
+  - @x-oasis/to-string@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes

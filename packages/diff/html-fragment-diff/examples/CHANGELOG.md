@@ -1,5 +1,13 @@
 # html-fragment-diff-example
 
+## 0.2.2
+
+### Patch Changes
+
+- fbf782d: fix html diff
+- Updated dependencies [fbf782d]
+  - @x-oasis/html-fragment-diff@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes

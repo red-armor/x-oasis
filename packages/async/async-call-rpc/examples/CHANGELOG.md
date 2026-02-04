@@ -1,5 +1,11 @@
 # @x-oasis/async-call-rpc-examples
 
+## 0.1.2
+
+### Patch Changes
+
+- fbf782d: fix html diff
+
 ## 0.1.1
 
 ### Patch Changes

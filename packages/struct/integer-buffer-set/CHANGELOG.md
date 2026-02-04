@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.2.2
+
+### Patch Changes
+
+- fbf782d: fix html diff
+- Updated dependencies [fbf782d]
+  - @x-oasis/is-clamped@0.2.2
+  - @x-oasis/invariant@0.2.2
+  - @x-oasis/return-hook@0.2.2
+  - @x-oasis/heap@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
