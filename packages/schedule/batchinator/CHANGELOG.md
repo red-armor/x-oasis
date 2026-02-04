@@ -1,5 +1,14 @@
 # @x-oasis/batchinator
 
+## 0.2.3
+
+### Patch Changes
+
+- ef364cf: fix html diff
+- Updated dependencies [ef364cf]
+  - @x-oasis/default-boolean-value@0.2.3
+  - @x-oasis/debounce@0.2.3
+
 ## 0.2.2
 
 ### Patch Changes

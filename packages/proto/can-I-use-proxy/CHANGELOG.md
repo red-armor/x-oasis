@@ -1,5 +1,11 @@
 # @x-oasis/can-i-use-proxy
 
+## 0.2.3
+
+### Patch Changes
+
+- ef364cf: fix html diff
+
 ## 0.2.2
 
 ### Patch Changes

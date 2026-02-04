@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.3.3
+
+### Patch Changes
+
+- ef364cf: fix html diff
+
 ## 0.3.2
 
 ### Patch Changes

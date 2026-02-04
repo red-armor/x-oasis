@@ -1,5 +1,11 @@
 # @x-oasis/async-call-rpc-examples
 
+## 0.1.3
+
+### Patch Changes
+
+- ef364cf: fix html diff
+
 ## 0.1.2
 
 ### Patch Changes
