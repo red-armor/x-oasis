@@ -1,5 +1,18 @@
 # @x-oasis/async-call-rpc-misc
 
+## 0.2.1
+
+### Patch Changes
+
+- cfaacab: bump version diff html
+- Updated dependencies [cfaacab]
+  - @x-oasis/is-ascii@0.2.1
+  - @x-oasis/is-promise@0.2.1
+  - @x-oasis/disposable@0.2.1
+  - @x-oasis/emitter@0.2.1
+  - @x-oasis/id@0.2.1
+  - @x-oasis/deferred@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.3.1
+
+### Patch Changes
+
+- cfaacab: bump version diff html
+
 ## 0.3.0
 
 ### Minor Changes
