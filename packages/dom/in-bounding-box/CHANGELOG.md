@@ -1,5 +1,11 @@
 # @x-oasis/in-bounding-rect
 
+## 0.2.2
+
+### Patch Changes
+
+- fbf782d: fix html diff
+
 ## 0.2.1
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @x-oasis/async-call-rpc
 
+## 0.2.2
+
+### Patch Changes
+
+- fbf782d: fix html diff
+- Updated dependencies [fbf782d]
+  - @x-oasis/is-ascii@0.2.2
+  - @x-oasis/is-promise@0.2.2
+  - @x-oasis/disposable@0.2.2
+  - @x-oasis/emitter@0.2.2
+  - @x-oasis/id@0.2.2
+  - @x-oasis/deferred@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
