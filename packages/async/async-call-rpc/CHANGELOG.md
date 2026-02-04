@@ -1,5 +1,18 @@
 # @x-oasis/async-call-rpc
 
+## 0.2.3
+
+### Patch Changes
+
+- ef364cf: fix html diff
+- Updated dependencies [ef364cf]
+  - @x-oasis/is-ascii@0.2.3
+  - @x-oasis/is-promise@0.2.3
+  - @x-oasis/disposable@0.2.3
+  - @x-oasis/emitter@0.2.3
+  - @x-oasis/id@0.2.3
+  - @x-oasis/deferred@0.2.3
+
 ## 0.2.2
 
 ### Patch Changes
