@@ -1,5 +1,14 @@
 # @x-oasis/emitter
 
+## 0.2.1
+
+### Patch Changes
+
+- cfaacab: bump version diff html
+- Updated dependencies [cfaacab]
+  - @x-oasis/is-object@0.2.1
+  - @x-oasis/disposable@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

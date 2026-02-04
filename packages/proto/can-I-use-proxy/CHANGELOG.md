@@ -1,5 +1,11 @@
 # @x-oasis/can-i-use-proxy
 
+## 0.2.1
+
+### Patch Changes
+
+- cfaacab: bump version diff html
+
 ## 0.2.0
 
 ### Minor Changes

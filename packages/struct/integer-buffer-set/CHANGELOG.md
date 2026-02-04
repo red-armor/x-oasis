@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.2.1
+
+### Patch Changes
+
+- cfaacab: bump version diff html
+- Updated dependencies [cfaacab]
+  - @x-oasis/is-clamped@0.2.1
+  - @x-oasis/invariant@0.2.1
+  - @x-oasis/return-hook@0.2.1
+  - @x-oasis/heap@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

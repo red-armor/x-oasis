@@ -1,5 +1,11 @@
 # @x-oasis/async-call-rpc-examples
 
+## 0.1.1
+
+### Patch Changes
+
+- cfaacab: bump version diff html
+
 ## 0.1.0
 
 ### Minor Changes
