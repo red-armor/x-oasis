@@ -65,7 +65,9 @@ describe('compareHtmlFragments', () => {
     const final = '<h1 class="title active">Hello</h1>';
     const result = compareHtmlFragments(original, final);
 
+    expect(Array.isArray(result.classAdded)).toBe(true);
     expect(result.classAdded).toContain('active');
+    expect(new Set(result.classAdded).size).toBe(result.classAdded.length);
     expect(result.classRemoved).toEqual([]);
   });
 
@@ -84,7 +86,20 @@ describe('compareHtmlFragments', () => {
     const result = compareHtmlFragments(original, final);
 
     expect(result.classRemoved).toContain('primary');
+    expect(Array.isArray(result.classAdded)).toBe(true);
     expect(result.classAdded).toContain('secondary');
+    expect(new Set(result.classAdded).size).toBe(result.classAdded.length);
+  });
+
+  test('classAdded should be array with no duplicates', () => {
+    // final 中 class 重复时，classAdded 仍应去重
+    const original = '<h1 class="a">x</h1>';
+    const final = '<h1 class="a b b c c c">x</h1>';
+    const result = compareHtmlFragments(original, final);
+
+    expect(Array.isArray(result.classAdded)).toBe(true);
+    expect(result.classAdded).toEqual(['b', 'c']);
+    expect(new Set(result.classAdded).size).toBe(result.classAdded.length);
   });
 
   test('should detect text changes', () => {
@@ -121,12 +136,16 @@ describe('compareHtmlFragments', () => {
   });
 
   test('should handle parsing failures gracefully', () => {
+    // parse5 仍会解析 <invalid> 为元素（tagName 为 'invalid'），只有无根元素或空片段时才为 null
     const original = '<invalid>';
     const final = '<h1>Valid</h1>';
     const result = compareHtmlFragments(original, final);
 
-    expect(result.original).toBeNull();
     expect(result.final).not.toBeNull();
+    expect(result.final?.tagName).toBe('h1');
+    // classAdded/classRemoved 应为 string[]，且无 class 时为空数组
+    expect(Array.isArray(result.classAdded)).toBe(true);
+    expect(Array.isArray(result.classRemoved)).toBe(true);
     expect(result.classAdded).toEqual([]);
     expect(result.classRemoved).toEqual([]);
   });
@@ -145,7 +164,11 @@ describe('consumeGroupChangeResult', () => {
 
     expect(consumed).toBeDefined();
     expect(consumed?.htmlDiff).toBeDefined();
+    expect(Array.isArray(consumed?.htmlDiff.classAdded)).toBe(true);
     expect(consumed?.htmlDiff.classAdded).toContain('active');
+    expect(new Set(consumed?.htmlDiff.classAdded).size).toBe(
+      consumed?.htmlDiff.classAdded.length ?? 0
+    );
     expect(consumed?.originalRange).toEqual(result.originalRange);
     expect(consumed?.finalRange).toEqual(result.finalRange);
   });

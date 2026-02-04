@@ -141,12 +141,13 @@ export function compareHtmlFragments(
 
   const originalClasses = new Set(original?.classList ?? []);
   const finalClasses = new Set(final?.classList ?? []);
-  const classAdded = (final?.classList ?? []).filter(
-    (c) => !originalClasses.has(c)
-  );
-  const classRemoved = (original?.classList ?? []).filter(
-    (c) => !finalClasses.has(c)
-  );
+  // 明确返回全新 string[]，避免被误用或序列化成 Set
+  const classAdded: string[] = [
+    ...(final?.classList ?? []).filter((c) => !originalClasses.has(c)),
+  ];
+  const classRemoved: string[] = [
+    ...(original?.classList ?? []).filter((c) => !finalClasses.has(c)),
+  ];
 
   const textOriginal = original?.textContent ?? '';
   const textFinal = final?.textContent ?? '';
