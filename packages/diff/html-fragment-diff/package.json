@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/html-fragment-diff",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Parse and compare HTML fragments to detect class changes and text changes",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.2.4
+
+### Patch Changes
+
+- 9280368: fix [...newSet(list)] issue
+- Updated dependencies [9280368]
+  - @x-oasis/is-clamped@0.2.4
+  - @x-oasis/invariant@0.2.4
+  - @x-oasis/return-hook@0.2.4
+  - @x-oasis/heap@0.2.4
+
 ## 0.2.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @x-oasis/map-diff-range
 
+## 0.2.4
+
+### Patch Changes
+
+- 9280368: fix [...newSet(list)] issue
+
 ## 0.2.3
 
 ### Patch Changes

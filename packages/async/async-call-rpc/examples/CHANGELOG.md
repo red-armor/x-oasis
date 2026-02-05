@@ -1,5 +1,11 @@
 # @x-oasis/async-call-rpc-examples
 
+## 0.1.4
+
+### Patch Changes
+
+- 9280368: fix [...newSet(list)] issue
+
 ## 0.1.3
 
 ### Patch Changes
