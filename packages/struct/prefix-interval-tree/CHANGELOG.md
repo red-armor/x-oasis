@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.3.4
+
+### Patch Changes
+
+- 9280368: fix [...newSet(list)] issue
+
 ## 0.3.3
 
 ### Patch Changes

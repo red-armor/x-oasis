@@ -1,5 +1,13 @@
 # @x-oasis/is-object
 
+## 0.2.4
+
+### Patch Changes
+
+- 9280368: fix [...newSet(list)] issue
+- Updated dependencies [9280368]
+  - @x-oasis/to-string@0.2.4
+
 ## 0.2.3
 
 ### Patch Changes

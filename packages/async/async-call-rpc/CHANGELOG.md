@@ -1,5 +1,18 @@
 # @x-oasis/async-call-rpc
 
+## 0.2.4
+
+### Patch Changes
+
+- 9280368: fix [...newSet(list)] issue
+- Updated dependencies [9280368]
+  - @x-oasis/is-ascii@0.2.4
+  - @x-oasis/is-promise@0.2.4
+  - @x-oasis/disposable@0.2.4
+  - @x-oasis/emitter@0.2.4
+  - @x-oasis/id@0.2.4
+  - @x-oasis/deferred@0.2.4
+
 ## 0.2.3
 
 ### Patch Changes
