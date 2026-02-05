@@ -64,9 +64,7 @@ function getTextContent(node: any): string {
 /**
  * 判断是否为元素节点（有 tagName）
  */
-function isElementNode(
-  node: any
-): node is {
+function isElementNode(node: any): node is {
   tagName: string;
   attrs: Array<{ name: string; value: string }>;
   childNodes?: any[];
@@ -80,7 +78,11 @@ function isElementNode(
 function splitClassList(classAttr: string | undefined): string[] {
   if (classAttr == null || classAttr === '') return [];
   const list = classAttr.trim().split(/\s+/).filter(Boolean);
-  return [...new Set(list)];
+  // [...new Set(list)] 是 ES6 语法，通过tsdx打包以后，它会被编译成
+  // [].concat(new Set(list)) 的语法，导致在浏览器中报错；这个编译
+  // 结果明显有问题，所以最好还是用Array.from。
+  // Array.from(new Set(list)) 是 ES2015 语法
+  return Array.from(new Set(list));
 }
 
 /**
