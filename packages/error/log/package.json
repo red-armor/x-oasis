@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/log",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A friendly logging library for browser environments",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

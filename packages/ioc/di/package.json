@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/di",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "dependency injection container",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
