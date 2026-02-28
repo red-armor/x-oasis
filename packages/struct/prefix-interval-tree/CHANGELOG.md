@@ -1,5 +1,13 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.3.5
+
+### Patch Changes
+
+- 680fc8f: fix lint issue
+- 56f3afd: fix lint
+- 0d5e07c: update di
+
 ## 0.3.4
 
 ### Patch Changes

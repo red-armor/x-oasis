@@ -1,5 +1,20 @@
 # @x-oasis/integer-buffer-set
 
+## 0.2.5
+
+### Patch Changes
+
+- 680fc8f: fix lint issue
+- 56f3afd: fix lint
+- 0d5e07c: update di
+- Updated dependencies [680fc8f]
+- Updated dependencies [56f3afd]
+- Updated dependencies [0d5e07c]
+  - @x-oasis/is-clamped@0.2.5
+  - @x-oasis/invariant@0.2.5
+  - @x-oasis/return-hook@0.2.5
+  - @x-oasis/heap@0.2.5
+
 ## 0.2.4
 
 ### Patch Changes
