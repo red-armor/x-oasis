@@ -83,8 +83,8 @@ export function instantiate(
     console.error(
       '[instantiate error ] ',
       binding,
-      binding?.identifier,
-      binding?.to,
+      (binding as Binding).identifier,
+      (binding as Binding).to,
       err
     );
     return null;

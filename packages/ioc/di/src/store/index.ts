@@ -50,7 +50,7 @@ export function addDependencies(
 ) {
   if (typeof index !== 'number') {
     // if it's a property binding, then use target.constructor
-    const targetModule = ensureModule(target.constructor);
+    const targetModule = ensureModule(target.constructor as DecoratorTarget);
     targetModule.addPropertyDependency(
       dependencyModuleIdentifier,
       propertyName

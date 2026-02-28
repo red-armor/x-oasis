@@ -33,6 +33,7 @@ export const createHiddenProperty = (
 export const isInjectable = (thing: any) => {
   if (!isObject(thing) && !isFunction(thing)) return false;
   if (thing[IS_INJECTABLE]) return true;
+  return false;
 };
 
 export const createId = (str: string) => Symbol(str);
