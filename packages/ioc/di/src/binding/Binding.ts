@@ -1,4 +1,5 @@
 import Container from '../Container';
+import Scope from '../scope/Scope';
 import {
   BindingProps,
   BindingType,
@@ -6,7 +7,6 @@ import {
   ModuleIdentifier,
   ToValue,
 } from '../types';
-import Scope from '../scope/Scope';
 
 class Binding {
   private _identifier: ModuleIdentifier;

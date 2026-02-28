@@ -1,5 +1,5 @@
 import Container from '../Container';
-import { ModuleIdentifier, Context } from './container';
+import { Context, ModuleIdentifier } from './container';
 
 export type Ctor<T = object> = new (...args: any[]) => T;
 

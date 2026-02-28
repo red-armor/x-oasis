@@ -1,9 +1,9 @@
-import { isInjectable } from './common';
-import { Ctor, BindingType } from './types';
-import { store } from './store';
-import Container from './Container';
-import { BINDING_NOT_FOUND } from './constants/error';
 import Binding from './binding/Binding';
+import { isInjectable } from './common';
+import { BINDING_NOT_FOUND } from './constants/error';
+import Container from './Container';
+import { store } from './store';
+import { Ctor, BindingType } from './types';
 
 export function instantiate(
   binding: Binding | Ctor,
@@ -80,11 +80,13 @@ export function instantiate(
 
     return instance;
   } catch (err) {
-    const bindingInfo =
-      binding instanceof Binding
-        ? { identifier: binding.identifier, to: binding.to }
-        : { ctor: binding };
-    console.error('[instantiate error ] ', binding, bindingInfo, err);
+    console.error(
+      '[instantiate error ] ',
+      binding,
+      binding?.identifier,
+      binding?.to,
+      err
+    );
     return null;
   }
 }

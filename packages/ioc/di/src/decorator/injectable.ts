@@ -1,5 +1,5 @@
-import { IS_INJECTABLE, createHiddenProperty } from '../common';
 import * as ERRORS_MSGS from '../constants/error';
+import { createHiddenProperty, IS_INJECTABLE } from '../common';
 import { registerModule, store } from '../store';
 import { DecoratorTarget, RegistryType } from '../types';
 

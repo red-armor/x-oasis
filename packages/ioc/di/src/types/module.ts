@@ -15,7 +15,7 @@ export type ModulePropertyDepToken = {
 
 export type ModuleConstructorDepToken = {
   // module: Module
-  id: ModuleIdentifier;
+  // id: ModuleIdentifier
   index: number;
 };
 

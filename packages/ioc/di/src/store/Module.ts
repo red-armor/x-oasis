@@ -1,9 +1,9 @@
 import {
-  ModuleProps,
   DecoratorTarget,
-  ModulePropertyDepToken,
   ModuleConstructorDepToken,
   ModuleIdentifier,
+  ModulePropertyDepToken,
+  ModuleProps,
   RegistryType,
 } from '../types';
 

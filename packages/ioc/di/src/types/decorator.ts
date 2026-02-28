@@ -1,6 +1,6 @@
-export type IDecorator<T = Function> = {
+export interface IDecorator<T = Function> {
   (target: T, key: string, index: number): void;
-};
+}
 
 type Prototype<T> = {
   [Property in keyof T]: T[Property] extends NewableFunction
@@ -9,8 +9,8 @@ type Prototype<T> = {
 } & { constructor: NewableFunction };
 
 interface ConstructorFunction<T = Record<string, unknown>> {
-  new (...args: unknown[]): T;
+  new (...args: any[]): T;
   prototype?: Prototype<T>;
 }
 
-export type DecoratorTarget<T = unknown> = ConstructorFunction<T>;
+export type DecoratorTarget<T = any> = ConstructorFunction<T>;

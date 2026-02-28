@@ -1,9 +1,9 @@
-import { Ctor, ModuleIdentifier } from './types';
 import Binding from './binding/Binding';
 import BindingTo from './binding/BindingTo';
-import { instantiate } from './instantiate';
 import { isInjectable } from './common';
+import { instantiate } from './instantiate';
 import Registry from './Registry';
+import { Ctor, ModuleIdentifier } from './types';
 
 class Container {
   private _bindingStore = new Map<ModuleIdentifier, Binding>();

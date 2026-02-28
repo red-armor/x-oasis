@@ -1,10 +1,10 @@
-import Binding from './Binding';
 import {
   BindingToProps,
   ToValueCtor,
   ToValueDynamicValue,
   BindingType,
 } from '../types';
+import Binding from './Binding';
 
 class BindingTo {
   private binding: Binding;

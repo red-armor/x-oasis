@@ -1,12 +1,14 @@
+// import { isFunction, isObject } from '@redcity/core/common/assertion/types';
+
+export function isFunction(thing: any): thing is Function {
+  return typeof thing === 'function';
+}
+
+export function isObject(thing: any): thing is object {
+  return typeof thing === 'object' && thing !== null;
+}
+
 export const hasSymbol = typeof Symbol !== 'undefined';
-
-const isFunction = (val: unknown): val is Function => {
-  return typeof val === 'function';
-};
-
-const isObject = (val: unknown): val is object => {
-  return val !== null && typeof val === 'object' && !Array.isArray(val);
-};
 
 export const DEPENDENCIES: unique symbol = hasSymbol
   ? Symbol.for('__dependencies__')
@@ -31,7 +33,6 @@ export const createHiddenProperty = (
 export const isInjectable = (thing: any) => {
   if (!isObject(thing) && !isFunction(thing)) return false;
   if (thing[IS_INJECTABLE]) return true;
-  return false;
 };
 
 export const createId = (str: string) => Symbol(str);

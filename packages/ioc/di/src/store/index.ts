@@ -1,6 +1,6 @@
-import Module from './Module';
-import { DecoratorTarget, ModuleIdentifier, RegistryType } from '../types';
 import { createHiddenProperty, IS_INJECTABLE } from '../common';
+import { DecoratorTarget, ModuleIdentifier, RegistryType } from '../types';
+import Module from './Module';
 
 export namespace store {
   export const moduleMap = new Map<any, Module>();
@@ -50,7 +50,7 @@ export function addDependencies(
 ) {
   if (typeof index !== 'number') {
     // if it's a property binding, then use target.constructor
-    const targetModule = ensureModule(target.constructor as DecoratorTarget);
+    const targetModule = ensureModule(target.constructor);
     targetModule.addPropertyDependency(
       dependencyModuleIdentifier,
       propertyName
