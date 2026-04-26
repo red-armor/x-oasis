@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>@x-oasis/event-stream - Visual Examples</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e1e4ed;
+    --text-dim: #7a7f94;
+    --accent: #6c8cff;
+    --green: #4ade80;
+    --red: #f87171;
+    --orange: #fb923c;
+    --yellow: #facc15;
+    --purple: #a78bfa;
+    --cyan: #22d3ee;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--accent);
+  }
+
+  h1 span { color: var(--text-dim); font-weight: 400; }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  /* ---- Tab bar ---- */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-family: inherit;
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ---- Demo card ---- */
+  .demo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .demo h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .demo .desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  /* ---- Flow diagram ---- */
+  .flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .flow-col {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .flow-col h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .flow-col h3 .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .flow-col h3 .dot.producer { background: var(--orange); }
+  .flow-col h3 .dot.buffer { background: var(--yellow); }
+  .flow-col h3 .dot.consumer { background: var(--green); }
+
+  /* ---- Arrow between columns ---- */
+  .flow-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 18px;
+    padding-top: 28px;
+    flex-shrink: 0;
+    width: 32px;
+  }
+
+  .flow-arrow .label {
+    font-size: 10px;
+    writing-mode: vertical-lr;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- Event items ---- */
+  .event-list {
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .event-item {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    animation: slideIn 0.25s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .event-item.pushed {
+    background: rgba(251, 146, 60, 0.12);
+    border: 1px solid rgba(251, 146, 60, 0.25);
+    color: var(--orange);
+  }
+
+  .event-item.buffered {
+    background: rgba(250, 204, 21, 0.10);
+    border: 1px solid rgba(250, 204, 21, 0.2);
+    color: var(--yellow);
+  }
+
+  .event-item.consumed {
+    background: rgba(74, 222, 128, 0.10);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    color: var(--green);
+  }
+
+  .event-item.terminal {
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    color: var(--purple);
+  }
+
+  .event-item.error-item {
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    color: var(--red);
+  }
+
+  .event-item .icon { flex-shrink: 0; }
+
+  /* ---- State badge ---- */
+  .state-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+
+  .state-badge {
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .state-badge.idle {
+    background: rgba(122, 127, 148, 0.15);
+    color: var(--text-dim);
+  }
+
+  .state-badge.flowing {
+    background: rgba(108, 140, 255, 0.15);
+    color: var(--accent);
+  }
+
+  .state-badge.done {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--green);
+  }
+
+  .state-badge.error-state {
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--red);
+  }
+
+  .stat { color: var(--text-dim); }
+  .stat b { color: var(--text); }
+
+  /* ---- Result box ---- */
+  .result-box {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .result-box.success {
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    color: var(--green);
+  }
+
+  .result-box.failure {
+    background: rgba(248, 113, 113, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    color: var(--red);
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    padding: 8px 18px;
+    font-size: 13px;
+    font-family: inherit;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn.primary:hover {
+    background: #5a7aee;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* ---- LLM token area ---- */
+  .token-output {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    min-height: 60px;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .token-output .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background: var(--accent);
+    animation: blink 0.8s step-end infinite;
+    vertical-align: text-bottom;
+    margin-left: 1px;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* ---- Pipeline stage ---- */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stage {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    transition: all 0.3s;
+  }
+
+  .stage.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(108, 140, 255, 0.08);
+    box-shadow: 0 0 12px rgba(108, 140, 255, 0.15);
+  }
+
+  .stage.complete {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(74, 222, 128, 0.08);
+  }
+
+  .stage.failed {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(248, 113, 113, 0.08);
+  }
+
+  .stage-arrow {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* ---- Progress bar ---- */
+  .progress-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    width: 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>@x-oasis/event-stream <span>Visual Examples</span></h1>
+<p class="subtitle">Push-pull bridged async event stream with final result aggregation</p>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-panel="demo1">1. Push / Pull</button>
+  <button class="tab" data-panel="demo2">2. LLM Streaming</button>
+  <button class="tab" data-panel="demo3">3. Pipeline</button>
+  <button class="tab" data-panel="demo4">4. Error Recovery</button>
+  <button class="tab" data-panel="demo5">5. Result Only</button>
+</div>
+
+<!-- ========== Demo 1: Basic Push / Pull ========== -->
+<div class="panel active" id="demo1">
+  <div class="demo">
+    <h2>Basic Push / Pull</h2>
+    <p class="desc">
+      Producer pushes events into the stream. Events buffer when no consumer
+      is listening. Consumer pulls them via <code>for await...of</code>.
+      Watch events flow from left to right.
+    </p>
+
+    <div class="state-bar" id="d1-state-bar">
+      <span class="state-badge idle" id="d1-state">idle</span>
+      <span class="stat">buffered: <b id="d1-buffered">0</b></span>
+      <span class="stat">waiting: <b id="d1-waiting">0</b></span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Producer</h3>
+        <div class="event-list" id="d1-produced"></div>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-col">
+        <h3><span class="dot buffer"></span> Buffer</h3>
+        <div class="event-list" id="d1-buffer"></div>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-col">
+        <h3><span class="dot consumer"></span> Consumer</h3>
+        <div class="event-list" id="d1-consumed"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d1-run">Run Demo</button>
+      <button class="btn" id="d1-reset">Reset</button>
+    </div>
+
+    <div id="d1-result"></div>
+  </div>
+</div>
+
+<!-- ========== Demo 2: LLM Token Streaming ========== -->
+<div class="panel" id="demo2">
+  <div class="demo">
+    <h2>LLM Token Streaming</h2>
+    <p class="desc">
+      Simulates an LLM producing tokens over time. The consumer renders
+      each token as it arrives, building the response character by character.
+      This is the primary use case for EventStream.
+    </p>
+
+    <div class="state-bar">
+      <span class="state-badge idle" id="d2-state">idle</span>
+      <span class="stat">tokens: <b id="d2-count">0</b></span>
+    </div>
+
+    <div class="token-output" id="d2-output"><span class="cursor" id="d2-cursor" style="display:none"></span></div>
+
+    <div class="flow" style="margin-top:12px">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Token Events</h3>
+        <div class="event-list" id="d2-events" style="max-height:180px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d2-run">Start Streaming</button>
+      <button class="btn" id="d2-reset">Reset</button>
+    </div>
+
+    <div id="d2-result"></div>
+  </div>
+</div>
+
+<!-- ========== Demo 3: Multi-stage Pipeline ========== -->
+<div class="panel" id="demo3">
+  <div class="demo">
+    <h2>Multi-stage Pipeline</h2>
+    <p class="desc">
+      Each pipeline stage is an EventStream. The output of one stage feeds
+      into the next. Events propagate through: Fetch &#x2192; Parse &#x2192;
+      Transform &#x2192; Done.
+    </p>
+
+    <div class="state-bar">
+      <span class="state-badge idle" id="d3-state">idle</span>
+    </div>
+
+    <div class="pipeline" id="d3-pipeline">
+      <span class="stage" id="d3-s0">Fetch</span>
+      <span class="stage-arrow">&#x2192;</span>
+      <span class="stage" id="d3-s1">Parse</span>
+      <span class="stage-arrow">&#x2192;</span>
+      <span class="stage" id="d3-s2">Transform</span>
+      <span class="stage-arrow">&#x2192;</span>
+      <span class="stage" id="d3-s3">Done</span>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="d3-progress"></div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Stage Log</h3>
+        <div class="event-list" id="d3-log"></div>
+      </div>
+      <div class="flow-col">
+        <h3><span class="dot consumer"></span> Output Items</h3>
+        <div class="event-list" id="d3-output"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d3-run">Run Pipeline</button>
+      <button class="btn" id="d3-reset">Reset</button>
+    </div>
+
+    <div id="d3-result"></div>
+  </div>
+</div>
+
+<!-- ========== Demo 4: Error + External end() ========== -->
+<div class="panel" id="demo4">
+  <div class="demo">
+    <h2>Error Handling &amp; External end()</h2>
+    <p class="desc">
+      Demonstrates two termination paths: <code>stream.error()</code> rejects
+      the result promise, while <code>stream.end()</code> resolves it normally.
+      Choose which path to take.
+    </p>
+
+    <div class="state-bar">
+      <span class="state-badge idle" id="d4-state">idle</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Events</h3>
+        <div class="event-list" id="d4-events"></div>
+      </div>
+      <div class="flow-col">
+        <h3><span class="dot consumer"></span> Consumed</h3>
+        <div class="event-list" id="d4-consumed"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d4-run-ok">Run (end normally)</button>
+      <button class="btn" id="d4-run-err" style="border-color:var(--red);color:var(--red)">Run (with error)</button>
+      <button class="btn" id="d4-reset">Reset</button>
+    </div>
+
+    <div id="d4-result"></div>
+  </div>
+</div>
+
+<!-- ========== Demo 5: Result Only ========== -->
+<div class="panel" id="demo5">
+  <div class="demo">
+    <h2>Result Only (skip iteration)</h2>
+    <p class="desc">
+      The consumer calls <code>await stream.result()</code> to skip individual
+      events and wait for the final aggregated value. Progress events are
+      produced but only the final result matters.
+    </p>
+
+    <div class="state-bar">
+      <span class="state-badge idle" id="d5-state">idle</span>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="d5-progress"></div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Progress Events (ignored)</h3>
+        <div class="event-list" id="d5-events"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d5-run">Run Computation</button>
+      <button class="btn" id="d5-reset">Reset</button>
+    </div>
+
+    <div id="d5-result"></div>
+  </div>
+</div>
+
+<script type="module">
+// ============================================================================
+// Inline EventStream (same logic as src/EventStream.ts, browser-compatible)
+// ============================================================================
+
+class EventStream {
+  _queue = [];
+  _waiting = [];
+  _done = false;
+  _started = false;
+  _finalResultPromise;
+  _resolveFinalResult;
+  _rejectFinalResult;
+  _isComplete;
+  _extractResult;
+
+  constructor(options) {
+    this._isComplete = options.isComplete;
+    this._extractResult = options.extractResult;
+    this._finalResultPromise = new Promise((resolve, reject) => {
+      this._resolveFinalResult = resolve;
+      this._rejectFinalResult = reject;
+    });
+    this._finalResultPromise.catch(() => {});
+  }
+
+  push(event) {
+    if (this._done) return;
+    this._started = true;
+    if (this._isComplete(event)) {
+      this._done = true;
+      this._resolveFinalResult(this._extractResult(event));
+    }
+    const waiter = this._waiting.shift();
+    if (waiter) {
+      waiter({ value: event, done: false });
+    } else {
+      this._queue.push(event);
+    }
+    if (this._done) this._drainWaiters();
+  }
+
+  end(result) {
+    if (this._done) return;
+    this._done = true;
+    if (result !== undefined) this._resolveFinalResult(result);
+    this._drainWaiters();
+  }
+
+  error(reason) {
+    if (this._done) return;
+    this._done = true;
+    this._rejectFinalResult(reason);
+    this._drainWaiters();
+  }
+
+  async *[Symbol.asyncIterator]() {
+    while (true) {
+      if (this._queue.length > 0) {
+        yield this._queue.shift();
+      } else if (this._done) {
+        return;
+      } else {
+        const result = await new Promise((resolve) => this._waiting.push(resolve));
+        if (result.done) return;
+        yield result.value;
+      }
+    }
+  }
+
+  result() { return this._finalResultPromise; }
+
+  get state() {
+    if (this._done) return 'done';
+    if (this._started) return 'flowing';
+    return 'idle';
+  }
+
+  get isDone() { return this._done; }
+  get bufferedCount() { return this._queue.length; }
+  get waitingCount() { return this._waiting.length; }
+
+  _drainWaiters() {
+    while (this._waiting.length > 0) {
+      this._waiting.shift()({ value: undefined, done: true });
+    }
+  }
+}
+
+// ============================================================================
+// Shared helpers
+// ============================================================================
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function $(id) { return document.getElementById(id); }
+
+function addItem(container, className, icon, text) {
+  const el = document.createElement('div');
+  el.className = `event-item ${className}`;
+  el.innerHTML = `<span class="icon">${icon}</span> ${escHtml(text)}`;
+  container.appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  return el;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function setStateBadge(el, state) {
+  el.textContent = state;
+  el.className = 'state-badge ' + (state === 'error' ? 'error-state' : state);
+}
+
+function showResult(container, ok, text) {
+  container.innerHTML = `<div class="result-box ${ok ? 'success' : 'failure'}">${escHtml(text)}</div>`;
+}
+
+// ============================================================================
+// Tab switching
+// ============================================================================
+
+document.querySelectorAll('.tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+    tab.classList.add('active');
+    $(tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ============================================================================
+// Demo 1: Basic Push / Pull
+// ============================================================================
+
+let d1Running = false;
+
+$('d1-run').onclick = async () => {
+  if (d1Running) return;
+  d1Running = true;
+  $('d1-run').disabled = true;
+  resetDemo1();
+
+  const stream = new EventStream({
+    isComplete: (e) => e.type === 'done',
+    extractResult: (e) => e.total,
+  });
+
+  const data = [
+    { type: 'count', value: 1 },
+    { type: 'count', value: 2 },
+    { type: 'count', value: 3 },
+    { type: 'count', value: 4 },
+    { type: 'done', total: 10 },
+  ];
+
+  // Phase 1: push events with no consumer (they buffer)
+  for (const item of data.slice(0, 3)) {
+    await sleep(400);
+    stream.push(item);
+    addItem($('d1-produced'), 'pushed', '&#x25B6;', `push({ value: ${item.value} })`);
+    addItem($('d1-buffer'), 'buffered', '&#x25A0;', `value: ${item.value}`);
+    updateD1Stats(stream);
+  }
+
+  await sleep(600);
+
+  // Phase 2: start consumer, it drains buffer then waits
+  const consumePromise = (async () => {
+    for await (const event of stream) {
+      // Remove first item from buffer display
+      const bufEl = $('d1-buffer').firstChild;
+      if (bufEl) bufEl.remove();
+
+      if (event.type === 'count') {
+        addItem($('d1-consumed'), 'consumed', '&#x2713;', `consumed: ${event.value}`);
+      } else {
+        addItem($('d1-consumed'), 'terminal', '&#x2605;', `done (total=${event.total})`);
+      }
+      updateD1Stats(stream);
+      await sleep(300);
+    }
+  })();
+
+  // Phase 3: push remaining items (delivered directly to waiting consumer)
+  await sleep(1200);
+  for (const item of data.slice(3)) {
+    await sleep(500);
+    stream.push(item);
+    const isDone = item.type === 'done';
+    addItem($('d1-produced'), isDone ? 'terminal' : 'pushed', isDone ? '&#x2605;' : '&#x25B6;',
+      isDone ? `push({ type: "done", total: ${item.total} })` : `push({ value: ${item.value} })`);
+    updateD1Stats(stream);
+  }
+
+  await consumePromise;
+
+  const result = await stream.result();
+  showResult($('d1-result'), true, `stream.result() resolved: ${result}`);
+  updateD1Stats(stream);
+
+  d1Running = false;
+  $('d1-run').disabled = false;
+};
+
+function updateD1Stats(stream) {
+  setStateBadge($('d1-state'), stream.state);
+  $('d1-buffered').textContent = stream.bufferedCount;
+  $('d1-waiting').textContent = stream.waitingCount;
+}
+
+function resetDemo1() {
+  $('d1-produced').innerHTML = '';
+  $('d1-buffer').innerHTML = '';
+  $('d1-consumed').innerHTML = '';
+  $('d1-result').innerHTML = '';
+  setStateBadge($('d1-state'), 'idle');
+  $('d1-buffered').textContent = '0';
+  $('d1-waiting').textContent = '0';
+}
+
+$('d1-reset').onclick = () => { resetDemo1(); };
+
+// ============================================================================
+// Demo 2: LLM Token Streaming
+// ============================================================================
+
+let d2Running = false;
+
+const LLM_RESPONSE = `EventStream is a generic push-pull bridged async iterable. The producer calls push() to emit events; the consumer uses for-await-of to pull them one by one. Internally, a queue/waiting pair acts as a mutual-exclusion buffer, balancing speed differences between the two sides.`;
+
+$('d2-run').onclick = async () => {
+  if (d2Running) return;
+  d2Running = true;
+  $('d2-run').disabled = true;
+  resetDemo2();
+  $('d2-cursor').style.display = 'inline-block';
+  setStateBadge($('d2-state'), 'flowing');
+
+  const stream = new EventStream({
+    isComplete: (e) => e.type === 'end',
+    extractResult: (e) => e.fullText,
+  });
+
+  // Producer: simulate LLM tokens
+  const tokens = LLM_RESPONSE.split(/(?<=\s)/); // split on whitespace boundaries
+  let count = 0;
+
+  (async () => {
+    let full = '';
+    for (const token of tokens) {
+      await sleep(30 + Math.random() * 60);
+      full += token;
+      stream.push({ type: 'token', text: token });
+    }
+    await sleep(100);
+    stream.push({ type: 'end', fullText: full });
+  })();
+
+  // Consumer: render tokens
+  const output = $('d2-output');
+  for await (const event of stream) {
+    if (event.type === 'token') {
+      count++;
+      $('d2-count').textContent = count;
+      // Insert text before cursor
+      const cursor = $('d2-cursor');
+      const textNode = document.createTextNode(event.text);
+      output.insertBefore(textNode, cursor);
+
+      addItem($('d2-events'), 'pushed', '&#x25B6;', `token: "${event.text.trim()}"`);
+    } else {
+      addItem($('d2-events'), 'terminal', '&#x2605;', 'end');
+    }
+  }
+
+  $('d2-cursor').style.display = 'none';
+  setStateBadge($('d2-state'), 'done');
+
+  const fullText = await stream.result();
+  showResult($('d2-result'), true, `stream.result() = "${fullText.slice(0, 50)}..."`);
+
+  d2Running = false;
+  $('d2-run').disabled = false;
+};
+
+function resetDemo2() {
+  $('d2-output').innerHTML = '<span class="cursor" id="d2-cursor" style="display:none"></span>';
+  $('d2-events').innerHTML = '';
+  $('d2-result').innerHTML = '';
+  $('d2-count').textContent = '0';
+  setStateBadge($('d2-state'), 'idle');
+}
+
+$('d2-reset').onclick = () => { resetDemo2(); };
+
+// ============================================================================
+// Demo 3: Multi-stage Pipeline
+// ============================================================================
+
+let d3Running = false;
+
+$('d3-run').onclick = async () => {
+  if (d3Running) return;
+  d3Running = true;
+  $('d3-run').disabled = true;
+  resetDemo3();
+  setStateBadge($('d3-state'), 'flowing');
+
+  const rawData = ['Alice,30', 'Bob,25', 'Charlie,35', 'Diana,28'];
+
+  // Stage 0: Fetch
+  setStage(0, 'active');
+  const fetchStream = new EventStream({
+    isComplete: (e) => e.type === 'done',
+    extractResult: (e) => e.items,
+  });
+
+  (async () => {
+    const items = [];
+    for (const line of rawData) {
+      await sleep(400);
+      items.push(line);
+      fetchStream.push({ type: 'data', line });
+      addItem($('d3-log'), 'pushed', '&#x25B6;', `[Fetch] received: "${line}"`);
+    }
+    await sleep(200);
+    fetchStream.push({ type: 'done', items });
+  })();
+
+  // Stage 1: Parse
+  const parseStream = new EventStream({
+    isComplete: (e) => e.type === 'done',
+    extractResult: (e) => e.records,
+  });
+
+  (async () => {
+    const records = [];
+    for await (const event of fetchStream) {
+      if (event.type === 'data') {
+        setStage(1, 'active');
+        $('d3-progress').style.width = '25%';
+        await sleep(200);
+        const [name, age] = event.line.split(',');
+        const record = { name, age: parseInt(age) };
+        records.push(record);
+        parseStream.push({ type: 'record', record });
+        addItem($('d3-log'), 'consumed', '&#x2713;', `[Parse] { name:"${name}", age:${age} }`);
+      }
+    }
+    setStage(0, 'complete');
+    $('d3-progress').style.width = '50%';
+    await sleep(200);
+    parseStream.push({ type: 'done', records });
+  })();
+
+  // Stage 2: Transform
+  const transformStream = new EventStream({
+    isComplete: (e) => e.type === 'done',
+    extractResult: (e) => e.output,
+  });
+
+  (async () => {
+    const output = [];
+    for await (const event of parseStream) {
+      if (event.type === 'record') {
+        setStage(2, 'active');
+        $('d3-progress').style.width = '75%';
+        await sleep(300);
+        const label = `${event.record.name} (age ${event.record.age})`;
+        output.push(label);
+        transformStream.push({ type: 'item', label });
+        addItem($('d3-output'), 'consumed', '&#x2713;', label);
+      }
+    }
+    setStage(1, 'complete');
+    await sleep(200);
+    transformStream.push({ type: 'done', output });
+  })();
+
+  // Final consumer
+  const result = await transformStream.result();
+  setStage(2, 'complete');
+  setStage(3, 'complete');
+  $('d3-progress').style.width = '100%';
+  setStateBadge($('d3-state'), 'done');
+  showResult($('d3-result'), true, `Pipeline complete: [${result.join(', ')}]`);
+
+  d3Running = false;
+  $('d3-run').disabled = false;
+};
+
+function setStage(idx, cls) {
+  const el = $(`d3-s${idx}`);
+  el.className = 'stage ' + cls;
+}
+
+function resetDemo3() {
+  for (let i = 0; i < 4; i++) setStage(i, '');
+  $('d3-log').innerHTML = '';
+  $('d3-output').innerHTML = '';
+  $('d3-result').innerHTML = '';
+  $('d3-progress').style.width = '0';
+  setStateBadge($('d3-state'), 'idle');
+}
+
+$('d3-reset').onclick = () => { resetDemo3(); };
+
+// ============================================================================
+// Demo 4: Error Handling & External end()
+// ============================================================================
+
+let d4Running = false;
+
+async function runDemo4(withError) {
+  if (d4Running) return;
+  d4Running = true;
+  $('d4-run-ok').disabled = true;
+  $('d4-run-err').disabled = true;
+  resetDemo4();
+  setStateBadge($('d4-state'), 'flowing');
+
+  const stream = new EventStream({
+    isComplete: () => false, // no terminal event in protocol
+    extractResult: () => null,
+  });
+
+  // Consumer
+  const consumePromise = (async () => {
+    for await (const event of stream) {
+      addItem($('d4-consumed'), 'consumed', '&#x2713;', `consumed: chunk-${event}`);
+      await sleep(100);
+    }
+    addItem($('d4-consumed'), withError ? 'error-item' : 'terminal', withError ? '&#x2717;' : '&#x2605;',
+      withError ? 'iteration stopped (stream errored)' : 'iteration ended (stream closed)');
+  })();
+
+  // Producer
+  for (let i = 1; i <= 3; i++) {
+    await sleep(500);
+    stream.push(i);
+    addItem($('d4-events'), 'pushed', '&#x25B6;', `push(${i})`);
+  }
+
+  await sleep(600);
+
+  if (withError) {
+    stream.error(new Error('connection lost'));
+    addItem($('d4-events'), 'error-item', '&#x2717;', 'stream.error("connection lost")');
+    setStateBadge($('d4-state'), 'error');
+  } else {
+    stream.end([1, 2, 3]);
+    addItem($('d4-events'), 'terminal', '&#x2605;', 'stream.end([1, 2, 3])');
+    setStateBadge($('d4-state'), 'done');
+  }
+
+  await consumePromise;
+
+  try {
+    const result = await stream.result();
+    showResult($('d4-result'), true, `stream.result() resolved: [${result}]`);
+  } catch (err) {
+    showResult($('d4-result'), false, `stream.result() rejected: ${err.message}`);
+  }
+
+  d4Running = false;
+  $('d4-run-ok').disabled = false;
+  $('d4-run-err').disabled = false;
+}
+
+$('d4-run-ok').onclick = () => runDemo4(false);
+$('d4-run-err').onclick = () => runDemo4(true);
+
+function resetDemo4() {
+  $('d4-events').innerHTML = '';
+  $('d4-consumed').innerHTML = '';
+  $('d4-result').innerHTML = '';
+  setStateBadge($('d4-state'), 'idle');
+}
+
+$('d4-reset').onclick = () => { resetDemo4(); };
+
+// ============================================================================
+// Demo 5: Result Only (skip iteration)
+// ============================================================================
+
+let d5Running = false;
+
+$('d5-run').onclick = async () => {
+  if (d5Running) return;
+  d5Running = true;
+  $('d5-run').disabled = true;
+  resetDemo5();
+  setStateBadge($('d5-state'), 'flowing');
+
+  const stream = new EventStream({
+    isComplete: (e) => e.type === 'done',
+    extractResult: (e) => e.output,
+  });
+
+  // Producer: runs computation, pushes progress
+  (async () => {
+    const results = [];
+    for (let i = 1; i <= 8; i++) {
+      await sleep(300);
+      results.push(i * i);
+      const pct = Math.round((i / 8) * 100);
+      stream.push({ type: 'progress', percent: pct, partial: [...results] });
+      addItem($('d5-events'), 'pushed', '&#x25B6;', `progress: ${pct}% (${i}^2 = ${i*i})`);
+      $('d5-progress').style.width = pct + '%';
+    }
+    await sleep(200);
+    stream.push({ type: 'done', output: results });
+    addItem($('d5-events'), 'terminal', '&#x2605;', 'done');
+  })();
+
+  // Consumer: only awaits the final result
+  addItem($('d5-events'), 'consumed', '&#x23F3;', 'consumer: await stream.result()...');
+
+  const output = await stream.result();
+
+  setStateBadge($('d5-state'), 'done');
+  $('d5-progress').style.width = '100%';
+  showResult($('d5-result'), true, `stream.result() = [${output.join(', ')}]`);
+
+  d5Running = false;
+  $('d5-run').disabled = false;
+};
+
+function resetDemo5() {
+  $('d5-events').innerHTML = '';
+  $('d5-result').innerHTML = '';
+  $('d5-progress').style.width = '0';
+  setStateBadge($('d5-state'), 'idle');
+}
+
+$('d5-reset').onclick = () => { resetDemo5(); };
+
+</script>
+</body>
+</html>

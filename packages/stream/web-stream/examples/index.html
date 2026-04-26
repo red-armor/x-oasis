@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>@x-oasis/web-stream - Visual Examples</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e1e4ed;
+    --text-dim: #7a7f94;
+    --accent: #6c8cff;
+    --green: #4ade80;
+    --red: #f87171;
+    --orange: #fb923c;
+    --yellow: #facc15;
+    --purple: #a78bfa;
+    --cyan: #22d3ee;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--accent);
+  }
+
+  h1 span { color: var(--text-dim); font-weight: 400; }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  /* ---- Tab bar ---- */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-family: inherit;
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ---- Demo card ---- */
+  .demo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .demo h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .demo .desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  /* ---- Pipeline visualization ---- */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .pipe-stage {
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background: rgba(108, 140, 255, 0.1);
+    border: 1px solid rgba(108, 140, 255, 0.25);
+    color: var(--accent);
+    white-space: nowrap;
+    transition: all 0.3s;
+  }
+
+  .pipe-stage.active {
+    background: rgba(108, 140, 255, 0.25);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(108, 140, 255, 0.3);
+  }
+
+  .pipe-stage.done {
+    background: rgba(74, 222, 128, 0.1);
+    border-color: rgba(74, 222, 128, 0.3);
+    color: var(--green);
+  }
+
+  .pipe-arrow {
+    color: var(--text-dim);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ---- Log area ---- */
+  .log {
+    background: #12141c;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 12px;
+    min-height: 60px;
+    max-height: 320px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .log .line {
+    animation: fadeIn 0.2s ease-out;
+    margin-bottom: 2px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .log .dim { color: var(--text-dim); }
+  .log .ok { color: var(--green); }
+  .log .err { color: var(--red); }
+  .log .info { color: var(--cyan); }
+  .log .warn { color: var(--orange); }
+  .log .accent { color: var(--accent); }
+  .log .purple { color: var(--purple); }
+
+  /* ---- Output text area ---- */
+  .output-text {
+    background: #12141c;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    min-height: 48px;
+    margin-bottom: 12px;
+    line-height: 1.8;
+  }
+
+  .output-text .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background: var(--accent);
+    animation: blink 0.8s step-end infinite;
+    vertical-align: text-bottom;
+    margin-left: 1px;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-right: 6px;
+    margin-bottom: 8px;
+  }
+
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn.primary {
+    background: rgba(108, 140, 255, 0.15);
+    border-color: rgba(108, 140, 255, 0.4);
+    color: var(--accent);
+  }
+
+  /* ---- Tool call card ---- */
+  .tool-card {
+    background: rgba(167, 139, 250, 0.08);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  .tool-card .tool-name {
+    color: var(--purple);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .tool-card .tool-args {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+
+  .tool-card.complete {
+    border-color: rgba(74, 222, 128, 0.3);
+    background: rgba(74, 222, 128, 0.06);
+  }
+
+  .tool-card.complete .tool-name { color: var(--green); }
+</style>
+</head>
+<body>
+
+<h1>@x-oasis/web-stream <span>Visual Examples</span></h1>
+<p class="subtitle">Web Streams API pipeline composition -- TransformStream chain, SSE round-trip, tool call tracking</p>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-panel="bridge">AsyncIterable Bridge</button>
+  <button class="tab" data-panel="sse">SSE Roundtrip</button>
+  <button class="tab" data-panel="llm">LLM SSE Stream</button>
+  <button class="tab" data-panel="tools">Tool Call Tracking</button>
+  <button class="tab" data-panel="pipeline">Pipeline Compose</button>
+</div>
+
+<!-- ====================================================================== -->
+<!-- Demo 1: AsyncIterable Bridge                                           -->
+<!-- ====================================================================== -->
+<div class="panel active" id="panel-bridge">
+  <div class="demo">
+    <h2>AsyncIterable Bridge</h2>
+    <p class="desc">
+      createAsyncIterableStream 将 ReadableStream 包装为 AsyncIterable，
+      支持 for-await-of 消费。反向的 convertAsyncIteratorToReadableStream 将
+      async generator 转为 ReadableStream。
+    </p>
+
+    <div class="pipeline" id="bridge-pipeline">
+      <div class="pipe-stage" id="bp-gen">async generator</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="bp-rs">ReadableStream</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="bp-ais">AsyncIterableStream</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="bp-consume">for await...of</div>
+    </div>
+
+    <button class="btn primary" id="bridge-run">Run Demo</button>
+    <button class="btn" id="bridge-break">Run with Early Break</button>
+    <div class="log" id="bridge-log"></div>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- Demo 2: SSE Roundtrip                                                  -->
+<!-- ====================================================================== -->
+<div class="panel" id="panel-sse">
+  <div class="demo">
+    <h2>SSE Roundtrip</h2>
+    <p class="desc">
+      JSON 对象 &rarr; JsonToSseTransformStream &rarr; SSE 文本 &rarr;
+      SseParserStream &rarr; 还原的结构化消息。验证编解码往返一致性。
+    </p>
+
+    <div class="pipeline" id="sse-pipeline">
+      <div class="pipe-stage" id="sp-json">JSON Objects</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="sp-encode">JsonToSse</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="sp-text">SSE Text</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="sp-parse">SseParser</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="sp-out">Parsed Messages</div>
+    </div>
+
+    <button class="btn primary" id="sse-run">Run Roundtrip</button>
+    <div class="log" id="sse-log"></div>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- Demo 3: LLM SSE Streaming                                              -->
+<!-- ====================================================================== -->
+<div class="panel" id="panel-llm">
+  <div class="demo">
+    <h2>LLM SSE Streaming</h2>
+    <p class="desc">
+      模拟 LLM 的 SSE 流式响应。parseJsonEventStream 将原始字节流解析为类型化事件，
+      消费者逐 token 渲染，打字机效果。
+    </p>
+
+    <div class="pipeline" id="llm-pipeline">
+      <div class="pipe-stage" id="lp-bytes">Uint8Array</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="lp-text">TextDecoder</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="lp-sse">SseParser</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="lp-json">JSON Parse</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="lp-render">Render</div>
+    </div>
+
+    <button class="btn primary" id="llm-run">Start Streaming</button>
+    <div class="output-text" id="llm-output"><span class="cursor"></span></div>
+    <div class="log" id="llm-log"></div>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- Demo 4: Tool Call Tracking                                             -->
+<!-- ====================================================================== -->
+<div class="panel" id="panel-tools">
+  <div class="demo">
+    <h2>Tool Call Tracking</h2>
+    <p class="desc">
+      StreamingToolCallTracker 将多个 delta chunk 累积为完整的 tool call。
+      观察 tool-input-start / delta / end / tool-call 事件的发射时机。
+    </p>
+
+    <button class="btn primary" id="tools-run">Simulate Tool Calls</button>
+    <div id="tools-cards" style="margin: 12px 0;"></div>
+    <div class="log" id="tools-log"></div>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- Demo 5: Pipeline Composition                                           -->
+<!-- ====================================================================== -->
+<div class="panel" id="panel-pipeline">
+  <div class="demo">
+    <h2>Pipeline Composition</h2>
+    <p class="desc">
+      演示多层 TransformStream 管道：数字流 &rarr; 过滤奇数 &rarr; 乘以 10 &rarr;
+      转为字符串。每层独立，通过 pipeThrough 串联。
+    </p>
+
+    <div class="pipeline" id="pipe-pipeline">
+      <div class="pipe-stage" id="pp-source">Source [1..10]</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="pp-filter">Filter Odd</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="pp-map">x * 10</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="pp-format">Format</div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-stage" id="pp-collect">Collect</div>
+    </div>
+
+    <button class="btn primary" id="pipe-run">Run Pipeline</button>
+    <div class="log" id="pipe-log"></div>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- Inline module code                                                     -->
+<!-- ====================================================================== -->
+<script type="module">
+
+// ---- Inline implementations (browser-friendly, no build step) ----
+
+function createAsyncIterableStream(source) {
+  const stream = source.pipeThrough(new TransformStream());
+  stream[Symbol.asyncIterator] = function () {
+    const reader = this.getReader();
+    let finished = false;
+    async function cleanup(cancel) {
+      if (finished) return;
+      finished = true;
+      try { if (cancel) await reader.cancel?.(); }
+      finally { try { reader.releaseLock(); } catch {} }
+    }
+    return {
+      async next() {
+        if (finished) return { done: true, value: undefined };
+        const { done, value } = await reader.read();
+        if (done) { await cleanup(true); return { done: true, value: undefined }; }
+        return { done: false, value };
+      },
+      async return() { await cleanup(true); return { done: true, value: undefined }; },
+      async throw(e) { await cleanup(true); throw e; },
+    };
+  };
+  return stream;
+}
+
+function convertAsyncIteratorToReadableStream(iterator) {
+  let cancelled = false;
+  return new ReadableStream({
+    async pull(controller) {
+      if (cancelled) return;
+      try {
+        const { value, done } = await iterator.next();
+        if (done) controller.close(); else controller.enqueue(value);
+      } catch (e) { controller.error(e); }
+    },
+    async cancel() {
+      cancelled = true;
+      if (iterator.return) try { await iterator.return(); } catch {}
+    },
+  });
+}
+
+class JsonToSseTransformStream extends TransformStream {
+  constructor() {
+    super({
+      transform(part, c) { c.enqueue(`data: ${JSON.stringify(part)}\n\n`); },
+      flush(c) { c.enqueue('data: [DONE]\n\n'); },
+    });
+  }
+}
+
+class SseParserStream extends TransformStream {
+  constructor() {
+    let buffer = '', event = '', data = '', id, retry;
+    function processLine(line, c) {
+      if (line === '') {
+        if (data !== '') {
+          if (data.endsWith('\n')) data = data.slice(0, -1);
+          const msg = { event: event || '', data };
+          if (id !== undefined) msg.id = id;
+          if (retry !== undefined) msg.retry = retry;
+          c.enqueue(msg);
+        }
+        event = ''; data = ''; id = undefined; retry = undefined;
+        return;
+      }
+      if (line.startsWith(':')) return;
+      const ci = line.indexOf(':');
+      let f, v;
+      if (ci === -1) { f = line; v = ''; }
+      else { f = line.slice(0, ci); v = line[ci+1] === ' ' ? line.slice(ci+2) : line.slice(ci+1); }
+      if (f === 'event') event = v;
+      else if (f === 'data') data += v + '\n';
+      else if (f === 'id') { if (!v.includes('\0')) id = v; }
+      else if (f === 'retry') { const n = parseInt(v, 10); if (!isNaN(n)) retry = n; }
+    }
+    super({
+      transform(chunk, c) {
+        buffer += chunk;
+        const lines = buffer.split(/\r\n|\r|\n/);
+        buffer = lines.pop();
+        for (const l of lines) processLine(l, c);
+      },
+      flush(c) {
+        if (buffer.length > 0) processLine(buffer, c);
+        processLine('', c);
+      },
+    });
+  }
+}
+
+function parseJsonEventStream({ stream, schema }) {
+  return stream
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new SseParserStream())
+    .pipeThrough(new TransformStream({
+      transform({ data }, c) {
+        if (data === '[DONE]') return;
+        try {
+          const raw = JSON.parse(data);
+          if (schema) {
+            try { c.enqueue({ success: true, value: schema.parse(raw), rawValue: raw }); }
+            catch (e) { c.enqueue({ success: false, error: e, rawValue: raw }); }
+          } else {
+            c.enqueue({ success: true, value: raw, rawValue: raw });
+          }
+        } catch (e) {
+          c.enqueue({ success: false, error: e, rawValue: data });
+        }
+      },
+    }));
+}
+
+class StreamingToolCallTracker {
+  constructor(opts = {}) {
+    this.toolCalls = [];
+    this._genId = opts.generateId || (() => `call_${Date.now()}_${++StreamingToolCallTracker._c}`);
+    this.typeValidation = opts.typeValidation || 'none';
+  }
+  processDelta(d, enqueue) {
+    const idx = d.index ?? this.toolCalls.length;
+    if (!this.toolCalls[idx]) this._newCall(idx, d, enqueue);
+    else this._existingCall(idx, d, enqueue);
+  }
+  flush(enqueue) {
+    for (const tc of this.toolCalls) if (!tc.done) this._finish(tc, enqueue);
+  }
+  _newCall(i, d, enqueue) {
+    enqueue({ type: 'tool-input-start', id: d.id, toolName: d.function.name });
+    this.toolCalls[i] = { id: d.id, name: d.function.name, args: d.function.arguments || '', done: false };
+    const tc = this.toolCalls[i];
+    if (tc.args.length > 0) enqueue({ type: 'tool-input-delta', id: tc.id, delta: tc.args });
+    try { JSON.parse(tc.args); this._finish(tc, enqueue); } catch {}
+  }
+  _existingCall(i, d, enqueue) {
+    const tc = this.toolCalls[i];
+    if (tc.done) return;
+    if (d.function?.arguments) {
+      tc.args += d.function.arguments;
+      enqueue({ type: 'tool-input-delta', id: tc.id, delta: d.function.arguments });
+    }
+    try { JSON.parse(tc.args); this._finish(tc, enqueue); } catch {}
+  }
+  _finish(tc, enqueue) {
+    enqueue({ type: 'tool-input-end', id: tc.id });
+    enqueue({ type: 'tool-call', toolCallId: tc.id, toolName: tc.name, input: tc.args });
+    tc.done = true;
+  }
+}
+StreamingToolCallTracker._c = 0;
+
+// ---- UI Helpers ----
+
+function $(id) { return document.getElementById(id); }
+
+function appendLog(logEl, cls, text) {
+  const div = document.createElement('div');
+  div.className = `line ${cls}`;
+  div.textContent = text;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setStage(id, state) {
+  const el = $(id);
+  el.classList.remove('active', 'done');
+  if (state) el.classList.add(state);
+}
+
+function resetStages(...ids) {
+  for (const id of ids) setStage(id, null);
+}
+
+// ---- Tab switching ----
+
+$('tabs').addEventListener('click', (e) => {
+  if (!e.target.classList.contains('tab')) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  $(`panel-${e.target.dataset.panel}`).classList.add('active');
+});
+
+// ====================================================================
+// Demo 1: AsyncIterable Bridge
+// ====================================================================
+
+async function runBridge(earlyBreak) {
+  const log = $('bridge-log');
+  log.innerHTML = '';
+  resetStages('bp-gen', 'bp-rs', 'bp-ais', 'bp-consume');
+
+  appendLog(log, 'dim', '-- Creating async generator yielding [1, 2, 3, 4, 5]');
+
+  async function* numbers() {
+    for (let i = 1; i <= 5; i++) {
+      await delay(200);
+      yield i;
+    }
+  }
+
+  setStage('bp-gen', 'active');
+  appendLog(log, 'info', '[generator] Created');
+  await delay(100);
+
+  setStage('bp-rs', 'active');
+  const readable = convertAsyncIteratorToReadableStream(numbers());
+  appendLog(log, 'info', '[ReadableStream] Converted from async generator');
+  await delay(100);
+
+  setStage('bp-ais', 'active');
+  const stream = createAsyncIterableStream(readable);
+  appendLog(log, 'info', '[AsyncIterableStream] Wrapped for for-await-of');
+  await delay(100);
+
+  setStage('bp-consume', 'active');
+  appendLog(log, 'dim', '-- Consuming with for await...of' + (earlyBreak ? ' (break at 3)' : ''));
+
+  for await (const value of stream) {
+    appendLog(log, 'ok', `  received: ${value}`);
+    if (earlyBreak && value === 3) {
+      appendLog(log, 'warn', '  [break] Early exit at value 3');
+      break;
+    }
+  }
+
+  setStage('bp-gen', 'done');
+  setStage('bp-rs', 'done');
+  setStage('bp-ais', 'done');
+  setStage('bp-consume', 'done');
+  appendLog(log, 'ok', earlyBreak ? '-- Done (early break, resources cleaned up)' : '-- Done (all values consumed)');
+}
+
+$('bridge-run').onclick = () => runBridge(false);
+$('bridge-break').onclick = () => runBridge(true);
+
+// ====================================================================
+// Demo 2: SSE Roundtrip
+// ====================================================================
+
+$('sse-run').onclick = async () => {
+  const log = $('sse-log');
+  log.innerHTML = '';
+  resetStages('sp-json', 'sp-encode', 'sp-text', 'sp-parse', 'sp-out');
+
+  const objects = [
+    { type: 'token', text: 'Hello' },
+    { type: 'token', text: ' World' },
+    { type: 'done', usage: { tokens: 42 } },
+  ];
+
+  setStage('sp-json', 'active');
+  appendLog(log, 'dim', `-- Input: ${objects.length} JSON objects`);
+  for (const obj of objects) appendLog(log, 'info', `  ${JSON.stringify(obj)}`);
+
+  // Encode
+  await delay(200);
+  setStage('sp-encode', 'active');
+  const source = new ReadableStream({
+    start(c) { for (const o of objects) c.enqueue(o); c.close(); },
+  });
+  const sseStream = source.pipeThrough(new JsonToSseTransformStream());
+  const sseReader = sseStream.getReader();
+  const sseTexts = [];
+  while (true) {
+    const { done, value } = await sseReader.read();
+    if (done) break;
+    sseTexts.push(value);
+  }
+
+  appendLog(log, 'dim', '-- Encoded SSE:');
+  for (const t of sseTexts) appendLog(log, 'accent', `  ${JSON.stringify(t)}`);
+
+  // Decode
+  await delay(200);
+  setStage('sp-text', 'active');
+  setStage('sp-parse', 'active');
+
+  const textSource = new ReadableStream({
+    start(c) { for (const t of sseTexts) c.enqueue(t); c.close(); },
+  });
+  const parsed = textSource.pipeThrough(new SseParserStream());
+  const parsedReader = parsed.getReader();
+  const messages = [];
+  while (true) {
+    const { done, value } = await parsedReader.read();
+    if (done) break;
+    messages.push(value);
+  }
+
+  await delay(200);
+  setStage('sp-out', 'active');
+  appendLog(log, 'dim', '-- Parsed messages:');
+  for (const m of messages) appendLog(log, 'ok', `  event="${m.event}" data=${m.data}`);
+
+  // Verify roundtrip
+  const dataValues = messages.filter(m => m.data !== '[DONE]').map(m => JSON.parse(m.data));
+  const match = JSON.stringify(dataValues) === JSON.stringify(objects);
+  appendLog(log, match ? 'ok' : 'err', match ? '-- Roundtrip verified: data matches!' : '-- Roundtrip MISMATCH');
+
+  for (const id of ['sp-json', 'sp-encode', 'sp-text', 'sp-parse', 'sp-out']) setStage(id, 'done');
+};
+
+// ====================================================================
+// Demo 3: LLM SSE Streaming
+// ====================================================================
+
+$('llm-run').onclick = async () => {
+  const log = $('llm-log');
+  const output = $('llm-output');
+  log.innerHTML = '';
+  output.innerHTML = '<span class="cursor"></span>';
+  resetStages('lp-bytes', 'lp-text', 'lp-sse', 'lp-json', 'lp-render');
+
+  const tokens = [
+    'Web', ' Streams', ' API', ' enables', ' pipeline', ' composition',
+    ' through', ' Transform', 'Stream', ' chaining.', ' Each', ' stage',
+    ' processes', ' data', ' independently,', ' connected', ' by',
+    ' pipe', 'Through().'
+  ];
+
+  // Build simulated SSE byte stream
+  const encoder = new TextEncoder();
+  const chunks = [];
+  for (const token of tokens) {
+    const event = { type: 'text_delta', delta: token };
+    chunks.push(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+  }
+  chunks.push(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+  chunks.push(encoder.encode('data: [DONE]\n\n'));
+
+  setStage('lp-bytes', 'active');
+  appendLog(log, 'dim', `-- Simulated ${chunks.length} SSE byte chunks`);
+
+  let chunkIndex = 0;
+  const byteStream = new ReadableStream({
+    async pull(controller) {
+      if (chunkIndex < chunks.length) {
+        await delay(80);
+        controller.enqueue(chunks[chunkIndex++]);
+      } else {
+        controller.close();
+      }
+    },
+  });
+
+  setStage('lp-text', 'active');
+  setStage('lp-sse', 'active');
+  setStage('lp-json', 'active');
+
+  const parsed = parseJsonEventStream({ stream: byteStream });
+  const iterable = createAsyncIterableStream(parsed);
+
+  setStage('lp-render', 'active');
+  let textContent = '';
+
+  for await (const result of iterable) {
+    if (!result.success) {
+      appendLog(log, 'err', `  Parse error: ${result.error.message}`);
+      continue;
+    }
+    const event = result.value;
+    if (event.type === 'text_delta') {
+      textContent += event.delta;
+      output.innerHTML = textContent + '<span class="cursor"></span>';
+      appendLog(log, 'info', `  text_delta: "${event.delta}"`);
+    } else if (event.type === 'done') {
+      appendLog(log, 'ok', '  done event received');
+    }
+  }
+
+  output.innerHTML = textContent;
+  for (const id of ['lp-bytes', 'lp-text', 'lp-sse', 'lp-json', 'lp-render']) setStage(id, 'done');
+  appendLog(log, 'ok', `-- Complete: ${textContent.length} characters rendered`);
+};
+
+// ====================================================================
+// Demo 4: Tool Call Tracking
+// ====================================================================
+
+$('tools-run').onclick = async () => {
+  const log = $('tools-log');
+  const cards = $('tools-cards');
+  log.innerHTML = '';
+  cards.innerHTML = '';
+
+  const tracker = new StreamingToolCallTracker();
+  const cardEls = {};
+
+  function handlePart(part) {
+    if (part.type === 'tool-input-start') {
+      appendLog(log, 'purple', `  [start] ${part.toolName} (${part.id})`);
+      const card = document.createElement('div');
+      card.className = 'tool-card';
+      card.innerHTML = `<div class="tool-name">${part.toolName} &mdash; ${part.id}</div><div class="tool-args"></div>`;
+      cards.appendChild(card);
+      cardEls[part.id] = card;
+    } else if (part.type === 'tool-input-delta') {
+      appendLog(log, 'info', `  [delta] ${part.id}: +${JSON.stringify(part.delta)}`);
+      if (cardEls[part.id]) {
+        const argsEl = cardEls[part.id].querySelector('.tool-args');
+        argsEl.textContent += part.delta;
+      }
+    } else if (part.type === 'tool-input-end') {
+      appendLog(log, 'dim', `  [end] ${part.id}`);
+    } else if (part.type === 'tool-call') {
+      appendLog(log, 'ok', `  [tool-call] ${part.toolName}(${part.input})`);
+      if (cardEls[part.toolCallId]) {
+        cardEls[part.toolCallId].classList.add('complete');
+      }
+    }
+  }
+
+  // Simulate two interleaved tool calls with streamed arguments
+  const deltas = [
+    { index: 0, id: 'call_A', type: 'function', function: { name: 'get_weather', arguments: '{"' } },
+    { index: 1, id: 'call_B', type: 'function', function: { name: 'search_web', arguments: '{"' } },
+    { index: 0, function: { arguments: 'city' } },
+    { index: 1, function: { arguments: 'query' } },
+    { index: 0, function: { arguments: '":"' } },
+    { index: 1, function: { arguments: '":"' } },
+    { index: 0, function: { arguments: 'Tokyo' } },
+    { index: 1, function: { arguments: 'web streams api' } },
+    { index: 0, function: { arguments: '"}' } },
+    { index: 1, function: { arguments: '"}' } },
+  ];
+
+  appendLog(log, 'dim', `-- Simulating ${deltas.length} interleaved deltas for 2 tool calls`);
+
+  for (const delta of deltas) {
+    await delay(200);
+    appendLog(log, 'warn', `delta[${delta.index}]: ${JSON.stringify(delta.function)}`);
+    tracker.processDelta(delta, handlePart);
+  }
+
+  appendLog(log, 'dim', '-- Calling flush()');
+  tracker.flush(handlePart);
+  appendLog(log, 'ok', '-- Complete');
+};
+
+// ====================================================================
+// Demo 5: Pipeline Composition
+// ====================================================================
+
+$('pipe-run').onclick = async () => {
+  const log = $('pipe-log');
+  log.innerHTML = '';
+  resetStages('pp-source', 'pp-filter', 'pp-map', 'pp-format', 'pp-collect');
+
+  appendLog(log, 'dim', '-- Building pipeline: [1..10] -> filter odd -> x*10 -> format');
+
+  // Source
+  setStage('pp-source', 'active');
+  const source = new ReadableStream({
+    async start(controller) {
+      for (let i = 1; i <= 10; i++) {
+        await delay(100);
+        controller.enqueue(i);
+      }
+      controller.close();
+    },
+  });
+
+  // Filter odd numbers
+  const filterOdd = new TransformStream({
+    transform(n, controller) {
+      if (n % 2 !== 0) controller.enqueue(n);
+    },
+  });
+
+  // Multiply by 10
+  const multiplyBy10 = new TransformStream({
+    transform(n, controller) { controller.enqueue(n * 10); },
+  });
+
+  // Format as string
+  const format = new TransformStream({
+    transform(n, controller) { controller.enqueue(`value=${n}`); },
+  });
+
+  // Connect pipeline
+  const output = source
+    .pipeThrough(filterOdd)
+    .pipeThrough(multiplyBy10)
+    .pipeThrough(format);
+
+  const iterable = createAsyncIterableStream(output);
+
+  setStage('pp-filter', 'active');
+  setStage('pp-map', 'active');
+  setStage('pp-format', 'active');
+  setStage('pp-collect', 'active');
+
+  const results = [];
+  for await (const value of iterable) {
+    appendLog(log, 'ok', `  ${value}`);
+    results.push(value);
+    await delay(50);
+  }
+
+  for (const id of ['pp-source', 'pp-filter', 'pp-map', 'pp-format', 'pp-collect']) setStage(id, 'done');
+  appendLog(log, 'dim', `-- Pipeline complete: ${results.length} items collected`);
+  appendLog(log, 'info', `  [1,2,3,...,10] -> filter odd [1,3,5,7,9] -> x10 [10,30,50,70,90] -> format`);
+};
+
+</script>
+</body>
+</html>

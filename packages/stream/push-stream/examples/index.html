@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>@x-oasis/push-stream - Visual Examples</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e1e4ed;
+    --text-dim: #7a7f94;
+    --accent: #6c8cff;
+    --green: #4ade80;
+    --red: #f87171;
+    --orange: #fb923c;
+    --yellow: #facc15;
+    --purple: #a78bfa;
+    --cyan: #22d3ee;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--accent);
+  }
+
+  h1 span { color: var(--text-dim); font-weight: 400; }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  /* ---- Tab bar ---- */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-family: inherit;
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ---- Demo card ---- */
+  .demo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .demo h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .demo .desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  /* ---- Flow diagram ---- */
+  .flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .flow-col {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .flow-col h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .flow-col h3 .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .flow-col h3 .dot.producer { background: var(--orange); }
+  .flow-col h3 .dot.buffer { background: var(--yellow); }
+  .flow-col h3 .dot.consumer { background: var(--green); }
+
+  /* ---- Arrow between columns ---- */
+  .flow-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 18px;
+    padding-top: 28px;
+    flex-shrink: 0;
+    width: 32px;
+  }
+
+  /* ---- Event items ---- */
+  .event-list {
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .event-item {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    animation: slideIn 0.25s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .event-item.pushed {
+    background: rgba(251, 146, 60, 0.12);
+    border: 1px solid rgba(251, 146, 60, 0.25);
+    color: var(--orange);
+  }
+
+  .event-item.buffered {
+    background: rgba(250, 204, 21, 0.10);
+    border: 1px solid rgba(250, 204, 21, 0.2);
+    color: var(--yellow);
+  }
+
+  .event-item.consumed {
+    background: rgba(74, 222, 128, 0.10);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    color: var(--green);
+  }
+
+  .event-item.terminal {
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    color: var(--purple);
+  }
+
+  .event-item.error-item {
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    color: var(--red);
+  }
+
+  .event-item .icon { flex-shrink: 0; }
+
+  /* ---- State badge ---- */
+  .state-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+
+  .state-badge {
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .state-badge.idle {
+    background: rgba(122, 127, 148, 0.15);
+    color: var(--text-dim);
+  }
+
+  .state-badge.flowing {
+    background: rgba(108, 140, 255, 0.15);
+    color: var(--accent);
+  }
+
+  .state-badge.done {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--green);
+  }
+
+  .state-badge.error-state {
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--red);
+  }
+
+  .stat { color: var(--text-dim); }
+  .stat b { color: var(--text); }
+
+  /* ---- Result box ---- */
+  .result-box {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .result-box.success {
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    color: var(--green);
+  }
+
+  .result-box.failure {
+    background: rgba(248, 113, 113, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    color: var(--red);
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    padding: 8px 18px;
+    font-size: 13px;
+    font-family: inherit;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn.primary:hover {
+    background: #5a7aee;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* ---- Token output ---- */
+  .token-output {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    min-height: 60px;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .token-output .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background: var(--accent);
+    animation: blink 0.8s step-end infinite;
+    vertical-align: text-bottom;
+    margin-left: 1px;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* ---- Compare table ---- */
+  .compare-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: rgba(108, 140, 255, 0.06);
+    border: 1px solid rgba(108, 140, 255, 0.15);
+    border-radius: 6px;
+  }
+
+  .compare-note code {
+    color: var(--accent);
+    background: rgba(108, 140, 255, 0.12);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<h1>@x-oasis/push-stream <span>Visual Examples</span></h1>
+<p class="subtitle">Single-consumer push-pull async stream with enqueue/done/error semantics</p>
+
+<div class="compare-note">
+  Modeled after claude-code's <code>Stream&lt;T&gt;</code>.
+  Key differences from <code>@x-oasis/event-stream</code>: no <code>isComplete</code> / <code>extractResult</code>,
+  strict single-consumer enforcement, and explicit <code>done()</code> termination.
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-panel="demo1">1. Enqueue / Done</button>
+  <button class="tab" data-panel="demo2">2. Single Consumer</button>
+  <button class="tab" data-panel="demo3">3. LLM Streaming</button>
+  <button class="tab" data-panel="demo4">4. Error Handling</button>
+  <button class="tab" data-panel="demo5">5. Early Break</button>
+</div>
+
+<!-- ========== Demo 1: Basic Enqueue / Done ========== -->
+<div class="panel active" id="demo1">
+  <div class="demo">
+    <h2>Basic Enqueue / Done</h2>
+    <p class="desc">
+      Producer calls <code>enqueue(value)</code> to push values. Values buffer
+      when no consumer is listening. Consumer pulls them via <code>for await...of</code>.
+      Producer calls <code>done()</code> to terminate. Watch values flow from left to right.
+    </p>
+
+    <div class="state-bar" id="d1-state-bar">
+      <span class="state-badge idle" id="d1-state">idle</span>
+      <span class="stat">buffered: <b id="d1-buffered">0</b></span>
+      <span class="stat">waiting: <b id="d1-waiting">false</b></span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Producer</h3>
+        <div class="event-list" id="d1-produced"></div>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-col">
+        <h3><span class="dot buffer"></span> Buffer</h3>
+        <div class="event-list" id="d1-buffer"></div>
+      </div>
+      <div class="flow-arrow">&#x2192;</div>
+      <div class="flow-col">
+        <h3><span class="dot consumer"></span> Consumer</h3>
+        <div class="event-list" id="d1-consumed"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d1-run">Run Demo</button>
+      <button class="btn" id="d1-reset">Reset</button>
+    </div>
+
+    <div id="d1-result"></div>
+  </div>
+</div>
+
+<!-- ========== Demo 2: Single Consumer Enforcement ========== -->
+<div class="panel" id="demo2">
+  <div class="demo">
+    <h2>Single Consumer Enforcement</h2>
+    <p class="desc">
+      Unlike <code>EventStream</code>, <code>PushStream</code> enforces strict single-consumer
+      semantics. Calling <code>[Symbol.asyncIterator]()</code> a second time throws an error.
+      Click "Run Demo" to see the first consumer succeed and the second one fail.
+    </p>
+
+    <div class="state-bar">
+      <span class="state-badge idle" id="d2-state">idle</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-col">
+        <h3><span class="dot consumer"></span> Consumer 1</h3>
+        <div class="event-list" id="d2-consumer1"></div>
+      </div>
+      <div class="flow-col">
+        <h3><span class="dot consumer"></span> Consumer 2</h3>
+        <div class="event-list" id="d2-consumer2"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d2-run">Run Demo</button>
+      <button class="btn" id="d2-reset">Reset</button>
+    </div>
+
+    <div id="d2-result"></div>
+  </div>
+</div>
+
+<!-- ========== Demo 3: LLM Token Streaming ========== -->
+<div class="panel" id="demo3">
+  <div class="demo">
+    <h2>LLM Token Streaming</h2>
+    <p class="desc">
+      Simulates an LLM producing tokens over time. The producer <code>enqueue()</code>s
+      each token and calls <code>done()</code> when finished. The consumer renders
+      tokens as they arrive. This mirrors claude-code's streaming pattern.
+    </p>
+
+    <div class="state-bar">
+      <span class="state-badge idle" id="d3-state">idle</span>
+      <span class="stat">tokens: <b id="d3-count">0</b></span>
+    </div>
+
+    <div class="token-output" id="d3-output"><span class="cursor" id="d3-cursor" style="display:none"></span></div>
+
+    <div class="flow" style="margin-top:12px">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Token Events</h3>
+        <div class="event-list" id="d3-events" style="max-height:180px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d3-run">Start Streaming</button>
+      <button class="btn" id="d3-reset">Reset</button>
+    </div>
+
+    <div id="d3-result"></div>
+  </div>
+</div>
+
+<!-- ========== Demo 4: Error Handling ========== -->
+<div class="panel" id="demo4">
+  <div class="demo">
+    <h2>Error Handling</h2>
+    <p class="desc">
+      Demonstrates two termination paths: <code>stream.done()</code> ends iteration
+      normally, while <code>stream.error()</code> rejects the pending <code>next()</code>
+      call. Subsequent <code>next()</code> calls after <code>error()</code> also reject
+      with the stored error.
+    </p>
+
+    <div class="state-bar">
+      <span class="state-badge idle" id="d4-state">idle</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Producer</h3>
+        <div class="event-list" id="d4-events"></div>
+      </div>
+      <div class="flow-col">
+        <h3><span class="dot consumer"></span> Consumer</h3>
+        <div class="event-list" id="d4-consumed"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d4-run-ok">Run (done normally)</button>
+      <button class="btn" id="d4-run-err" style="border-color:var(--red);color:var(--red)">Run (with error)</button>
+      <button class="btn" id="d4-reset">Reset</button>
+    </div>
+
+    <div id="d4-result"></div>
+  </div>
+</div>
+
+<!-- ========== Demo 5: Early Break / onReturn ========== -->
+<div class="panel" id="demo5">
+  <div class="demo">
+    <h2>Early Break &amp; onReturn</h2>
+    <p class="desc">
+      When the consumer breaks out of <code>for await...of</code> early, the iterator's
+      <code>return()</code> method is called, which marks the stream as done and invokes
+      the <code>onReturn</code> callback. This allows the producer to clean up resources
+      (e.g. abort a fetch).
+    </p>
+
+    <div class="state-bar">
+      <span class="state-badge idle" id="d5-state">idle</span>
+    </div>
+
+    <div class="flow">
+      <div class="flow-col">
+        <h3><span class="dot producer"></span> Producer</h3>
+        <div class="event-list" id="d5-events"></div>
+      </div>
+      <div class="flow-col">
+        <h3><span class="dot consumer"></span> Consumer (breaks at 3)</h3>
+        <div class="event-list" id="d5-consumed"></div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn primary" id="d5-run">Run Demo</button>
+      <button class="btn" id="d5-reset">Reset</button>
+    </div>
+
+    <div id="d5-result"></div>
+  </div>
+</div>
+
+<script type="module">
+// ============================================================================
+// Inline PushStream (same logic as src/PushStream.ts, browser-compatible)
+// ============================================================================
+
+class PushStream {
+  _queue = [];
+  _readResolve = undefined;
+  _readReject = undefined;
+  _isDone = false;
+  _hasError = undefined;
+  _started = false;
+  _flowing = false;
+  _onReturn;
+
+  constructor(options) {
+    this._onReturn = options?.onReturn;
+  }
+
+  [Symbol.asyncIterator]() {
+    if (this._started) {
+      throw new Error('PushStream can only be iterated once');
+    }
+    this._started = true;
+    return this;
+  }
+
+  next() {
+    if (this._queue.length > 0) {
+      return Promise.resolve({ done: false, value: this._queue.shift() });
+    }
+    if (this._isDone) {
+      return Promise.resolve({ done: true, value: undefined });
+    }
+    if (this._hasError) {
+      return Promise.reject(this._hasError);
+    }
+    return new Promise((resolve, reject) => {
+      this._readResolve = resolve;
+      this._readReject = reject;
+    });
+  }
+
+  return() {
+    this._isDone = true;
+    if (this._onReturn) this._onReturn();
+    return Promise.resolve({ done: true, value: undefined });
+  }
+
+  enqueue(value) {
+    if (this._isDone || this._hasError !== undefined) return;
+    this._flowing = true;
+    if (this._readResolve) {
+      const resolve = this._readResolve;
+      this._readResolve = undefined;
+      this._readReject = undefined;
+      resolve({ done: false, value });
+    } else {
+      this._queue.push(value);
+    }
+  }
+
+  done() {
+    if (this._isDone || this._hasError !== undefined) return;
+    this._isDone = true;
+    if (this._readResolve) {
+      const resolve = this._readResolve;
+      this._readResolve = undefined;
+      this._readReject = undefined;
+      resolve({ done: true, value: undefined });
+    }
+  }
+
+  error(err) {
+    if (this._isDone || this._hasError !== undefined) return;
+    this._hasError = err;
+    if (this._readReject) {
+      const reject = this._readReject;
+      this._readResolve = undefined;
+      this._readReject = undefined;
+      reject(err);
+    }
+  }
+
+  get state() {
+    if (this._hasError !== undefined) return 'error';
+    if (this._isDone) return 'done';
+    if (this._flowing) return 'flowing';
+    return 'idle';
+  }
+
+  get isDone() { return this._isDone || this._hasError !== undefined; }
+  get bufferedCount() { return this._queue.length; }
+  get hasWaiting() { return this._readResolve !== undefined; }
+}
+
+// ============================================================================
+// Shared helpers
+// ============================================================================
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function $(id) { return document.getElementById(id); }
+
+function addItem(container, className, icon, text) {
+  const el = document.createElement('div');
+  el.className = `event-item ${className}`;
+  el.innerHTML = `<span class="icon">${icon}</span> ${escHtml(text)}`;
+  container.appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  return el;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function setStateBadge(el, state) {
+  el.textContent = state;
+  el.className = 'state-badge ' + (state === 'error' ? 'error-state' : state);
+}
+
+function showResult(container, ok, text) {
+  container.innerHTML = `<div class="result-box ${ok ? 'success' : 'failure'}">${escHtml(text)}</div>`;
+}
+
+// ============================================================================
+// Tab switching
+// ============================================================================
+
+document.querySelectorAll('.tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+    tab.classList.add('active');
+    $(tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ============================================================================
+// Demo 1: Basic Enqueue / Done
+// ============================================================================
+
+let d1Running = false;
+
+$('d1-run').onclick = async () => {
+  if (d1Running) return;
+  d1Running = true;
+  $('d1-run').disabled = true;
+  resetDemo1();
+
+  const stream = new PushStream();
+
+  const data = ['alpha', 'beta', 'gamma', 'delta'];
+
+  // Phase 1: enqueue values with no consumer (they buffer)
+  for (let i = 0; i < 3; i++) {
+    await sleep(400);
+    stream.enqueue(data[i]);
+    addItem($('d1-produced'), 'pushed', '&#x25B6;', `enqueue("${data[i]}")`);
+    addItem($('d1-buffer'), 'buffered', '&#x25A0;', `"${data[i]}"`);
+    updateD1Stats(stream);
+  }
+
+  await sleep(600);
+
+  // Phase 2: start consumer, it drains buffer then waits
+  const consumePromise = (async () => {
+    for await (const value of stream) {
+      const bufEl = $('d1-buffer').firstChild;
+      if (bufEl) bufEl.remove();
+      addItem($('d1-consumed'), 'consumed', '&#x2713;', `consumed: "${value}"`);
+      updateD1Stats(stream);
+      await sleep(300);
+    }
+    addItem($('d1-consumed'), 'terminal', '&#x2605;', 'iteration ended');
+  })();
+
+  // Phase 3: enqueue remaining + done
+  await sleep(1200);
+  stream.enqueue(data[3]);
+  addItem($('d1-produced'), 'pushed', '&#x25B6;', `enqueue("${data[3]}")`);
+  updateD1Stats(stream);
+
+  await sleep(500);
+  stream.done();
+  addItem($('d1-produced'), 'terminal', '&#x2605;', 'done()');
+  updateD1Stats(stream);
+
+  await consumePromise;
+
+  showResult($('d1-result'), true, 'Stream completed normally via done()');
+  updateD1Stats(stream);
+
+  d1Running = false;
+  $('d1-run').disabled = false;
+};
+
+function updateD1Stats(stream) {
+  setStateBadge($('d1-state'), stream.state);
+  $('d1-buffered').textContent = stream.bufferedCount;
+  $('d1-waiting').textContent = String(stream.hasWaiting);
+}
+
+function resetDemo1() {
+  $('d1-produced').innerHTML = '';
+  $('d1-buffer').innerHTML = '';
+  $('d1-consumed').innerHTML = '';
+  $('d1-result').innerHTML = '';
+  setStateBadge($('d1-state'), 'idle');
+  $('d1-buffered').textContent = '0';
+  $('d1-waiting').textContent = 'false';
+}
+
+$('d1-reset').onclick = () => { resetDemo1(); };
+
+// ============================================================================
+// Demo 2: Single Consumer Enforcement
+// ============================================================================
+
+let d2Running = false;
+
+$('d2-run').onclick = async () => {
+  if (d2Running) return;
+  d2Running = true;
+  $('d2-run').disabled = true;
+  resetDemo2();
+  setStateBadge($('d2-state'), 'flowing');
+
+  const stream = new PushStream();
+
+  stream.enqueue('hello');
+  stream.enqueue('world');
+  stream.done();
+
+  // Consumer 1: succeeds
+  addItem($('d2-consumer1'), 'consumed', '&#x2713;', 'Starting iteration...');
+  await sleep(400);
+
+  for await (const value of stream) {
+    await sleep(300);
+    addItem($('d2-consumer1'), 'consumed', '&#x2713;', `received: "${value}"`);
+  }
+  addItem($('d2-consumer1'), 'terminal', '&#x2605;', 'Iteration complete');
+
+  await sleep(600);
+
+  // Consumer 2: throws
+  addItem($('d2-consumer2'), 'consumed', '&#x2713;', 'Attempting iteration...');
+  await sleep(400);
+
+  try {
+    for await (const value of stream) {
+      addItem($('d2-consumer2'), 'consumed', '&#x2713;', `received: "${value}"`);
+    }
+  } catch (err) {
+    addItem($('d2-consumer2'), 'error-item', '&#x2717;', `Error: ${err.message}`);
+  }
+
+  setStateBadge($('d2-state'), 'done');
+  showResult($('d2-result'), true, 'Single-consumer enforced: second iterator threw Error');
+
+  d2Running = false;
+  $('d2-run').disabled = false;
+};
+
+function resetDemo2() {
+  $('d2-consumer1').innerHTML = '';
+  $('d2-consumer2').innerHTML = '';
+  $('d2-result').innerHTML = '';
+  setStateBadge($('d2-state'), 'idle');
+}
+
+$('d2-reset').onclick = () => { resetDemo2(); };
+
+// ============================================================================
+// Demo 3: LLM Token Streaming
+// ============================================================================
+
+let d3Running = false;
+
+const LLM_RESPONSE = `PushStream is a low-level transport pipe where the producer pushes values via enqueue() and signals completion via done(). The consumer pulls values through the AsyncIterator protocol. Unlike EventStream, completion is explicit rather than event-driven.`;
+
+$('d3-run').onclick = async () => {
+  if (d3Running) return;
+  d3Running = true;
+  $('d3-run').disabled = true;
+  resetDemo3();
+  $('d3-cursor').style.display = 'inline-block';
+  setStateBadge($('d3-state'), 'flowing');
+
+  const stream = new PushStream();
+
+  // Producer: simulate LLM tokens
+  const tokens = LLM_RESPONSE.split(/(?<=\s)/);
+  let count = 0;
+
+  (async () => {
+    for (const token of tokens) {
+      await sleep(30 + Math.random() * 60);
+      stream.enqueue(token);
+    }
+    await sleep(100);
+    stream.done();
+  })();
+
+  // Consumer: render tokens
+  const output = $('d3-output');
+  for await (const token of stream) {
+    count++;
+    $('d3-count').textContent = count;
+    const cursor = $('d3-cursor');
+    const textNode = document.createTextNode(token);
+    output.insertBefore(textNode, cursor);
+    addItem($('d3-events'), 'pushed', '&#x25B6;', `enqueue("${token.trim()}")`);
+  }
+
+  addItem($('d3-events'), 'terminal', '&#x2605;', 'done()');
+
+  $('d3-cursor').style.display = 'none';
+  setStateBadge($('d3-state'), 'done');
+  showResult($('d3-result'), true, `Stream completed: ${count} tokens delivered`);
+
+  d3Running = false;
+  $('d3-run').disabled = false;
+};
+
+function resetDemo3() {
+  $('d3-output').innerHTML = '<span class="cursor" id="d3-cursor" style="display:none"></span>';
+  $('d3-events').innerHTML = '';
+  $('d3-result').innerHTML = '';
+  $('d3-count').textContent = '0';
+  setStateBadge($('d3-state'), 'idle');
+}
+
+$('d3-reset').onclick = () => { resetDemo3(); };
+
+// ============================================================================
+// Demo 4: Error Handling
+// ============================================================================
+
+let d4Running = false;
+
+async function runDemo4(withError) {
+  if (d4Running) return;
+  d4Running = true;
+  $('d4-run-ok').disabled = true;
+  $('d4-run-err').disabled = true;
+  resetDemo4();
+  setStateBadge($('d4-state'), 'flowing');
+
+  const stream = new PushStream();
+
+  // Consumer
+  const consumePromise = (async () => {
+    try {
+      for await (const value of stream) {
+        addItem($('d4-consumed'), 'consumed', '&#x2713;', `consumed: ${value}`);
+        await sleep(100);
+      }
+      addItem($('d4-consumed'), 'terminal', '&#x2605;', 'iteration ended normally');
+    } catch (err) {
+      addItem($('d4-consumed'), 'error-item', '&#x2717;', `caught: ${err.message}`);
+    }
+  })();
+
+  // Producer
+  for (let i = 1; i <= 3; i++) {
+    await sleep(500);
+    stream.enqueue(i);
+    addItem($('d4-events'), 'pushed', '&#x25B6;', `enqueue(${i})`);
+  }
+
+  await sleep(600);
+
+  if (withError) {
+    stream.error(new Error('connection lost'));
+    addItem($('d4-events'), 'error-item', '&#x2717;', 'error("connection lost")');
+    setStateBadge($('d4-state'), 'error');
+  } else {
+    stream.done();
+    addItem($('d4-events'), 'terminal', '&#x2605;', 'done()');
+    setStateBadge($('d4-state'), 'done');
+  }
+
+  await consumePromise;
+
+  if (withError) {
+    showResult($('d4-result'), false, 'Stream errored: consumer caught the rejection');
+  } else {
+    showResult($('d4-result'), true, 'Stream completed normally via done()');
+  }
+
+  d4Running = false;
+  $('d4-run-ok').disabled = false;
+  $('d4-run-err').disabled = false;
+}
+
+$('d4-run-ok').onclick = () => runDemo4(false);
+$('d4-run-err').onclick = () => runDemo4(true);
+
+function resetDemo4() {
+  $('d4-events').innerHTML = '';
+  $('d4-consumed').innerHTML = '';
+  $('d4-result').innerHTML = '';
+  setStateBadge($('d4-state'), 'idle');
+}
+
+$('d4-reset').onclick = () => { resetDemo4(); };
+
+// ============================================================================
+// Demo 5: Early Break & onReturn
+// ============================================================================
+
+let d5Running = false;
+
+$('d5-run').onclick = async () => {
+  if (d5Running) return;
+  d5Running = true;
+  $('d5-run').disabled = true;
+  resetDemo5();
+  setStateBadge($('d5-state'), 'flowing');
+
+  let cleanedUp = false;
+
+  const stream = new PushStream({
+    onReturn: () => {
+      cleanedUp = true;
+      addItem($('d5-events'), 'terminal', '&#x21A9;', 'onReturn() called - cleanup!');
+    },
+  });
+
+  // Producer: keeps enqueuing
+  const producerPromise = (async () => {
+    for (let i = 1; i <= 10; i++) {
+      if (stream.isDone) {
+        addItem($('d5-events'), 'pushed', '&#x25A0;', `enqueue(${i}) - discarded (stream done)`);
+        await sleep(300);
+        continue;
+      }
+      await sleep(400);
+      stream.enqueue(i);
+      addItem($('d5-events'), 'pushed', '&#x25B6;', `enqueue(${i})`);
+    }
+  })();
+
+  // Consumer: breaks after 3 values
+  for await (const value of stream) {
+    await sleep(300);
+    addItem($('d5-consumed'), 'consumed', '&#x2713;', `consumed: ${value}`);
+    if (value === 3) {
+      addItem($('d5-consumed'), 'terminal', '&#x2605;', 'break! (value === 3)');
+      break;
+    }
+  }
+
+  await producerPromise;
+
+  setStateBadge($('d5-state'), 'done');
+  showResult($('d5-result'), true, `Consumer broke at 3. onReturn called: ${cleanedUp}. Remaining enqueues discarded.`);
+
+  d5Running = false;
+  $('d5-run').disabled = false;
+};
+
+function resetDemo5() {
+  $('d5-events').innerHTML = '';
+  $('d5-consumed').innerHTML = '';
+  $('d5-result').innerHTML = '';
+  setStateBadge($('d5-state'), 'idle');
+}
+
+$('d5-reset').onclick = () => { resetDemo5(); };
+
+</script>
+</body>
+</html>
