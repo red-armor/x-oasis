@@ -182,9 +182,10 @@ try {
 
 ## createContext — 请求上下文注入
 
-类似 tRPC 的 `createContext`，可以在每次请求时注入上下文信息：
+类似 tRPC 的 `createContext`，可以在每次请求时注入上下文信息。上下文会作为 handler 的第二个参数传入：
 
 ```typescript
+// 服务端 — 配置 createContext
 const channel = new WebSocketChannel(ws, {
   createContext: ({ event, requestPath, methodName }) => ({
     sender: event?.sender,
@@ -193,7 +194,17 @@ const channel = new WebSocketChannel(ws, {
     timestamp: Date.now(),
   }),
 });
+
+// handler 接收 context 作为第二个参数
+const service = serviceHost.registerService('api', {
+  greet: (args: [string], ctx: { timestamp: number }) => {
+    return `Hello ${args[0]}, called at ${ctx.timestamp}`;
+  },
+});
+service.setChannel(channel);
 ```
+
+`createContext` 支持异步函数（返回 `Promise`），如果 context 创建失败，客户端会收到 `RPCError`。
 
 ## React Query 集成
 
@@ -309,15 +320,69 @@ channel.activate(); // 自动 replay 所有排队请求
 
 ## 订阅
 
-支持事件式订阅（`on*` 方法名约定）和正式的 Subscription 协议：
+支持两种订阅模式：
+
+### 1. 正式 Subscription 协议（推荐）
+
+使用 `ProxyRPCClient.subscribe()` 方法启动流式订阅。服务端 handler 返回一个 observable-like 对象（带 `subscribe({ next, error, complete })` 方法）：
 
 ```typescript
-// 事件方法（约定 on + 大写字母开头）
+// === 服务端 ===
+const service = serviceHost.registerService('fs', {
+  watchFiles: (args: [string]) => {
+    const dir = args[0];
+    // 返回一个 observable-like 对象
+    return {
+      subscribe: ({ next, error, complete }) => {
+        const watcher = fs.watch(dir, (eventType, filename) => {
+          next({ eventType, filename });
+        });
+        // 返回 Unsubscribable
+        return {
+          unsubscribe: () => watcher.close(),
+        };
+      },
+    };
+  },
+});
+service.setChannel(channel);
+```
+
+```typescript
+// === 客户端 ===
+const client = clientHost.registerClient('fs', { channel });
+
+const subscription = client.subscribe('watchFiles', ['/src'], {
+  onData: (event) => console.log('File changed:', event),
+  onError: (err) => console.error('Watch error:', err),
+  onComplete: () => console.log('Watch ended'),
+});
+
+// 取消订阅 — 发送 SubscriptionStop 到服务端
+subscription.unsubscribe();
+```
+
+协议消息类型：
+
+- `SubscriptionRequest` (`sub`) — 客户端发起订阅
+- `SubscriptionStop` (`unsub`) — 客户端取消订阅
+- `SubscriptionStopped` (`ss`) — 服务端确认订阅已停止
+
+### 2. 事件方法约定
+
+使用 `on*` 方法名约定的事件式订阅（向后兼容）：
+
+```typescript
 proxy.onDataChanged((data) => {
   console.log('Data changed:', data);
 });
+```
 
-// 断开连接时自动清理所有订阅
+### 生命周期管理
+
+断开连接时自动清理所有活跃订阅：
+
+```typescript
 channel.disconnect(); // 内部调用 cleanUpSubscriptions()
 ```
 
@@ -349,6 +414,9 @@ import {
   // Error
   RPCError,
   JSONRPCErrorCode,
+
+  // Subscription
+  type SubscriptionObserver,
 } from '@x-oasis/async-call-rpc';
 
 // React Query 集成（单独入口）

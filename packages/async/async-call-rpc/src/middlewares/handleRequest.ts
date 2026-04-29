@@ -1,4 +1,4 @@
-import { ResponseType, DeserializedMessageOutput } from '../types';
+import { ResponseType, RequestType, DeserializedMessageOutput } from '../types';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 import {
   ErrorResponseMethodNotFound,
@@ -68,6 +68,24 @@ export const handleRequest =
 
     const jsonrpcRequest = makeRequest(seqId, methodName, args);
 
+    // Handle SubscriptionStop — cancel an active subscription
+    if (type === RequestType.SubscriptionStop) {
+      const sub = protocol.subscriptions.get(seqId);
+      if (sub) {
+        sub.unsubscribe();
+        protocol.subscriptions.delete(seqId);
+      }
+      // Send SubscriptionStopped acknowledgement
+      safeSendReply(
+        protocol,
+        protocol.writeBuffer.encode([
+          [ResponseType.SubscriptionStopped, seqId],
+          [],
+        ])
+      );
+      return message;
+    }
+
     const handler = service.getHandler(methodName);
 
     if (!handler) {
@@ -82,11 +100,132 @@ export const handleRequest =
       return message;
     }
 
-    const result = handler(args);
+    /**
+     * Resolve per-request context if `createContext` is configured.
+     */
+    const resolveContext = async (): Promise<
+      Record<string, unknown> | undefined
+    > => {
+      if (!protocol.createContext) return undefined;
+      return protocol.createContext({
+        event: message.event ?? null,
+        requestPath,
+        methodName,
+      });
+    };
 
-    // Normalize to Promise for uniform handling
-    Promise.resolve(result).then(
-      (response: any) => {
+    // Handle SubscriptionRequest — start a streaming subscription
+    if (type === RequestType.SubscriptionRequest) {
+      const startSubscription = async () => {
+        let ctx: Record<string, unknown> | undefined;
+        try {
+          ctx = await resolveContext();
+        } catch (err) {
+          const errorBody = createErrorResponseBody(err, jsonrpcRequest);
+          safeSendReply(
+            protocol,
+            protocol.writeBuffer.encode([
+              [ResponseType.ReturnFail, seqId],
+              [errorBody],
+            ])
+          );
+          return;
+        }
+
+        try {
+          const result = ctx !== undefined ? handler(args, ctx) : handler(args);
+          const observable = await Promise.resolve(result);
+
+          // The handler should return an observable-like object with `subscribe()`
+          if (
+            observable &&
+            typeof observable === 'object' &&
+            typeof observable.subscribe === 'function'
+          ) {
+            const subscription = observable.subscribe({
+              next: (value: any) => {
+                safeSendReply(
+                  protocol,
+                  protocol.writeBuffer.encode([
+                    [ResponseType.ReturnSuccess, seqId],
+                    [value],
+                  ])
+                );
+              },
+              error: (err: unknown) => {
+                const errorBody = createErrorResponseBody(err, jsonrpcRequest);
+                safeSendReply(
+                  protocol,
+                  protocol.writeBuffer.encode([
+                    [ResponseType.ReturnFail, seqId],
+                    [errorBody],
+                  ])
+                );
+                protocol.subscriptions.delete(seqId);
+              },
+              complete: () => {
+                safeSendReply(
+                  protocol,
+                  protocol.writeBuffer.encode([
+                    [ResponseType.SubscriptionStopped, seqId],
+                    [],
+                  ])
+                );
+                protocol.subscriptions.delete(seqId);
+              },
+            });
+
+            // Track the subscription for lifecycle cleanup
+            protocol.subscriptions.set(seqId, subscription);
+          } else {
+            // Handler returned a non-observable — treat as single-value response
+            safeSendReply(
+              protocol,
+              protocol.writeBuffer.encode([
+                [ResponseType.ReturnSuccess, seqId],
+                [observable],
+              ])
+            );
+          }
+        } catch (err: unknown) {
+          const errorBody = createErrorResponseBody(err, jsonrpcRequest);
+          safeSendReply(
+            protocol,
+            protocol.writeBuffer.encode([
+              [ResponseType.ReturnFail, seqId],
+              [errorBody],
+            ])
+          );
+        }
+      };
+
+      startSubscription();
+      return message;
+    }
+
+    /**
+     * Normal request — invoke handler, optionally with context.
+     */
+    const invokeHandler = async () => {
+      let ctx: Record<string, unknown> | undefined;
+      try {
+        ctx = await resolveContext();
+      } catch (err) {
+        const errorBody = createErrorResponseBody(err, jsonrpcRequest);
+        safeSendReply(
+          protocol,
+          protocol.writeBuffer.encode([
+            [ResponseType.ReturnFail, seqId],
+            [errorBody],
+          ])
+        );
+        return;
+      }
+
+      const result = ctx !== undefined ? handler(args, ctx) : handler(args);
+
+      try {
+        const response = await Promise.resolve(result);
         const responseHeader = [ResponseType.ReturnSuccess, seqId];
         let sendData = null;
         try {
@@ -104,8 +243,7 @@ export const handleRequest =
         }
 
         safeSendReply(protocol, sendData);
-      },
-      (err: unknown) => {
+      } catch (err: unknown) {
         const errorBody = createErrorResponseBody(err, jsonrpcRequest);
         const responseHeader = [ResponseType.ReturnFail, seqId];
         const responseBody = [errorBody];
@@ -115,7 +253,9 @@ export const handleRequest =
           protocol.writeBuffer.encode([responseHeader, responseBody])
         );
       }
-    );
+    };
+
+    invokeHandler();
 
     return message;
   };

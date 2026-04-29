@@ -9,6 +9,9 @@ export { default as WebSocketChannel } from './protocol/WebSocketChannel';
 
 export { ProxyRPCClient, RPCService, clientHost, serviceHost };
 
+// Export subscription types
+export type { SubscriptionObserver } from './endpoint/ProxyRPCClient';
+
 // Export JSONRPC utilities and types
 export * from './utils';
 export type { ErrorResponse, ErrorResponseDetail, ID } from './error';

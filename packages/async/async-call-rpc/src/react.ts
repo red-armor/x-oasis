@@ -199,22 +199,19 @@ export function createRPCReact<
       useEffect(() => {
         if (!enabledRef.current) return undefined;
 
-        // For `on*` event methods, the first arg is usually the callback.
-        // We wrap it so that each event pushes data into the query cache.
-        const callback = (...eventArgs: any[]) => {
-          queryClient.setQueryData(
-            [requestPath, method, ...args],
-            eventArgs.length === 1 ? eventArgs[0] : eventArgs
-          );
-        };
-
-        try {
-          (proxy as any)[method](callback);
-        } catch {
-          // Subscription may not be supported for this method
-        }
+        // Use the proper subscription API if available on the client,
+        // otherwise fall back to direct proxy call (for `on*` event methods).
+        const sub = client.subscribe(method, args as any[], {
+          onData: (value: any) => {
+            queryClient.setQueryData([requestPath, method, ...args], value);
+          },
+          onError: (err: Error) => {
+            console.error(`[useSubscription] Error in ${method}:`, err);
+          },
+        });
 
         return () => {
+          sub.unsubscribe();
           queryClient.removeQueries({
             queryKey: [requestPath, method, ...args],
           });

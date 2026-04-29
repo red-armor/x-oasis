@@ -1,4 +1,3 @@
-import isPromise from '@x-oasis/is-promise';
 import { ResponseType, DeserializedMessageOutput } from '../types';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 import { isEventMethod } from '../common';
@@ -9,6 +8,13 @@ import {
 } from '../utils/jsonrpc';
 import { JSONRPCErrorCode } from '../error';
 
+/**
+ * Middleware for handling port-based (MessagePort) requests.
+ *
+ * Used in Electron/MessageChannel scenarios where the response
+ * must be sent back through `event.sender` and may include a
+ * `MessagePort` transfer.
+ */
 export const handlePortRequest =
   (protocol: AbstractChannelProtocol) =>
   (message: DeserializedMessageOutput) => {
@@ -31,85 +37,27 @@ export const handlePortRequest =
     const args = body[0];
 
     if (serviceHost) {
+      // Event methods (on*) are handled by subscription protocol; skip here
       if (isEventMethod(methodName)) {
-        // const event = serviceHost.getHandler(requestPath, methodName)
-        // const fn = (...args: any[]) => {
-        //   const responseHeader = [ResponseType.ReturnSuccess, seqId]
-        //   let responseBody = []
-        //   let sendData = null
-        //   try {
-        //     responseBody = args
-        //     sendData = protocol.writeBuffer.encode([responseHeader, responseBody])
-        //   } catch (err) {
-        //     sendData = protocol.writeBuffer.encode([responseHeader, []])
-        //     console.error(`[handleRequest sendReply encode error ] ${requestPath} ${methodName}`, err)
-        //   }
-
-        //   // TODO: temp; main <=> project renderer...
-        //   if (messageEvent?.sender) {
-        //     messageEvent.sender.send(channelName, sendData)
-        //     return
-        //   }
-
-        //   protocol.sendReply(sendData)
-        // }
-
-        // event(fn)
         return message;
       }
 
       const handler = serviceHost.getHandler(methodName);
-
-      // Create JSONRPC request object for error context
       const jsonrpcRequest = makeRequest(seqId, methodName, args);
 
-      // todo
-      const result = Promise.resolve(handler?.(args));
+      if (!handler) return message;
 
-      if (handler && isPromise(result)) {
-        result.then(
-          (port: any) => {
-            const responseHeader = [ResponseType.PortSuccess, seqId];
-            let responseBody: any[] = [];
-            let sendData = null;
-            try {
-              responseBody = [];
-              sendData = protocol.writeBuffer.encode([
-                responseHeader,
-                responseBody,
-              ]);
-            } catch (err) {
-              // Encoding error - use standardized error format
-              const mapper = defaultErrorMapper(
-                err instanceof Error ? err.stack : '',
-                JSONRPCErrorCode.InternalError
-              );
-              const errorResponse = ErrorResponseMapped(
-                jsonrpcRequest,
-                err,
-                mapper
-              );
-              responseBody = [errorResponse.error];
-              sendData = protocol.writeBuffer.encode([
-                responseHeader,
-                responseBody,
-              ]);
-              console.error(
-                `[handleRequest sendReply encode error ] ${requestPath} ${methodName}`,
-                err
-              );
-            }
-
-            // TODO: temp; main <=> project renderer...
-            if (messageEvent?.sender) {
-              messageEvent.sender.postMessage(channelName, sendData, [port]);
-              return;
-            }
-
-            protocol.sendReply(sendData);
-          },
-          (err: unknown) => {
-            // Use standardized JSONRPC error format
+      Promise.resolve(handler(args)).then(
+        (port: any) => {
+          const responseHeader = [ResponseType.PortSuccess, seqId];
+          let responseBody: any[] = [];
+          let sendData = null;
+          try {
+            sendData = protocol.writeBuffer.encode([
+              responseHeader,
+              responseBody,
+            ]);
+          } catch (err) {
             const mapper = defaultErrorMapper(
               err instanceof Error ? err.stack : '',
               JSONRPCErrorCode.InternalError
@@ -119,23 +67,51 @@ export const handlePortRequest =
               err,
               mapper
             );
-            const responseHeader = [ResponseType.ReturnFail, seqId];
-            const responseBody = [errorResponse.error];
-
-            if (messageEvent?.sender) {
-              messageEvent.sender.send(
-                (protocol as any).channelName,
-                protocol.writeBuffer.encode([responseHeader, responseBody])
-              );
-              return;
-            }
-
-            protocol.sendReply(
-              protocol.writeBuffer.encode([responseHeader, responseBody])
+            responseBody = [errorResponse.error];
+            sendData = protocol.writeBuffer.encode([
+              responseHeader,
+              responseBody,
+            ]);
+            console.error(
+              `[handlePortRequest] Encode error for ${requestPath}.${methodName}:`,
+              err
             );
           }
-        );
-      }
+
+          // Route response through event.sender if available (Electron IPC)
+          if (messageEvent?.sender) {
+            messageEvent.sender.postMessage(channelName, sendData, [port]);
+            return;
+          }
+
+          protocol.sendReply(sendData);
+        },
+        (err: unknown) => {
+          const mapper = defaultErrorMapper(
+            err instanceof Error ? err.stack : '',
+            JSONRPCErrorCode.InternalError
+          );
+          const errorResponse = ErrorResponseMapped(
+            jsonrpcRequest,
+            err,
+            mapper
+          );
+          const responseHeader = [ResponseType.ReturnFail, seqId];
+          const responseBody = [errorResponse.error];
+
+          if (messageEvent?.sender) {
+            messageEvent.sender.send(
+              (protocol as any).channelName,
+              protocol.writeBuffer.encode([responseHeader, responseBody])
+            );
+            return;
+          }
+
+          protocol.sendReply(
+            protocol.writeBuffer.encode([responseHeader, responseBody])
+          );
+        }
+      );
     }
     return message;
   };

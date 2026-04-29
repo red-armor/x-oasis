@@ -102,6 +102,7 @@ export const prepareNormalData = (channel: AbstractChannelProtocol) => {
     let params = [] as any[];
     const seqId = channel.seqId;
     let isOptionsRequest = false;
+    let requestType = RequestType.PromiseRequest;
 
     if (typeof props === 'string') {
       requestPath = props;
@@ -113,10 +114,15 @@ export const prepareNormalData = (channel: AbstractChannelProtocol) => {
       isOptionsRequest = props.isOptionsRequest;
       // args will convert to array on default
       params = [].concat(props.args);
+
+      // Support subscription request types
+      if ((props as any).requestType) {
+        requestType = (props as any).requestType;
+      }
     }
 
     const header: RequestEntryHeader = [
-      RequestType.PromiseRequest,
+      requestType,
       seqId,
       requestPath,
       methodName,

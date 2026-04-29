@@ -18,30 +18,86 @@ export const handleResponse =
 
     const seqId = header[1];
 
+    // Handle SubscriptionStopped — the server ended a subscription
+    if (type === ResponseType.SubscriptionStopped) {
+      const sub = protocol.subscriptions.get(`${seqId}`);
+      if (sub) {
+        // The server-side subscription is done; clean up client-side tracking
+        protocol.subscriptions.delete(`${seqId}`);
+      }
+      // Also notify any subscription listener
+      const listener = protocol.requestEvents.get(`${seqId}`);
+      if (listener && typeof listener._onComplete === 'function') {
+        listener._onComplete();
+      }
+      protocol.requestEvents.delete(`${seqId}`);
+      return null;
+    }
+
     const findDefer = protocol.ongoingRequests.get(`${seqId}`);
 
     if (findDefer) {
-      protocol.ongoingRequests.delete(`${seqId}`);
-      if (type === ResponseType.PortSuccess) {
-        findDefer.resolve(message.ports[0]);
-      } else if (type === ResponseType.ReturnFail) {
-        // Wrap raw error into a structured RPCError
-        const rawError = body[0];
-        const rpcError = new RPCError({
-          code: rawError?.code ?? JSONRPCErrorCode.InternalError,
-          message: rawError?.message ?? 'Remote procedure call failed',
-          data: rawError?.data,
-        });
-        findDefer.reject(rpcError);
+      // Check if this deferred is for a subscription (has _isSubscription flag)
+      const isSubscription = (findDefer as any)._isSubscription;
+
+      if (isSubscription) {
+        // For subscriptions, don't delete the deferred — stream continues.
+        // Route data to the subscription listener instead.
+        if (type === ResponseType.ReturnFail) {
+          const rawError = body[0];
+          const rpcError = new RPCError({
+            code: rawError?.code ?? JSONRPCErrorCode.InternalError,
+            message: rawError?.message ?? 'Remote procedure call failed',
+            data: rawError?.data,
+          });
+          // Subscription error — clean up and reject
+          protocol.ongoingRequests.delete(`${seqId}`);
+          findDefer.reject(rpcError);
+        } else if (type === ResponseType.ReturnSuccess) {
+          // Subscription data — notify via the event listener
+          const listener = protocol.requestEvents.get(`${seqId}`);
+          if (listener && typeof listener === 'function') {
+            listener(body[0]);
+          }
+        }
       } else {
-        findDefer.resolve(body[0]);
+        // Normal one-shot request
+        protocol.ongoingRequests.delete(`${seqId}`);
+        if (type === ResponseType.PortSuccess) {
+          findDefer.resolve(message.ports[0]);
+        } else if (type === ResponseType.ReturnFail) {
+          const rawError = body[0];
+          const rpcError = new RPCError({
+            code: rawError?.code ?? JSONRPCErrorCode.InternalError,
+            message: rawError?.message ?? 'Remote procedure call failed',
+            data: rawError?.data,
+          });
+          findDefer.reject(rpcError);
+        } else {
+          findDefer.resolve(body[0]);
+        }
       }
     } else {
-      // Event method callback (e.g. on* methods)
+      // Event method callback (e.g. on* methods) or subscription data
       const findListener = protocol.requestEvents.get(`${seqId}`);
 
       if (findListener) {
-        findListener(...body);
+        if (typeof findListener === 'function') {
+          findListener(...body);
+        } else if (typeof findListener._onData === 'function') {
+          // Structured subscription listener
+          if (type === ResponseType.ReturnFail) {
+            const rawError = body[0];
+            const rpcError = new RPCError({
+              code: rawError?.code ?? JSONRPCErrorCode.InternalError,
+              message: rawError?.message ?? 'Remote procedure call failed',
+              data: rawError?.data,
+            });
+            findListener._onError?.(rpcError);
+          } else {
+            findListener._onData(body[0]);
+          }
+        }
       }
     }
     return null;

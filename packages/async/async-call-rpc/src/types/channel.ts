@@ -25,6 +25,11 @@ export type SendingProps = {
   args?: any[];
   isOptionsRequest?: boolean;
   transfer?: MessagePort[];
+  /**
+   * Override the request type (default: `PromiseRequest`).
+   * Set to `SubscriptionRequest` or `SubscriptionStop` for streaming subscriptions.
+   */
+  requestType?: string;
 };
 
 /**
