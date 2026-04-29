@@ -9,12 +9,13 @@
  *
  * Prerequisites:
  *   npm install @tanstack/react-query react react-dom
+ *   npm install @x-oasis/async-call-rpc @x-oasis/async-call-rpc-react
  */
 
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WebSocketChannel, clientHost } from '../src/index';
-import { createRPCReact } from '../src/react';
+import { WebSocketChannel, clientHost } from '@x-oasis/async-call-rpc';
+import { createRPCReact } from '@x-oasis/async-call-rpc-react';
 
 // ---------------------------------------------------------------------------
 // 1. Define the remote service interface

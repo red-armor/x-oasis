@@ -208,64 +208,17 @@ service.setChannel(channel);
 
 ## React Query 集成
 
-通过 `createRPCReact()` 将 RPC 调用无缝接入 `@tanstack/react-query`：
+React Query 集成已拆分为独立包 [`@x-oasis/async-call-rpc-react`](../async-call-rpc-react/)，保持本包的轻量和零 React 依赖。
 
 ```bash
-pnpm add @tanstack/react-query react
+pnpm add @x-oasis/async-call-rpc-react @tanstack/react-query react
 ```
 
 ```tsx
-import { createRPCReact } from '@x-oasis/async-call-rpc/react';
-
-// 定义远程服务接口
-type FileService = {
-  readFile(path: string): Promise<string>;
-  writeFile(path: string, content: string): Promise<void>;
-  listFiles(dir: string): Promise<string[]>;
-};
-
-// 创建类型安全的 hooks
-const fileRPC = createRPCReact<FileService>(fileClient);
-
-function FileViewer({ path }: { path: string }) {
-  // useQuery — 自动缓存、去重、刷新
-  const { data, isLoading, error } = fileRPC.useQuery('readFile', [path]);
-
-  // useMutation — 写操作
-  const writeMutation = fileRPC.useMutation('writeFile', {
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: fileRPC.getQueryKey('readFile', path),
-      });
-    },
-  });
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-
-  return (
-    <div>
-      <pre>{data}</pre>
-      <button
-        onClick={() => writeMutation.mutate([path, 'new content'])}
-        disabled={writeMutation.isPending}
-      >
-        Save
-      </button>
-    </div>
-  );
-}
+import { createRPCReact } from '@x-oasis/async-call-rpc-react';
 ```
 
-### API
-
-| Hook                                      | 说明                                            |
-| ----------------------------------------- | ----------------------------------------------- |
-| `useQuery(method, args, options?)`        | 查询，queryKey 自动为 `[path, method, ...args]` |
-| `useMutation(method, options?)`           | 写操作                                          |
-| `useSubscription(method, args, options?)` | 订阅 `on*` 事件方法，数据推入 query cache       |
-| `getQueryKey(method, ...args)`            | 生成 queryKey，用于手动 `invalidateQueries`     |
-| `proxy`                                   | 底层的 RPC 代理对象                             |
+详见 [`@x-oasis/async-call-rpc-react` README](../async-call-rpc-react/README.md)。
 
 ## 序列化
 
@@ -418,9 +371,6 @@ import {
   // Subscription
   type SubscriptionObserver,
 } from '@x-oasis/async-call-rpc';
-
-// React Query 集成（单独入口）
-import { createRPCReact } from '@x-oasis/async-call-rpc/react';
 ```
 
 ## 运行示例

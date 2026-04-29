@@ -1,0 +1,31 @@
+{
+  "name": "@x-oasis/async-call-rpc-react",
+  "version": "0.1.0",
+  "description": "React Query integration for @x-oasis/async-call-rpc",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/async-call-rpc-react.esm.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdx build --tsconfig tsconfig.build.json",
+    "clean": "rimraf ./dist",
+    "compile": "tsc -p tsconfig.build.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tsdx": "^0.14.1"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": ">=5.0.0",
+    "@x-oasis/async-call-rpc": "workspace:*",
+    "react": ">=17.0.0"
+  },
+  "dependencies": {}
+}

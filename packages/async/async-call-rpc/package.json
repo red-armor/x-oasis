@@ -5,18 +5,6 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "module": "dist/async-call-rpc.esm.js",
-  "exports": {
-    ".": {
-      "import": "./dist/async-call-rpc.esm.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./react": {
-      "import": "./dist/react.esm.js",
-      "require": "./dist/react.js",
-      "types": "./dist/react.d.ts"
-    }
-  },
   "files": [
     "dist",
     "index.ts",
@@ -36,18 +24,6 @@
   "devDependencies": {
     "tsdx": "^0.14.1",
     "ws": "^8.19.0"
-  },
-  "peerDependencies": {
-    "@tanstack/react-query": ">=5.0.0",
-    "react": ">=17.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@tanstack/react-query": {
-      "optional": true
-    },
-    "react": {
-      "optional": true
-    }
   },
   "dependencies": {
     "@x-oasis/deferred": "workspace:*",

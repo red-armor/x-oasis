@@ -1,7 +1,7 @@
 /**
- * @module react
+ * @module @x-oasis/async-call-rpc-react
  *
- * React Query integration for async-call-rpc.
+ * React Query integration for @x-oasis/async-call-rpc.
  *
  * Provides `createRPCReact()` — a factory that generates type-safe
  * React hooks (`useQuery`, `useMutation`, `useSubscription`) backed
@@ -32,7 +32,10 @@
  * }
  * ```
  *
- * **Requirements**: `@tanstack/react-query` must be installed as a peer dependency.
+ * **Requirements**:
+ * - `@x-oasis/async-call-rpc` — the core RPC framework
+ * - `@tanstack/react-query` >= 5.0.0
+ * - `react` >= 17.0.0
  */
 
 import {
@@ -45,7 +48,7 @@ import {
   UseMutationResult,
 } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
-import ProxyRPCClient from './endpoint/ProxyRPCClient';
+import { ProxyRPCClient } from '@x-oasis/async-call-rpc';
 
 // ---------------------------------------------------------------------------
 // Type helpers
@@ -118,12 +121,12 @@ export interface RPCReactHooks<
   ) => UseMutationResult<MethodResult<T, K>, Error, MethodArgs<T, K>>;
 
   /**
-   * Subscribe to an event-style RPC method (e.g. `onFileChanged`).
+   * Subscribe to a streaming RPC method.
    *
    * Pushes each received value into the React Query cache so that
    * `useQuery` consumers automatically re-render.
    *
-   * @param method  - The `on*` event method name.
+   * @param method  - The remote method name.
    * @param args    - Arguments forwarded to the subscription setup.
    * @param options - `{ enabled }` to conditionally subscribe.
    */
@@ -199,8 +202,7 @@ export function createRPCReact<
       useEffect(() => {
         if (!enabledRef.current) return undefined;
 
-        // Use the proper subscription API if available on the client,
-        // otherwise fall back to direct proxy call (for `on*` event methods).
+        // Use the formal subscription API from ProxyRPCClient
         const sub = client.subscribe(method, args as any[], {
           onData: (value: any) => {
             queryClient.setQueryData([requestPath, method, ...args], value);
