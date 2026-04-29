@@ -160,16 +160,16 @@ importers:
 
   packages/async/async-call-rpc-react:
     dependencies:
+      react:
+        specifier: '>=17.0.0'
+        version: 18.3.1
+    devDependencies:
       '@tanstack/react-query':
         specifier: '>=5.0.0'
         version: 5.100.6(react@18.3.1)
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
         version: link:../async-call-rpc
-      react:
-        specifier: '>=17.0.0'
-        version: 18.3.1
-    devDependencies:
       tsdx:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
@@ -10173,10 +10173,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:
