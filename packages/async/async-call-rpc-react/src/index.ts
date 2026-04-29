@@ -150,7 +150,7 @@ export interface RPCReactHooks<
   getQueryKey: <K extends AsyncMethods<T>>(
     method: K,
     ...args: MethodArgs<T, K>
-  ) => readonly [string, K, ...MethodArgs<T, K>];
+  ) => readonly [string, K, ...any[]];
 
   /**
    * The underlying typed proxy instance.
@@ -174,7 +174,7 @@ export function createRPCReact<
   const getQueryKey = <K extends AsyncMethods<T>>(
     method: K,
     ...args: MethodArgs<T, K>
-  ): readonly [string, K, ...MethodArgs<T, K>] => {
+  ): readonly [string, K, ...any[]] => {
     return [requestPath, method, ...args] as const as any;
   };
 
