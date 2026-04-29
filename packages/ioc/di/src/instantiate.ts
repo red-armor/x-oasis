@@ -5,6 +5,30 @@ import Container from './Container';
 import { store } from './store';
 import { Ctor, BindingType } from './types';
 
+function _resolveDependency(
+  id: any,
+  index: number | string,
+  container: Container,
+  isProperty: boolean
+): any {
+  const moduleBinding = container.getBinding(id);
+
+  if (!moduleBinding) {
+    throw new Error(BINDING_NOT_FOUND(id, index as number));
+  }
+
+  if (moduleBinding.value != null) {
+    return moduleBinding.value;
+  }
+
+  const resolved = instantiate(moduleBinding, container);
+  if (moduleBinding.type !== BindingType.ParamsFactory) {
+    moduleBinding.value = resolved;
+  }
+
+  return resolved;
+}
+
 export function instantiate(
   binding: Binding | Ctor,
   container: Container,
@@ -31,24 +55,10 @@ export function instantiate(
     const args = [];
 
     for (let idx = 0; idx < constructorDeps.length; idx++) {
-      const current = constructorDeps[idx];
-      const { id, index } = current;
-
-      const moduleBinding = container.getBinding(id);
-
-      if (!moduleBinding) {
-        throw new Error(BINDING_NOT_FOUND(id, index));
-      }
-
-      if (moduleBinding.value != null) args[index] = moduleBinding.value;
-      else {
-        args[index] = instantiate(moduleBinding, container);
-        if (moduleBinding.type !== BindingType.ParamsFactory)
-          moduleBinding.value = args[index];
-      }
+      const { id, index } = constructorDeps[idx];
+      args[index] = _resolveDependency(id, index, container, false);
     }
 
-    // passing params should be insert on before
     passingArgs.forEach(
       (constructorParam, index) => (args[index] = constructorParam)
     );
@@ -58,22 +68,13 @@ export function instantiate(
     const propertyDeps = module.propertyDeps;
 
     for (let idx = 0; idx < propertyDeps.length; idx++) {
-      const current = propertyDeps[idx];
-      const { id, propertyName } = current;
-
-      const moduleBinding = container.getBinding(id);
-
-      if (!moduleBinding) {
-        throw new Error(BINDING_NOT_FOUND(id, idx));
-      }
-
-      if (moduleBinding.value != null) {
-        instance[propertyName] = moduleBinding.value;
-      } else {
-        instance[propertyName] = instantiate(moduleBinding, container);
-        if (moduleBinding.type !== BindingType.ParamsFactory)
-          moduleBinding.value = instance[propertyName];
-      }
+      const { id, propertyName } = propertyDeps[idx];
+      instance[propertyName] = _resolveDependency(
+        id,
+        propertyName,
+        container,
+        true
+      );
     }
 
     if (binding instanceof Binding) binding.value = instance;
@@ -81,11 +82,10 @@ export function instantiate(
     return instance;
   } catch (err) {
     console.error(
-      '[instantiate error ] ',
-      binding,
-      (binding as Binding).identifier,
-      (binding as Binding).to,
-      err
+      '[instantiate error] Constructor:',
+      binding instanceof Binding ? (binding as Binding).identifier : binding,
+      'Details:',
+      err instanceof Error ? err.message : String(err)
     );
     return null;
   }

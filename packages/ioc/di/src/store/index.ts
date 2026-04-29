@@ -5,19 +5,15 @@ import Module from './Module';
 export namespace store {
   export const moduleMap = new Map<any, Module>();
 
-  // export const getModule = (id: ModuleIdentifier) => moduleMap.get(id)
   export const setModule = (id: any, module: Module) =>
     moduleMap.set(id, module);
 
   export const hasTargetModule = (decoratorTarget: DecoratorTarget) => {
     return moduleMap.has(decoratorTarget);
-    // const id = moduleIdentifierExtractor(decoratorTarget)
-    // return moduleMap.has(id)
   };
+
   export const getTargetModule = (target: DecoratorTarget) => {
     return moduleMap.get(target);
-    // const id = moduleIdentifierExtractor(target)
-    // return getModule(id)
   };
 }
 
@@ -26,9 +22,7 @@ export function registerModule(
   registryType: RegistryType
 ) {
   if (!target) return null;
-  // const id = moduleIdentifierExtractor(target)
   const _module = new Module({ target, registryType });
-  // store.setModule(id, _module)
   store.setModule(target, _module);
   return _module;
 }

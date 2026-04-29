@@ -14,16 +14,11 @@ export default class Module {
 
   private _target: DecoratorTarget;
 
-  // private readonly _id: string
-
   private readonly _registryType: RegistryType;
 
   constructor(props: ModuleProps) {
     this._target = props.target;
-    // this._id = props.id
     this._registryType = props.registryType || RegistryType.Injected;
-    this.addConstructorDependency = this.addConstructorDependency.bind(this);
-    this.addPropertyDependency = this.addPropertyDependency.bind(this);
   }
 
   get target() {
@@ -33,10 +28,6 @@ export default class Module {
   set target(value: DecoratorTarget) {
     this._target = value;
   }
-
-  // get id() {
-  //   return this._id
-  // }
 
   get registryType() {
     return this._registryType;
