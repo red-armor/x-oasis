@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/web-stream",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Web Streams API utilities: async-iterable bridging, SSE parsing, binary event stream decoding, and streaming tool call tracking",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
