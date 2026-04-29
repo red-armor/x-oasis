@@ -187,7 +187,7 @@ export const handleRequest =
               ])
             );
           }
-        } catch (err: unknown) {
+        } catch (err) {
           const errorBody = createErrorResponseBody(err, jsonrpcRequest);
           safeSendReply(
             protocol,
@@ -243,7 +243,7 @@ export const handleRequest =
         }
 
         safeSendReply(protocol, sendData);
-      } catch (err: unknown) {
+      } catch (err) {
         const errorBody = createErrorResponseBody(err, jsonrpcRequest);
         const responseHeader = [ResponseType.ReturnFail, seqId];
         const responseBody = [errorBody];
