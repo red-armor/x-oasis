@@ -2,11 +2,7 @@ import ProxyRPCClient from './ProxyRPCClient';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
 class RPCClientHost {
-  protected readonly hostPath: string;
-
   private hostMap = new Map<string, ProxyRPCClient>();
-
-  // handlersMap = new Map<ServiceHandlerPath, IService>();
 
   registerClient(
     requestPath: string,
@@ -19,27 +15,14 @@ class RPCClientHost {
     return client;
   }
 
-  // registerServiceHandler(handlerPath: ServiceHandlerPath, service: IService) {
-  //   this.handlersMap.set(handlerPath, service);
-  // }
+  getClient(requestPath: string): ProxyRPCClient | undefined {
+    return this.hostMap.get(requestPath);
+  }
 
-  // getHandlers(handlerPath: ServiceHandlerPath) {
-  //   const handlers = this.handlersMap.get(handlerPath);
-  //   return handlers;
-  // }
-
-  // getHandler(handlerPath: ServiceHandlerPath, fnName: string) {
-  //   const handlers = this.handlersMap.get(handlerPath);
-  //   // should bind to current service object
-  //   if (handlers && handlers[fnName]) return handlers[fnName].bind(handlers);
-  //   return null;
-  // }
-
-  // merge(serviceHost: RPCClientHost) {
-  //   for (const [key, value] of serviceHost.handlersMap) {
-  //     this.registerServiceHandler(key, value);
-  //   }
-  // }
+  removeClient(requestPath: string): boolean {
+    return this.hostMap.delete(requestPath);
+  }
 }
+
 export { RPCClientHost };
 export default new RPCClientHost();

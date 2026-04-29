@@ -47,4 +47,21 @@ export type AbstractChannelProtocolProps = {
    * Custom write buffer instance (overrides serializationFormat)
    */
   writeBuffer?: any;
+  /**
+   * Context factory for injecting per-request data into handlers.
+   * Called on each incoming request, similar to tRPC's `createContext`.
+   *
+   * @example
+   * ```ts
+   * createContext: ({ event, requestPath, methodName }) => ({
+   *   sender: event?.sender,
+   *   timestamp: Date.now(),
+   * })
+   * ```
+   */
+  createContext?: (opts: {
+    event: any;
+    requestPath: string;
+    methodName: string;
+  }) => any;
 };

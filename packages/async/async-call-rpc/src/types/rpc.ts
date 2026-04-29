@@ -1,15 +1,27 @@
 export enum RequestType {
   /**
-   * for normal request, wait for return value
+   * Normal request — waits for a single return value.
    */
   PromiseRequest = 'pr',
   PromiseAbort = 'pa',
 
   /**
-   * send a command
+   * Fire-and-forget command — no return value expected.
    */
   SignalRequest = 'sr',
   SignalAbort = 'sa',
+
+  /**
+   * Subscription request — expects a stream of values.
+   * The server should keep sending `ReturnSuccess` until the
+   * client sends a `SubscriptionStop`.
+   */
+  SubscriptionRequest = 'sub',
+
+  /**
+   * Stop an active subscription.
+   */
+  SubscriptionStop = 'unsub',
 }
 
 export type RequestRawSequenceId = number;
@@ -33,6 +45,11 @@ export enum ResponseType {
 
   PortSuccess = 'ps',
   PortFail = 'pf',
+
+  /**
+   * Indicates the subscription has been stopped by the server.
+   */
+  SubscriptionStopped = 'ss',
 }
 export type ResponseEntryHeader = [ResponseType, RequestSequenceId];
 export type ResponseEntryBody = any;
@@ -40,7 +57,7 @@ export type ResponseEntryBody = any;
 export type HostName = string;
 
 /**
- * 0 RequestType: PromiseRequest, PromiseAbort, SignalRequest, SignalAbort
+ * 0 RequestType: PromiseRequest, PromiseAbort, SignalRequest, SignalAbort, SubscriptionRequest, SubscriptionStop
  * 1 RequestSequenceId: string
  */
 export type HostRequestEntryHeader = [
@@ -53,9 +70,10 @@ export type HostRequestEntryHeader = [
 export type HostRequestEntryBody = any;
 export type HostRequestEntry = [HostRequestEntryHeader, HostRequestEntryBody];
 
-// export type SendingProps = {
-//   requestPath?: string;
-//   fnName?: string;
-//   args?: any;
-//   isOptionsRequest?: boolean;
-// };
+/**
+ * An object that can be unsubscribed.
+ * Returned by subscription-style calls.
+ */
+export interface Unsubscribable {
+  unsubscribe(): void;
+}

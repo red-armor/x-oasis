@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 /**
  * JSONRPC Error Response Detail
  * Based on JSONRPC 2.0 specification
@@ -31,68 +29,92 @@ export interface ErrorResponse<Error = unknown> {
  * Based on JSONRPC 2.0 specification section 5.1
  */
 export enum JSONRPCErrorCode {
-  /**
-   * Parse error (-32700)
-   * Invalid JSON was received by the server.
-   * An error occurred on the server while parsing the JSON text.
-   */
   ParseError = -32700,
-
-  /**
-   * Invalid Request (-32600)
-   * The JSON sent is not a valid Request object.
-   */
   InvalidRequest = -32600,
-
-  /**
-   * Method not found (-32601)
-   * The method does not exist / is not available.
-   */
   MethodNotFound = -32601,
-
-  /**
-   * Invalid params (-32602)
-   * Invalid method parameter(s).
-   */
   InvalidParams = -32602,
-
-  /**
-   * Internal error (-32603)
-   * Internal JSON-RPC error.
-   */
   InternalError = -32603,
-
-  /**
-   * Server error (-32000 to -32099)
-   * Reserved for implementation-defined server-errors.
-   * The remainder of the space is available for application defined errors.
-   */
   ServerErrorStart = -32000,
   ServerErrorEnd = -32099,
 }
 
 /**
- * Create a JSONRPC error response object
- * This function is kept for backward compatibility.
- * For new code, prefer using functions from utils/jsonrpc.ts
+ * Structured RPC Error class.
+ *
+ * Inspired by tRPC's `TRPCError` — wraps any unknown error into a
+ * consistent shape with `code`, `message`, `data`, and preserved `stack`.
+ *
+ * @example
+ * ```ts
+ * try {
+ *   await client.someMethod();
+ * } catch (err) {
+ *   if (err instanceof RPCError) {
+ *     console.log(err.code, err.message, err.data);
+ *   }
+ * }
+ * ```
  */
-export const makeErrorResponse = <T>(
-  id: ID,
-  code: number,
-  message: string,
-  data?: T
-): ErrorResponse<T> => {
-  if (id === undefined) id = null;
-  code = Math.floor(code);
-  if (Number.isNaN(code)) code = -1;
-  const x: ErrorResponse<T> = {
-    jsonrpc: '2.0',
-    id,
-    error: { code, message, data },
-  };
-  // Remove undefined data field
-  if (x.error.data === undefined) {
-    delete (x.error as any).data;
+export class RPCError extends Error {
+  readonly code: number;
+  readonly data?: unknown;
+
+  constructor(opts: {
+    code: number;
+    message: string;
+    cause?: unknown;
+    data?: unknown;
+  }) {
+    super(opts.message);
+    this.name = 'RPCError';
+    this.code = opts.code;
+    this.data = opts.data;
+
+    // Preserve original stack if cause is an Error
+    if (opts.cause instanceof Error && opts.cause.stack) {
+      this.stack = opts.cause.stack;
+    }
   }
-  return x;
-};
+
+  /**
+   * Wrap any unknown value into an RPCError.
+   */
+  static fromUnknown(
+    cause: unknown,
+    code = JSONRPCErrorCode.InternalError
+  ): RPCError {
+    if (cause instanceof RPCError) {
+      return cause;
+    }
+
+    if (cause instanceof Error) {
+      return new RPCError({
+        code,
+        message: cause.message,
+        cause,
+        data: { type: cause.constructor.name, stack: cause.stack },
+      });
+    }
+
+    if (typeof cause === 'string') {
+      return new RPCError({ code, message: cause });
+    }
+
+    return new RPCError({
+      code,
+      message: 'Unknown error',
+      data: cause,
+    });
+  }
+
+  /**
+   * Convert to a plain JSONRPC error response detail object.
+   */
+  toJSON(): ErrorResponseDetail {
+    return {
+      code: this.code,
+      message: this.message,
+      ...(this.data !== undefined ? { data: this.data } : {}),
+    };
+  }
+}

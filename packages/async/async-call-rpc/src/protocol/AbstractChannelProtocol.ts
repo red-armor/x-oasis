@@ -11,6 +11,7 @@ import {
   RequestRawSequenceId,
   PendingSendEntry,
   AbstractChannelProtocolProps,
+  Unsubscribable,
 } from '../types';
 import { runMiddlewares, sendRequest } from '../middlewares';
 import ReadBaseBuffer from '../buffer/ReadBaseBuffer';
@@ -27,6 +28,20 @@ import { updateSeqInfo } from '../middlewares/updateSeqInfo';
 import { normalizeMessageChannelRawMessage } from '../middlewares/normalize';
 import { handleRequest } from '../middlewares/handleRequest';
 
+/**
+ * Context factory function, similar to tRPC's `createContext`.
+ * Called for each incoming request, allowing injection of per-request data
+ * (e.g. sender identity, auth info) into handlers.
+ */
+export type CreateContextFn<TContext = Record<string, unknown>> = (opts: {
+  /** The raw message event (may be null for non-browser transports) */
+  event: any;
+  /** The request path (service path) */
+  requestPath: string;
+  /** The method being called */
+  methodName: string;
+}) => TContext | Promise<TContext>;
+
 abstract class AbstractChannelProtocol
   extends Disposable
   implements IMessageChannel
@@ -41,7 +56,6 @@ abstract class AbstractChannelProtocol
 
   private _seqId: RequestRawSequenceId = -1;
 
-  // decoder should comes first !!!!
   protected _onMessageMiddleware: ClientMiddleware[] = [
     normalizeMessageChannelRawMessage,
     deserialize,
@@ -65,16 +79,32 @@ abstract class AbstractChannelProtocol
   private _isConnected = true;
 
   /**
-   * 如果说channel存在的话，那么就是ongoing request
+   * Tracks pending RPC requests awaiting responses (keyed by seqId).
    */
   public ongoingRequests: Map<string, Deferred> = new Map();
 
   /**
-   * 如果说channel不存在，那么请求就会暂时放到这个里面
+   * Requests queued while the channel is disconnected.
+   * Automatically replayed on reconnection.
    */
   public pendingSendEntries = new Set<PendingSendEntry>();
 
+  /**
+   * Event method callbacks (for `on*` style subscriptions), keyed by seqId.
+   */
   public requestEvents: Map<string, any> = new Map();
+
+  /**
+   * Active subscriptions on the server side, keyed by seqId.
+   * Used for lifecycle cleanup (e.g. window close, navigation).
+   * Mirrors electron-trpc's `subscriptions: Map<string, Unsubscribable>`.
+   */
+  public subscriptions: Map<string, Unsubscribable> = new Map();
+
+  /**
+   * Optional context factory for injecting per-request data into handlers.
+   */
+  private _createContext: CreateContextFn | null = null;
 
   private onDidConnectedEvent = new Event({ name: 'on-did-connected' });
 
@@ -93,14 +123,15 @@ abstract class AbstractChannelProtocol
       serializationFormat = SerializationFormat.JSON,
       readBuffer,
       writeBuffer,
+      createContext,
     } = props || {};
 
     this._description = description;
     this._isConnected = connected;
     this._masterProcessName = masterProcessName;
     this._serializationFormat = serializationFormat;
+    this._createContext = createContext || null;
 
-    // 如果提供了自定义 buffer，直接使用
     if (readBuffer) {
       this._readBuffer = readBuffer;
     }
@@ -108,7 +139,6 @@ abstract class AbstractChannelProtocol
       this._writeBuffer = writeBuffer;
     }
 
-    // 需要创建，否则创建'message'监听时，会出现混乱
     this._key = generateRandomKey();
     this.registerDisposable(this.onDidConnected(this.didConnected.bind(this)));
 
@@ -135,29 +165,24 @@ abstract class AbstractChannelProtocol
     return this._senderMiddleware;
   }
 
+  get createContext() {
+    return this._createContext;
+  }
+
   /**
-   * Get or create read buffer instance
-   * Uses lazy initialization with caching for performance
-   *
-   * Priority:
-   * 1. Custom buffer provided in constructor
-   * 2. Cached instance
-   * 3. Create new instance using BufferFactory with configured format
-   *
-   * Subclasses can override this method to provide custom buffer logic
+   * Get or create read buffer instance.
+   * Uses lazy initialization with caching for performance.
    */
   get readBuffer(): ReadBaseBuffer {
     if (this._readBuffer) {
       return this._readBuffer;
     }
 
-    // Try to create using BufferFactory
     try {
       this._readBuffer = BufferFactory.createReadBuffer(
         this._serializationFormat
       );
     } catch (error) {
-      // Fallback to JSON if configured format is not available
       console.warn(
         `[AbstractChannelProtocol] Failed to create read buffer with format "${this._serializationFormat}", falling back to JSON.`,
         error
@@ -171,28 +196,19 @@ abstract class AbstractChannelProtocol
   }
 
   /**
-   * Get or create write buffer instance
-   * Uses lazy initialization with caching for performance
-   *
-   * Priority:
-   * 1. Custom buffer provided in constructor
-   * 2. Cached instance
-   * 3. Create new instance using BufferFactory with configured format
-   *
-   * Subclasses can override this method to provide custom buffer logic
+   * Get or create write buffer instance.
+   * Uses lazy initialization with caching for performance.
    */
   get writeBuffer(): WriteBaseBuffer {
     if (this._writeBuffer) {
       return this._writeBuffer;
     }
 
-    // Try to create using BufferFactory
     try {
       this._writeBuffer = BufferFactory.createWriteBuffer(
         this._serializationFormat
       );
     } catch (error) {
-      // Fallback to JSON if configured format is not available
       console.warn(
         `[AbstractChannelProtocol] Failed to create write buffer with format "${this._serializationFormat}", falling back to JSON.`,
         error
@@ -205,27 +221,18 @@ abstract class AbstractChannelProtocol
     return this._writeBuffer;
   }
 
-  /**
-   * Get the configured serialization format
-   */
   get serializationFormat(): string {
     return this._serializationFormat;
   }
 
-  /**
-   * Set serialization format (will recreate buffers on next access)
-   * Note: This will clear cached buffers, new instances will be created on next access
-   */
   setSerializationFormat(format: string): void {
     if (this._serializationFormat !== format) {
       this._serializationFormat = format;
-      // Clear cached buffers to force recreation with new format
       this._readBuffer = null;
       this._writeBuffer = null;
     }
   }
 
-  // start from 1
   get seqId() {
     this._seqId += 1;
     return `${this._key}_${this._seqId}`;
@@ -244,16 +251,15 @@ abstract class AbstractChannelProtocol
   }
 
   /**
-   *
-   * @param middlewares
-   * @returns
-   *
-   * 增加自定义的middleware，需要重写这个方法
+   * Override to add custom send middleware.
    */
   decorateSendMiddleware(middlewares: SenderMiddleware[]) {
     return middlewares;
   }
 
+  /**
+   * Override to add custom receive middleware.
+   */
   decorateOnMessageMiddleware(middlewares: ClientMiddleware[]) {
     return middlewares;
   }
@@ -306,7 +312,6 @@ abstract class AbstractChannelProtocol
     this.onDidConnectedEvent.fire();
   }
 
-  // 已经绑定了channel，这个时候需要直接触发
   activate() {
     this._isConnected = true;
     this.onDidConnectedEvent.fire();
@@ -314,7 +319,24 @@ abstract class AbstractChannelProtocol
 
   disconnect() {
     this._isConnected = false;
+    // Clean up all active subscriptions on disconnect
+    this.cleanUpSubscriptions();
     this.onDidDisconnectedEvent.fire();
+  }
+
+  /**
+   * Cancel and clean up all active subscriptions.
+   * Mirrors electron-trpc's subscription cleanup on window close/navigation.
+   */
+  cleanUpSubscriptions() {
+    this.subscriptions.forEach((sub) => {
+      try {
+        sub.unsubscribe();
+      } catch {
+        // Ignore errors during cleanup
+      }
+    });
+    this.subscriptions.clear();
   }
 
   makeRequest(props: SendingProps, transfer?: MessagePort[]): Deferred | void;
@@ -326,7 +348,6 @@ abstract class AbstractChannelProtocol
   ): Deferred | void;
 
   makeRequest(...args: any[]) {
-    //
     const { returnValue } = runMiddlewares(this.senderMiddleware, args);
     if (returnValue) return returnValue;
   }
