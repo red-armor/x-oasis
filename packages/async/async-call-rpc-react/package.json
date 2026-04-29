@@ -12,7 +12,9 @@
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json"
+    "compile": "tsc -p tsconfig.build.json",
+    "example:dev": "cd examples/react-query-app && pnpm dev",
+    "example:build": "cd examples/react-query-app && pnpm build"
   },
   "publishConfig": {
     "access": "public"
