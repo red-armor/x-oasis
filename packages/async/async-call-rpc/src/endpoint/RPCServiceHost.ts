@@ -1,18 +1,29 @@
-import { ServiceHandlers } from '../types/proxyService';
 import RPCService from './RPCService';
+import { ServiceHandlerPath } from '../types';
 
 class RPCServiceHost {
-  protected readonly hostPath: string;
+  handlersMap = new Map<ServiceHandlerPath, RPCService>();
+  registerServiceHandler(handlerPath: ServiceHandlerPath, service: RPCService) {
+    this.handlersMap.set(handlerPath, service);
+  }
 
-  private hostMap = new Map<string, RPCService>();
+  getHandlers(handlerPath: ServiceHandlerPath) {
+    const handlers = this.handlersMap.get(handlerPath);
+    return handlers;
+  }
 
-  // handlersMap = new Map<ServiceHandlerPath, IService>();
+  getHandler(handlerPath: ServiceHandlerPath, fnName: string) {
+    const handlers = this.handlersMap.get(handlerPath);
+    // should bind to current service object
+    if (handlers && handlers[fnName]) return handlers[fnName].bind(handlers);
+    return null;
+  }
 
-  registerService(servicePath: string, serviceHandlers: ServiceHandlers) {
-    const service = new RPCService(servicePath, { handlers: serviceHandlers });
-    this.hostMap.set(servicePath, service);
-    return service;
+  merge(serviceHost: RPCServiceHost) {
+    for (const [key, value] of serviceHost.handlersMap) {
+      this.registerServiceHandler(key, value);
+    }
   }
 }
-export { RPCServiceHost };
-export default new RPCServiceHost();
+
+export default RPCServiceHost;

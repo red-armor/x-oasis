@@ -22,6 +22,7 @@ class RPCService {
     if (channel) {
       this.setChannel(channel);
     }
+
     this.registerHandlers(handlers);
   }
 
@@ -31,7 +32,7 @@ class RPCService {
     this.channel.on(this.handleMessage.bind(this));
   }
 
-  registerHandlers(handlers: Record<string, (...args: any[]) => any>) {
+  registerHandlers(handlers?: ServiceHandlers) {
     if (!handlers) return;
     for (const [methodName, handler] of Object.entries(handlers)) {
       this.registerHandler(methodName, handler);
