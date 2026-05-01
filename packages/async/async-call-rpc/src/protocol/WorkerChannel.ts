@@ -1,5 +1,5 @@
 import AbstractChannelProtocol from './AbstractChannelProtocol';
-import { AbstractChannelProtocolProps } from '../types/channel';
+import { AbstractChannelProtocolProps } from '../types/protocol';
 
 export default class WorkerChannel extends AbstractChannelProtocol {
   private worker: any;

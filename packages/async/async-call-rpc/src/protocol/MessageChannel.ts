@@ -2,7 +2,7 @@
 import {
   IMessageChannel,
   AbstractChannelProtocolProps,
-} from '../types/channel';
+} from '../types/protocol';
 import AbstractChannelProtocol from './AbstractChannelProtocol';
 import { SenderMiddleware, ClientMiddleware } from '../types';
 

@@ -1,6 +1,6 @@
+import RPCServiceHost from './RPCServiceHost';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
-import { RPCServiceHost } from './RPCServiceHost';
-import { ServiceHandlers } from '../types/proxyService';
+import { ServiceHandlers, RPCServiceOptions } from '../types';
 
 class RPCService {
   private channel: AbstractChannelProtocol;
@@ -8,20 +8,11 @@ class RPCService {
   readonly servicePath: string;
   readonly handlersMap = new Map<string, (...args: any[]) => any>();
 
-  constructor(
-    servicePath: string,
-    options?: {
-      channel?: AbstractChannelProtocol;
-      handlers: ServiceHandlers;
-      serviceHost?: RPCServiceHost;
-    }
-  ) {
-    const { channel, handlers, serviceHost } = options || {};
+  constructor(servicePath: string, options: RPCServiceOptions) {
+    const { channel, handlers, serviceHost } = options;
     this.servicePath = servicePath;
     this.serviceHost = serviceHost;
-    if (channel) {
-      this.setChannel(channel);
-    }
+    this.setChannel(channel);
 
     this.registerHandlers(handlers);
   }
@@ -50,6 +41,8 @@ class RPCService {
   getHandler(methodName: string) {
     return this.handlersMap.get(methodName);
   }
+
+  merge(service: RPCService) {}
 }
 
 export default RPCService;

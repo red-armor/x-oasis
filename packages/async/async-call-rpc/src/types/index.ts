@@ -1,9 +1,9 @@
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
-export * from './channel';
+export * from './protocol';
 export * from './rpc';
 export * from './proxyChannel';
-export * from './proxyService';
+export * from './endpoint';
 export * from './middleware';
 
 /**

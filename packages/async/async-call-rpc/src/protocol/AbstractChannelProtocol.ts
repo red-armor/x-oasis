@@ -52,7 +52,7 @@ abstract class AbstractChannelProtocol
 
   private _service: RPCService;
 
-  private readonly _description: string;
+  readonly _description: string;
 
   private _seqId: RequestRawSequenceId = -1;
 
@@ -102,6 +102,12 @@ abstract class AbstractChannelProtocol
   public subscriptions: Map<string, Unsubscribable> = new Map();
 
   /**
+   * Tracks active event method (ping-pong) listeners on the server side, keyed by seqId.
+   * Used to prevent sending responses after the client has unsubscribed.
+   */
+  public activeEventMethods: Set<string> = new Set();
+
+  /**
    * Optional context factory for injecting per-request data into handlers.
    */
   private _createContext: CreateContextFn | null = null;
@@ -117,7 +123,7 @@ abstract class AbstractChannelProtocol
   constructor(props?: AbstractChannelProtocolProps) {
     super();
     const {
-      description,
+      description = '',
       masterProcessName,
       connected = true,
       serializationFormat = SerializationFormat.JSON,

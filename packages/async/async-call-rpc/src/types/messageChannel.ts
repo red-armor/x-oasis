@@ -1,5 +1,6 @@
 import { IpcRenderer, UtilityProcess, WebContents } from 'electron';
-import { AbstractChannelProtocolProps as BaseAbstractChannelProtocolProps } from './channel';
+import { AbstractChannelProtocolProps as BaseAbstractChannelProtocolProps } from './protocol';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
 export interface ChannelPort {
   on(event: 'message', listener: (messageEvent: MessageEvent) => void): this;
@@ -10,14 +11,6 @@ export interface ChannelPort {
   postMessage(message: any, transfer?: MainPort[]): void;
 }
 
-export type UtilityMessageChannelPortStoreProps = {
-  name: string;
-  port: ParentPort;
-  masterProcessName: string;
-  clientMiddlewares?: ClientMiddleware[];
-  senderMiddlewares?: SenderMiddleware[];
-};
-
 export type OnMessageEntry = {
   data: any;
   ports: any;
@@ -25,11 +18,11 @@ export type OnMessageEntry = {
 export type SenderEntry = any;
 
 export type ClientMiddleware = (
-  channel?: MessageChannelProtocol
+  channel?: AbstractChannelProtocol
 ) => (v: OnMessageEntry) => OnMessageEntry;
 
 export type SenderMiddleware = (
-  channel?: MessageChannelProtocol
+  channel?: AbstractChannelProtocol
 ) => (data: SenderEntry) => SenderEntry;
 
 /**

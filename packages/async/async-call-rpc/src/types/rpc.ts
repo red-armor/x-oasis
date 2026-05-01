@@ -22,6 +22,12 @@ export enum RequestType {
    * Stop an active subscription.
    */
   SubscriptionStop = 'unsub',
+
+  /**
+   * Stop an active ping-pong event method (on* method).
+   * Similar to SubscriptionStop but for the simpler event method pattern.
+   */
+  EventMethodStop = 'evt-stop',
 }
 
 export type RequestRawSequenceId = number;
@@ -50,6 +56,11 @@ export enum ResponseType {
    * Indicates the subscription has been stopped by the server.
    */
   SubscriptionStopped = 'ss',
+
+  /**
+   * Indicates the event method (ping-pong) has been stopped.
+   */
+  EventMethodStopped = 'evt-stopped',
 }
 export type ResponseEntryHeader = [ResponseType, RequestSequenceId];
 export type ResponseEntryBody = any;
@@ -57,7 +68,7 @@ export type ResponseEntryBody = any;
 export type HostName = string;
 
 /**
- * 0 RequestType: PromiseRequest, PromiseAbort, SignalRequest, SignalAbort, SubscriptionRequest, SubscriptionStop
+ * 0 RequestType: PromiseRequest, PromiseAbort, SignalRequest, SignalAbort, SubscriptionRequest, SubscriptionStop, EventMethodStop
  * 1 RequestSequenceId: string
  */
 export type HostRequestEntryHeader = [

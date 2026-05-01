@@ -1,28 +1,26 @@
 import RPCService from './RPCService';
-import { ServiceHandlerPath } from '../types';
+import { RPCServiceOptions, ServiceHandlerPath, ServicePath } from '../types';
 
+/**
+ * const service = serviceHost.registerService(servicePath, service)
+ * const handler = service.getHandler(handlerName)
+ */
 class RPCServiceHost {
-  handlersMap = new Map<ServiceHandlerPath, RPCService>();
-  registerServiceHandler(handlerPath: ServiceHandlerPath, service: RPCService) {
-    this.handlersMap.set(handlerPath, service);
+  serviceMap = new Map<ServiceHandlerPath, RPCService>();
+
+  registerService(servicePath: ServicePath, serviceOptions: RPCServiceOptions) {
+    const service = new RPCService(servicePath, serviceOptions);
+    this.serviceMap.set(servicePath, service);
   }
 
-  getHandlers(handlerPath: ServiceHandlerPath) {
-    const handlers = this.handlersMap.get(handlerPath);
-    return handlers;
+  getService(servicePath: ServicePath) {
+    return this.serviceMap.get(servicePath);
   }
 
-  getHandler(handlerPath: ServiceHandlerPath, fnName: string) {
-    const handlers = this.handlersMap.get(handlerPath);
-    // should bind to current service object
-    if (handlers && handlers[fnName]) return handlers[fnName].bind(handlers);
+  getHandler(servicePath: ServicePath, handlerName: string) {
+    const service = this.getService(servicePath);
+    if (service) return service.getHandler(handlerName);
     return null;
-  }
-
-  merge(serviceHost: RPCServiceHost) {
-    for (const [key, value] of serviceHost.handlersMap) {
-      this.registerServiceHandler(key, value);
-    }
   }
 }
 

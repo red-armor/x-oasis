@@ -9,6 +9,7 @@ import {
   AsyncCallErrorDetail,
 } from '../utils/jsonrpc';
 import { JSONRPCErrorCode } from '../error';
+import { isEventMethod } from '../common';
 
 /**
  * Create standardized error response body
@@ -86,6 +87,23 @@ export const handleRequest =
       return message;
     }
 
+    // Handle EventMethodStop — cancel an active ping-pong event method listener
+    if (type === RequestType.EventMethodStop) {
+      // Mark this event method as inactive so remoteCallback stops sending
+      protocol.activeEventMethods.delete(seqId);
+      // Clean up the client's callback reference
+      protocol.requestEvents.delete(seqId);
+      // Send EventMethodStopped acknowledgement
+      safeSendReply(
+        protocol,
+        protocol.writeBuffer.encode([
+          [ResponseType.EventMethodStopped, seqId],
+          [],
+        ])
+      );
+      return message;
+    }
+
     const handler = service.getHandler(methodName);
 
     if (!handler) {
@@ -97,6 +115,81 @@ export const handleRequest =
         protocol,
         protocol.writeBuffer.encode([responseHeader, responseBody])
       );
+      return message;
+    }
+
+    /**
+     * Handle ping-pong event methods (on* methods).
+     *
+     * Ping-pong is a simple listen & fire pattern, distinct from streaming subscriptions:
+     * - Client registers a callback via createProxy().onMethod(callback)
+     * - Server calls the callback whenever it has data to send
+     * - Client can later send EventMethodStop to cancel the listener
+     *
+     * The callback function is wrapped in a "remote callback" that serializes
+     * and sends responses back to the client through the protocol. The server
+     * tracks active listeners using activeEventMethods set, allowing graceful
+     * cleanup when the client unsubscribes.
+     *
+     * Example:
+     *   Service: onPing(callback) { setInterval(() => callback('ping'), 1000); }
+     *   Client:  const unsub = client.onPing((data) => console.log(data));
+     *            // Later: unsub(); // Stop listening
+     */
+    if (isEventMethod(methodName)) {
+      // Register this event method as active.
+      // The client can later send EventMethodStop to deactivate it.
+      protocol.activeEventMethods.add(seqId);
+
+      // Create a remote callback function that the handler can invoke.
+      // Each invocation sends a ReturnSuccess response to the client.
+      // Before sending, check if this listener is still active (not cancelled by client).
+      const remoteCallback = (...callbackArgs: any[]) => {
+        // Skip if client has already cancelled this listener via EventMethodStop
+        if (!protocol.activeEventMethods.has(seqId)) {
+          return;
+        }
+
+        const responseHeader = [ResponseType.ReturnSuccess, seqId];
+        let sendData: any = null;
+
+        try {
+          // Encode the callback arguments as the response body
+          sendData = protocol.writeBuffer.encode([
+            responseHeader,
+            callbackArgs.length === 1 ? [callbackArgs[0]] : callbackArgs,
+          ]);
+        } catch (err) {
+          // If encoding fails, send empty response and log the error
+          sendData = protocol.writeBuffer.encode([responseHeader, []]);
+          console.error(
+            `[handleRequest] Encode error for ${requestPath}.${methodName}:`,
+            err
+          );
+        }
+
+        safeSendReply(protocol, sendData);
+      };
+
+      // Invoke the handler with the remote callback.
+      // The handler is expected to call remoteCallback(...) whenever it wants to send data.
+      try {
+        handler(remoteCallback);
+      } catch (err) {
+        // If handler throws during initialization, send error response and clean up
+        protocol.activeEventMethods.delete(seqId);
+        protocol.requestEvents.delete(seqId);
+
+        const errorBody = createErrorResponseBody(err, jsonrpcRequest);
+        safeSendReply(
+          protocol,
+          protocol.writeBuffer.encode([
+            [ResponseType.ReturnFail, seqId],
+            [errorBody],
+          ])
+        );
+      }
+
       return message;
     }
 
