@@ -1,12 +1,33 @@
-import AbstractChannelProtocol from './AbstractChannelProtocol';
-import { AbstractChannelProtocolProps } from '../types/protocol';
+import {
+  AbstractChannelProtocol,
+  AbstractChannelProtocolProps,
+} from '@x-oasis/async-call-rpc';
 
+/**
+ * RPC channel protocol for Web Workers.
+ *
+ * Wraps a `Worker` instance for bidirectional RPC communication
+ * between the main thread and a web worker.
+ *
+ * @example
+ * ```ts
+ * // Main thread
+ * const worker = new Worker('./worker.js');
+ * const channel = new WorkerChannel(worker, { name: 'my-worker' });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Inside the worker (worker.js)
+ * const channel = new WorkerChannel(self, { name: 'worker-self' });
+ * ```
+ */
 export default class WorkerChannel extends AbstractChannelProtocol {
   private worker: any;
   readonly name: string;
 
   /**
-   * @param worker Pass the Worker in the main thread.
+   * @param worker Pass the Worker in the main thread, or `self` inside the worker.
    * @param options Configuration options including serialization format
    */
   constructor(

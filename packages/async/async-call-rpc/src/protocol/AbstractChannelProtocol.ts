@@ -42,6 +42,107 @@ export type CreateContextFn<TContext = Record<string, unknown>> = (opts: {
   methodName: string;
 }) => TContext | Promise<TContext>;
 
+/**
+ * Abstract base class for all RPC channel protocols.
+ *
+ * `AbstractChannelProtocol` provides the core framework for bidirectional
+ * RPC communication over any transport layer. Subclasses only need to
+ * implement two methods — {@link send} and {@link on} — to adapt a
+ * specific transport (MessagePort, WebSocket, IPC, process, etc.).
+ *
+ * ## Architecture
+ *
+ * ```
+ *  Caller                                              Callee
+ *  ──────                                              ──────
+ *  makeRequest(path, method, ...args)
+ *       │
+ *       ▼
+ *  ┌─────────────────────────────────┐
+ *  │  Sender Middleware Pipeline     │
+ *  │  1. prepareNormalData           │  ← build request envelope
+ *  │  2. updateSeqInfo               │  ← assign seqId
+ *  │  3. serialize                   │  ← encode via WriteBuffer
+ *  │  4. sendRequest                 │  ← call this.send()
+ *  └─────────────────────────────────┘
+ *       │                                    │
+ *       │  ← transport (send/on) →           │
+ *       │                                    ▼
+ *                                  ┌─────────────────────────────────┐
+ *                                  │  Receive Middleware Pipeline    │
+ *                                  │  1. normalizeRawMessage        │  ← extract data
+ *                                  │  2. deserialize                │  ← decode via ReadBuffer
+ *                                  │  3. handleRequest              │  ← dispatch to service
+ *                                  │  4. handleResponse             │  ← resolve Deferred
+ *                                  └─────────────────────────────────┘
+ * ```
+ *
+ * ## Subclass Contract
+ *
+ * Every concrete protocol **must** override:
+ *
+ * - **`send(data, transfer?)`** — Transmit serialized data over the transport.
+ * - **`on(listener)`** — Register a listener for incoming messages and return
+ *   a cleanup function (or `void`).
+ *
+ * Optionally override:
+ *
+ * - **`decorateSendMiddleware(middlewares)`** — Prepend/append custom sender
+ *   middleware (e.g. compression, encryption).
+ * - **`decorateOnMessageMiddleware(middlewares)`** — Swap or extend receive
+ *   middleware (e.g. replace the normalizer for a different raw format).
+ * - **`disconnect()`** — Perform transport-specific teardown (close socket,
+ *   port, etc.) then call `super.disconnect()`.
+ *
+ * ## Built-in Transports
+ *
+ * | Class                         | Transport                              | Environment           |
+ * |-------------------------------|----------------------------------------|-----------------------|
+ * | `RPCMessageChannel`           | `MessagePort` (Web API)                | Browser / Worker      |
+ * | `WebSocketChannel`            | `WebSocket`                            | Browser / Node.js     |
+ * | `WorkerChannel`               | `Worker.postMessage`                   | Browser               |
+ * | `NodeProcessChannel`          | `child_process.fork` IPC               | Node.js               |
+ * | `ElectronUtilityProcessChannel` | Electron `UtilityProcess`            | Electron (main)       |
+ * | `IPCMainChannel`              | Electron `ipcMain` / `WebContents`     | Electron (main)       |
+ * | `IPCRendererChannel`          | Electron `ipcRenderer`                 | Electron (renderer)   |
+ * | `ElectronMessagePortMainChannel` | Electron `MessagePortMain`          | Electron (main)       |
+ *
+ * ## Key Features
+ *
+ * - **Middleware pipeline** — Pluggable send/receive pipelines (similar to
+ *   Express/Koa middleware).
+ * - **Offline queueing** — Requests made while disconnected are queued in
+ *   {@link pendingSendEntries} and automatically replayed on reconnection.
+ * - **Subscription lifecycle** — Server-side subscriptions are tracked in
+ *   {@link subscriptions} and cleaned up on disconnect.
+ * - **Context injection** — Per-request context via {@link createContext},
+ *   inspired by tRPC's `createContext`.
+ * - **Serialization** — Configurable via `serializationFormat`; defaults to
+ *   JSON with lazy-initialized {@link ReadBaseBuffer}/{@link WriteBaseBuffer}.
+ *
+ * @example
+ * ```ts
+ * // Implementing a custom transport
+ * class MyCustomChannel extends AbstractChannelProtocol {
+ *   constructor(private transport: MyTransport, opts?: AbstractChannelProtocolProps) {
+ *     super(opts);
+ *   }
+ *
+ *   send(data: unknown): void {
+ *     this.transport.write(data);
+ *   }
+ *
+ *   on(listener: (data: unknown) => void): () => void {
+ *     this.transport.onData(listener);
+ *     return () => this.transport.offData(listener);
+ *   }
+ * }
+ * ```
+ *
+ * @see {@link RPCService} for registering service handlers
+ * @see {@link SendingProps} for the request envelope shape
+ * @see {@link CreateContextFn} for per-request context injection
+ */
 abstract class AbstractChannelProtocol
   extends Disposable
   implements IMessageChannel

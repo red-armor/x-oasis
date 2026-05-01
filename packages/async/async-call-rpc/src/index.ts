@@ -3,12 +3,28 @@ import ProxyRPCClient from './endpoint/ProxyRPCClient';
 import RPCService from './endpoint/RPCService';
 import RPCServiceHost from './endpoint/RPCServiceHost';
 
-export { default as MessageChannel } from './protocol/MessageChannel';
-export { default as WorkerChannel } from './protocol/WorkerChannel';
-export { default as WebSocketChannel } from './protocol/WebSocketChannel';
+// Core protocol base class
+export { default as AbstractChannelProtocol } from './protocol/AbstractChannelProtocol';
+export type { CreateContextFn } from './protocol/AbstractChannelProtocol';
+
+// Core types for adapter packages
+export type {
+  IMessageChannel,
+  AbstractChannelProtocolProps,
+  SendingProps,
+} from './types/protocol';
+export type { ClientMiddleware, SenderMiddleware } from './types';
 
 // Export subscription types
 export type { SubscriptionObserver } from './endpoint/ProxyRPCClient';
+
+// Normalize middlewares (for adapter packages to swap the default normalizer)
+export {
+  normalizeMessageChannelRawMessage,
+  normalizeWebSocketRawMessage,
+  normalizeIPCChannelRawMessage,
+  processClientRawMessage,
+} from './middlewares/normalize';
 
 // Export JSONRPC utilities and types
 export * from './utils';
