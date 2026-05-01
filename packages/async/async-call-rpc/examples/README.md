@@ -5,6 +5,7 @@ Complete Vite + React projects demonstrating different RPC patterns with `@x-oas
 ## Projects Overview
 
 ### 1. **react-worker-example** — Web Worker RPC
+
 CPU-intensive computation in a Web Worker without blocking the UI.
 
 ```bash
@@ -15,6 +16,7 @@ pnpm dev
 ```
 
 **Features:**
+
 - Fibonacci and prime number calculation
 - Progress tracking
 - Non-blocking computation
@@ -25,6 +27,7 @@ pnpm dev
 ---
 
 ### 2. **react-websocket-example** — WebSocket RPC
+
 Real-time client-server communication over WebSocket.
 
 ```bash
@@ -40,6 +43,7 @@ pnpm dev
 ```
 
 **Features:**
+
 - Echo messages to server
 - Fetch server time
 - Fetch user data
@@ -52,6 +56,7 @@ pnpm dev
 ---
 
 ### 3. **react-full-app** — Complete Application
+
 Multi-pattern example combining WebSocket, Web Worker, and state management.
 
 ```bash
@@ -66,6 +71,7 @@ pnpm dev
 ```
 
 **Features:**
+
 - **Tasks Panel** — WebSocket for task management
 - **Compute Panel** — Web Worker for calculations
 - **Status Panel** — Real-time event updates
@@ -73,6 +79,57 @@ pnpm dev
 - Error handling and loading states
 
 **Best for:** Learning full integration of multiple RPC patterns
+
+---
+
+### 4. **react-pingpong-example** — Event Methods (on\* Ping-Pong)
+
+Demonstrates the `on*` event method pattern using a Web Worker. No server needed.
+
+```bash
+cd react-pingpong-example
+pnpm install
+pnpm dev
+# Open http://localhost:5176
+```
+
+**Features:**
+
+- Single ping/pong request-response
+- `onPing()` — continuous event subscription with unsubscribe
+- `onHeartbeat()` — periodic heartbeat monitoring
+- `onCountdown()` — finite countdown event stream
+- Subscribe/unsubscribe lifecycle management
+
+**Best for:** Understanding event method (`on*`) subscription pattern, simple periodic events
+
+---
+
+### 5. **react-streaming-example** — Subscription Streaming
+
+Demonstrates the `client.subscribe()` streaming API over WebSocket with observable-like handlers.
+
+```bash
+# Terminal 1: Start WebSocket server
+cd react-streaming-example
+npx tsx server.ts
+
+# Terminal 2: Start React app
+cd react-streaming-example
+pnpm install
+pnpm dev
+# Open http://localhost:5177
+```
+
+**Features:**
+
+- **Stock Price Stream** — High-frequency data push with `onData`
+- **Server Log Tail** — Finite stream with `onComplete` signal
+- **Timer** — Long-running subscription with manual `unsubscribe()`
+- Full lifecycle: `onData`, `onError`, `onComplete`
+- Multiple concurrent subscriptions
+
+**Best for:** Real-time data streaming, observables, server push with lifecycle management
 
 ---
 
@@ -94,9 +151,12 @@ pnpm dev
 ```
 
 Each project runs on a different port:
+
 - `react-worker-example`: http://localhost:5173
 - `react-websocket-example`: http://localhost:5174
 - `react-full-app`: http://localhost:5175
+- `react-pingpong-example`: http://localhost:5176
+- `react-streaming-example`: http://localhost:5177
 
 ### 3. Build for Production
 
@@ -142,17 +202,17 @@ project/
 Create async proxy and call worker methods:
 
 ```tsx
-import { WorkerChannel, clientHost } from '@x-oasis/async-call-rpc'
+import { WorkerChannel, clientHost } from '@x-oasis/async-call-rpc';
 
 const worker = new Worker(new URL('./worker.ts', import.meta.url), {
   type: 'module',
-})
-const channel = new WorkerChannel(worker, { name: 'main-thread' })
+});
+const channel = new WorkerChannel(worker, { name: 'main-thread' });
 const proxy = clientHost
   .registerClient('compute', { channel })
-  .createProxy<ComputeService>()
+  .createProxy<ComputeService>();
 
-const result = await proxy.fibonacci(35)
+const result = await proxy.fibonacci(35);
 ```
 
 ### Pattern 2: WebSocket
@@ -160,15 +220,15 @@ const result = await proxy.fibonacci(35)
 Connect to server and call RPC methods:
 
 ```tsx
-import { WebSocketChannel, clientHost } from '@x-oasis/async-call-rpc'
+import { WebSocketChannel, clientHost } from '@x-oasis/async-call-rpc';
 
-const ws = new WebSocket('ws://localhost:3456')
-const channel = new WebSocketChannel(ws, { name: 'client' })
+const ws = new WebSocket('ws://localhost:3456');
+const channel = new WebSocketChannel(ws, { name: 'client' });
 const api = clientHost
   .registerClient('api', { channel })
-  .createProxy<ApiService>()
+  .createProxy<ApiService>();
 
-const result = await api.echo('hello')
+const result = await api.echo('hello');
 ```
 
 ### Pattern 3: Event Subscription
@@ -177,11 +237,11 @@ Listen to real-time updates:
 
 ```tsx
 const unsub = proxy.onStatusChanged((status) => {
-  console.log('Status:', status)
-})
+  console.log('Status:', status);
+});
 
 // Cleanup
-unsub.unsubscribe()
+unsub.unsubscribe();
 ```
 
 ---
@@ -192,35 +252,35 @@ unsub.unsubscribe()
 
 ```tsx
 useEffect(() => {
-  const ws = new WebSocket(url)
-  const channel = new WebSocketChannel(ws)
-  const proxy = createProxy(channel)
+  const ws = new WebSocket(url);
+  const channel = new WebSocketChannel(ws);
+  const proxy = createProxy(channel);
 
   return () => {
-    proxy.unsubscribe?.()
-    ws.close()
-  }
-}, [])
+    proxy.unsubscribe?.();
+    ws.close();
+  };
+}, []);
 ```
 
 ### useState for State Management
 
 ```tsx
-const [connected, setConnected] = useState(false)
-const [result, setResult] = useState<T | null>(null)
-const [loading, setLoading] = useState(false)
-const [error, setError] = useState<string | null>(null)
+const [connected, setConnected] = useState(false);
+const [result, setResult] = useState<T | null>(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
 ```
 
 ### useRef for Persistent Objects
 
 ```tsx
-const proxyRef = useRef<ApiService | null>(null)
+const proxyRef = useRef<ApiService | null>(null);
 
 useEffect(() => {
-  proxyRef.current = createProxy(channel)
-  return () => proxyRef.current?.cleanup()
-}, [])
+  proxyRef.current = createProxy(channel);
+  return () => proxyRef.current?.cleanup();
+}, []);
 ```
 
 ---
@@ -228,17 +288,17 @@ useEffect(() => {
 ## Error Handling
 
 ```tsx
-import { RPCError, JSONRPCErrorCode } from '@x-oasis/async-call-rpc'
+import { RPCError, JSONRPCErrorCode } from '@x-oasis/async-call-rpc';
 
 try {
-  await proxy.someMethod()
+  await proxy.someMethod();
 } catch (err) {
   if (err instanceof RPCError) {
     if (err.code === JSONRPCErrorCode.MethodNotFound) {
       // Handle specific error
     }
   }
-  setError(err instanceof Error ? err.message : 'Unknown error')
+  setError(err instanceof Error ? err.message : 'Unknown error');
 }
 ```
 
@@ -278,6 +338,7 @@ npx tsx ../node.websocket.server.ts
 ```
 
 This provides:
+
 - `echo(message)` — Echo messages back
 - `now()` — Return current server time
 - `getCurrentUser()` — Return mock user data
@@ -332,10 +393,10 @@ Ensure Worker path uses `import.meta.url`:
 
 ```tsx
 // ✅ Correct
-new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
+new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 
 // ❌ Wrong
-new Worker('./worker.ts')
+new Worker('./worker.ts');
 ```
 
 ### TypeScript Errors
@@ -357,8 +418,10 @@ Make sure `tsconfig.json` includes DOM types:
 1. **Start with `react-worker-example`** — No server needed
 2. **Try `react-websocket-example`** — Add server communication
 3. **Explore `react-full-app`** — Combine multiple patterns
-4. **Read main README** — Full API documentation
-5. **Check async-call-rpc package** — Implementation details
+4. **Try `react-pingpong-example`** — Learn event method (`on*`) subscription
+5. **Try `react-streaming-example`** — Learn `subscribe()` streaming API
+6. **Read main README** — Full API documentation
+7. **Check async-call-rpc package** — Implementation details
 
 ---
 

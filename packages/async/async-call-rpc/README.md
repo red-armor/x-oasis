@@ -488,7 +488,7 @@ import {
 
 ## 运行示例
 
-示例项目在 `examples/` 目录下，包含三个 React 应用：
+示例项目在 `examples/` 目录下，包含五个 React 应用：
 
 ```bash
 # Worker 示例（最简单，推荐先看）
@@ -504,6 +504,16 @@ pnpm run dev:all   # 同时启动 WebSocket server 和 Vite dev server
 cd examples/react-full-app
 pnpm install
 pnpm run dev:all
+
+# 事件方法 (on* Ping-Pong) — Worker-based，展示 on* 事件订阅
+cd examples/react-pingpong-example
+pnpm install && pnpm dev
+
+# 流式订阅 (subscribe) — WebSocket-based，展示 observable 数据流
+cd examples/react-streaming-example
+pnpm install
+npx tsx server.ts &   # 启动 WebSocket server (端口 3457)
+pnpm dev
 ```
 
 详细说明见 `examples/README.md` 和 `examples/QUICKSTART.md`。

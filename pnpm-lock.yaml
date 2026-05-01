@@ -220,13 +220,7 @@ importers:
         specifier: ^4.0.0
         version: 4.1.4(@types/node@20.19.39)
 
-  packages/async/async-call-rpc/examples:
-    dependencies:
-      async-call-rpc:
-        specifier: file:..
-        version: '@x-oasis/async-call-rpc@file:packages/async/async-call-rpc'
-
-  packages/async/async-call-rpc/examples-projects/react-full-app:
+  packages/async/async-call-rpc/examples/react-full-app:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
@@ -263,7 +257,35 @@ importers:
         specifier: ^5.1.0
         version: 5.4.21(@types/node@24.10.9)
 
-  packages/async/async-call-rpc/examples-projects/react-websocket-example:
+  packages/async/async-call-rpc/examples/react-pingpong-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../..
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.3
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.27)
+      '@vitejs/plugin-react':
+        specifier: ^4.2.1
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.1.0
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc/examples/react-streaming-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
@@ -300,7 +322,44 @@ importers:
         specifier: ^5.1.0
         version: 5.4.21(@types/node@24.10.9)
 
-  packages/async/async-call-rpc/examples-projects/react-worker-example:
+  packages/async/async-call-rpc/examples/react-websocket-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../..
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      ws:
+        specifier: ^8.19.0
+        version: 8.19.0
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.3
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.27)
+      '@types/ws':
+        specifier: ^8.5.13
+        version: 8.18.1
+      '@vitejs/plugin-react':
+        specifier: ^4.2.1
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.1.0
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc/examples/react-worker-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
@@ -2581,9 +2640,6 @@ packages:
 
   '@vue/shared@3.5.27':
     resolution: {integrity: sha512-dXr/3CgqXsJkZ0n9F3I4elY8wM9jMJpP3pvRG52r6m0tu/MsAFIe6JpXVGeNMd/D9F4hQynWT8Rfuj0bdm9kFQ==}
-
-  '@x-oasis/async-call-rpc@file:packages/async/async-call-rpc':
-    resolution: {directory: packages/async/async-call-rpc, type: directory}
 
   JSONStream@1.3.5:
     resolution: {integrity: sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==}
@@ -8536,15 +8592,6 @@ snapshots:
       '@vue/shared': 3.5.27
 
   '@vue/shared@3.5.27': {}
-
-  '@x-oasis/async-call-rpc@file:packages/async/async-call-rpc':
-    dependencies:
-      '@x-oasis/deferred': link:packages/promise/deferred
-      '@x-oasis/disposable': link:packages/event/disposable
-      '@x-oasis/emitter': link:packages/event/emitter
-      '@x-oasis/id': link:packages/misc/id
-      '@x-oasis/is-ascii': link:packages/assertion/is-ascii
-      '@x-oasis/is-promise': link:packages/assertion/is-promise
 
   JSONStream@1.3.5:
     dependencies:
