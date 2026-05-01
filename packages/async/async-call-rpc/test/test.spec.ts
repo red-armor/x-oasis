@@ -20,6 +20,7 @@ describe('handleRequest middleware', () => {
       },
       subscriptions: new Map(),
       requestEvents: new Map(),
+      activeEventMethods: new Map(),
       writeBuffer: {
         encode: (data: any) => data, // Simple mock: return data as-is
       },
