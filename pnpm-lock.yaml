@@ -82,6 +82,12 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
 
+  packages/assertion/is-function:
+    devDependencies:
+      tsdx:
+        specifier: ^0.14.1
+        version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
+
   packages/assertion/is-nan:
     devDependencies:
       tsdx:
@@ -147,6 +153,9 @@ importers:
       '@x-oasis/is-ascii':
         specifier: workspace:*
         version: link:../../assertion/is-ascii
+      '@x-oasis/is-function':
+        specifier: workspace:*
+        version: link:../../assertion/is-function
       '@x-oasis/is-object':
         specifier: workspace:*
         version: link:../../assertion/is-object
@@ -615,6 +624,9 @@ importers:
 
   packages/event/disposable:
     dependencies:
+      '@x-oasis/is-function':
+        specifier: workspace:*
+        version: link:../../assertion/is-function
       '@x-oasis/is-object':
         specifier: workspace:*
         version: link:../../assertion/is-object
@@ -677,6 +689,10 @@ importers:
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
 
   packages/ioc/di:
+    dependencies:
+      '@x-oasis/is-function':
+        specifier: workspace:*
+        version: link:../../assertion/is-function
     devDependencies:
       tsdx:
         specifier: ^0.14.1

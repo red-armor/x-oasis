@@ -1,9 +1,9 @@
+import isFunction from '@x-oasis/is-function';
+
+export { isFunction };
+
 export function isObject(thing: any): thing is Object {
   return typeof thing === 'object' && thing !== null;
-}
-
-export function isFunction(thing: any): thing is Function {
-  return typeof thing === 'function';
 }
 
 export function isArray(thing: any): thing is any[] {

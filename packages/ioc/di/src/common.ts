@@ -1,8 +1,6 @@
-// import { isFunction, isObject } from '@redcity/core/common/assertion/types';
+import isFunction from '@x-oasis/is-function';
 
-export function isFunction(thing: any): thing is Function {
-  return typeof thing === 'function';
-}
+export { isFunction };
 
 export function isObject(thing: any): thing is object {
   return typeof thing === 'object' && thing !== null;
