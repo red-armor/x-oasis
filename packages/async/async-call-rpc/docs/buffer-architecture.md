@@ -91,7 +91,7 @@ const buffer = BufferFactory.createReadBuffer(format);
 
 ## 设计优势
 
-### ✅ 1. **解耦 (Decoupling)**
+### 1. **解耦 (Decoupling)**
 
 各层之间通过接口通信，互不依赖：
 
@@ -107,7 +107,7 @@ export const serialize = (channel: AbstractChannelProtocol) => {
 };
 ```
 
-### ✅ 2. **可扩展 (Extensible)**
+### 2. **可扩展 (Extensible)**
 
 添加新格式不需要修改现有代码：
 
@@ -115,8 +115,12 @@ export const serialize = (channel: AbstractChannelProtocol) => {
 // 添加新的序列化格式，只需要：
 // 1. 实现 ReadBaseBuffer 和 WriteBaseBuffer
 class MyNewFormatBuffer extends ReadBaseBuffer {
-  decode(data: any): any { /* ... */ }
-  getFormat(): string { return 'my-format'; }
+  decode(data: any): any {
+    /* ... */
+  }
+  getFormat(): string {
+    return 'my-format';
+  }
 }
 
 // 2. 注册到工厂
@@ -127,7 +131,7 @@ const buffer = BufferFactory.createReadBuffer('my-format');
 // 完成！不需要修改任何其他代码
 ```
 
-### ✅ 3. **可替换 (Replaceable)**
+### 3. **可替换 (Replaceable)**
 
 可以轻松切换不同的实现：
 
@@ -136,15 +140,15 @@ const buffer = BufferFactory.createReadBuffer('my-format');
 const devBuffer = BufferFactory.createReadBuffer(SerializationFormat.JSON);
 
 // 生产环境使用 MessagePack（性能更好）
-const prodBuffer = BufferFactory.createReadBuffer(SerializationFormat.MESSAGEPACK);
+const prodBuffer = BufferFactory.createReadBuffer(
+  SerializationFormat.MESSAGEPACK
+);
 
 // 根据环境变量切换
-const buffer = process.env.NODE_ENV === 'production' 
-  ? prodBuffer 
-  : devBuffer;
+const buffer = process.env.NODE_ENV === 'production' ? prodBuffer : devBuffer;
 ```
 
-### ✅ 4. **可测试 (Testable)**
+### 4. **可测试 (Testable)**
 
 每一层都可以独立测试：
 
@@ -177,11 +181,17 @@ describe('BufferFactory', () => {
 // 开发环境：使用 JSON，方便调试
 if (process.env.NODE_ENV === 'development') {
   channel.readBuffer = BufferFactory.createReadBuffer(SerializationFormat.JSON);
-  channel.writeBuffer = BufferFactory.createWriteBuffer(SerializationFormat.JSON);
+  channel.writeBuffer = BufferFactory.createWriteBuffer(
+    SerializationFormat.JSON
+  );
 } else {
   // 生产环境：使用 MessagePack，提升性能
-  channel.readBuffer = BufferFactory.createReadBuffer(SerializationFormat.MESSAGEPACK);
-  channel.writeBuffer = BufferFactory.createWriteBuffer(SerializationFormat.MESSAGEPACK);
+  channel.readBuffer = BufferFactory.createReadBuffer(
+    SerializationFormat.MESSAGEPACK
+  );
+  channel.writeBuffer = BufferFactory.createWriteBuffer(
+    SerializationFormat.MESSAGEPACK
+  );
 }
 ```
 
@@ -208,14 +218,14 @@ function getOptimalFormat(dataSize: number): SerializationFormat {
 // 客户端发送支持的格式列表
 const clientFormats = [
   SerializationFormat.MESSAGEPACK,
-  SerializationFormat.JSON
+  SerializationFormat.JSON,
 ];
 
 // 服务端选择最佳格式
 const serverFormats = [
   SerializationFormat.MESSAGEPACK,
   SerializationFormat.CBOR,
-  SerializationFormat.JSON
+  SerializationFormat.JSON,
 ];
 
 // 协商结果
@@ -229,7 +239,7 @@ channel.writeBuffer = BufferFactory.createWriteBuffer(selectedFormat);
 
 ## 对比：非分层设计的问题
 
-### ❌ 不好的设计（紧耦合）
+### 不好的设计（紧耦合）
 
 ```typescript
 // 所有层都直接依赖 JSON
@@ -238,7 +248,7 @@ class Channel {
     const json = JSON.stringify(data); // 硬编码 JSON
     this.socket.send(json);
   }
-  
+
   receive(json: string) {
     const data = JSON.parse(json); // 硬编码 JSON
     return data;
@@ -251,7 +261,7 @@ class Channel {
 // 3. 无法测试序列化逻辑（和传输逻辑耦合）
 ```
 
-### ✅ 好的设计（分层可配置）
+### 好的设计（分层可配置）
 
 ```typescript
 // 抽象层定义接口
@@ -261,17 +271,21 @@ abstract class WriteBaseBuffer {
 
 // 实现层提供具体实现
 class JSONBuffer extends WriteBaseBuffer {
-  encode(data: any) { return JSON.stringify(data); }
+  encode(data: any) {
+    return JSON.stringify(data);
+  }
 }
 
 class MessagePackBuffer extends WriteBaseBuffer {
-  encode(data: any) { return msgpack.encode(data); }
+  encode(data: any) {
+    return msgpack.encode(data);
+  }
 }
 
 // 协议层使用抽象接口
 class Channel {
   constructor(private writeBuffer: WriteBaseBuffer) {}
-  
+
   send(data: any) {
     const encoded = this.writeBuffer.encode(data); // 使用抽象接口
     this.socket.send(encoded);
@@ -292,7 +306,8 @@ const msgpackChannel = new Channel(new MessagePackBuffer());
 - **优势**: 解耦、可扩展、可替换、可测试
 
 这样的设计让你可以：
-- ✅ 轻松添加新的序列化格式
-- ✅ 根据场景选择最合适的格式
-- ✅ 在不影响其他代码的情况下切换格式
-- ✅ 独立测试每一层的功能
+
+- 轻松添加新的序列化格式
+- 根据场景选择最合适的格式
+- 在不影响其他代码的情况下切换格式
+- 独立测试每一层的功能

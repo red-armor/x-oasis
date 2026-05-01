@@ -6,21 +6,24 @@
 
 ## 主要改进
 
-### 1. ✅ 统一使用 BufferFactory
+### 1. 统一使用 BufferFactory
 
 **之前的问题：**
+
 - 每个 Channel 子类都直接创建 `new ReadBuffer()` / `new WriteBuffer()`
 - 无法统一管理序列化格式
 - 每次访问 getter 都创建新实例（性能问题）
 
 **优化后：**
+
 - 所有 Channel 统一使用 `BufferFactory` 创建 buffer
 - 支持通过配置指定序列化格式
 - 实现了实例缓存，避免重复创建
 
-### 2. ✅ 支持配置化序列化格式
+### 2. 支持配置化序列化格式
 
 **新增功能：**
+
 - 在构造函数中通过 `serializationFormat` 参数指定格式
 - 支持运行时动态切换格式（`setSerializationFormat()`）
 - 支持自定义 buffer 实例（`readBuffer` / `writeBuffer` 参数）
@@ -30,7 +33,7 @@
 ```typescript
 // 方式 1: 通过配置指定格式
 const channel = new WebSocketChannel(socket, {
-  serializationFormat: 'msgpack' // 使用 MessagePack
+  serializationFormat: 'msgpack', // 使用 MessagePack
 });
 
 // 方式 2: 使用自定义 buffer
@@ -38,34 +41,38 @@ const customBuffer = new MyCustomBuffer();
 const channel = new MessageChannel({
   port,
   readBuffer: customBuffer,
-  writeBuffer: customBuffer
+  writeBuffer: customBuffer,
 });
 
 // 方式 3: 运行时切换格式
 channel.setSerializationFormat('cbor');
 ```
 
-### 3. ✅ 优化缓存机制
+### 3. 优化缓存机制
 
 **之前的问题：**
+
 - `MessageChannel` 和 `WebSocketChannel` 每次访问都创建新实例
 - `AbstractChannelProtocol` 有缓存，但子类重写后失效
 
 **优化后：**
+
 - 所有 Channel 都使用父类的缓存机制
 - 首次访问时创建，后续访问复用实例
 - 格式切换时自动清理缓存
 
-### 4. ✅ 增强错误处理
+### 4. 增强错误处理
 
 **新增功能：**
+
 - 格式不支持时自动回退到 JSON
 - 提供清晰的错误提示和警告
 - 支持自定义 buffer 的验证
 
-### 5. ✅ 改进类型定义
+### 5. 改进类型定义
 
 **新增类型：**
+
 - `AbstractChannelProtocolProps` - 统一的配置接口
 - 所有 Channel 构造函数都支持序列化配置
 
@@ -89,7 +96,7 @@ registerMessagePack();
 
 // 2. 创建 Channel 时指定格式
 const channel = new WebSocketChannel(socket, {
-  serializationFormat: 'msgpack'
+  serializationFormat: 'msgpack',
 });
 ```
 
@@ -113,7 +120,7 @@ BufferFactory.registerReadBuffer('my-format', () => new MyCustomBuffer());
 // 3. 使用
 const channel = new MessageChannel({
   port,
-  serializationFormat: 'my-format'
+  serializationFormat: 'my-format',
 });
 ```
 
@@ -161,12 +168,13 @@ console.log(buffer1 === buffer3); // false
 ### 从旧版本迁移
 
 **之前：**
+
 ```typescript
 class MyChannel extends AbstractChannelProtocol {
   get readBuffer() {
     return new ReadBuffer(); // 每次都创建新实例
   }
-  
+
   get writeBuffer() {
     return new WriteBuffer();
   }
@@ -174,6 +182,7 @@ class MyChannel extends AbstractChannelProtocol {
 ```
 
 **现在（推荐）：**
+
 ```typescript
 // 方式 1: 使用配置（推荐）
 class MyChannel extends AbstractChannelProtocol {
@@ -203,8 +212,8 @@ interface AbstractChannelProtocolProps {
   description?: string;
   masterProcessName?: string;
   connected?: boolean;
-  serializationFormat?: string;  // 序列化格式：'json' | 'msgpack' | 'cbor' | ...
-  readBuffer?: ReadBaseBuffer;   // 自定义读 buffer（覆盖 serializationFormat）
+  serializationFormat?: string; // 序列化格式：'json' | 'msgpack' | 'cbor' | ...
+  readBuffer?: ReadBaseBuffer; // 自定义读 buffer（覆盖 serializationFormat）
   writeBuffer?: WriteBaseBuffer; // 自定义写 buffer（覆盖 serializationFormat）
 }
 ```
@@ -212,32 +221,37 @@ interface AbstractChannelProtocolProps {
 ## 最佳实践
 
 1. **开发环境使用 JSON**：便于调试和查看数据
+
    ```typescript
    const format = process.env.NODE_ENV === 'production' ? 'msgpack' : 'json';
-   const channel = new WebSocketChannel(socket, { serializationFormat: format });
+   const channel = new WebSocketChannel(socket, {
+     serializationFormat: format,
+   });
    ```
 
 2. **生产环境使用 MessagePack**：提升性能
+
    ```typescript
-   const channel = new WebSocketChannel(socket, { 
-     serializationFormat: 'msgpack' 
+   const channel = new WebSocketChannel(socket, {
+     serializationFormat: 'msgpack',
    });
    ```
 
 3. **统一配置**：在应用入口统一配置序列化格式
+
    ```typescript
    const RPC_CONFIG = {
-     serializationFormat: process.env.RPC_FORMAT || 'json'
+     serializationFormat: process.env.RPC_FORMAT || 'json',
    };
-   
+
    const channel = new WebSocketChannel(socket, RPC_CONFIG);
    ```
 
 4. **错误处理**：监听格式不支持的情况
    ```typescript
    try {
-     const channel = new WebSocketChannel(socket, { 
-       serializationFormat: 'msgpack' 
+     const channel = new WebSocketChannel(socket, {
+       serializationFormat: 'msgpack',
      });
    } catch (error) {
      // 会自动回退到 JSON，但会输出警告
@@ -249,10 +263,10 @@ interface AbstractChannelProtocolProps {
 
 通过本次优化，`async-call-rpc` 的 buffer 系统现在具备：
 
-- ✅ **统一管理**：通过 BufferFactory 统一创建和管理
-- ✅ **配置灵活**：支持多种配置方式
-- ✅ **性能优化**：实例缓存，避免重复创建
-- ✅ **易于扩展**：支持自定义格式和实现
-- ✅ **向后兼容**：默认行为保持不变（使用 JSON）
+- **统一管理**：通过 BufferFactory 统一创建和管理
+- **配置灵活**：支持多种配置方式
+- **性能优化**：实例缓存，避免重复创建
+- **易于扩展**：支持自定义格式和实现
+- **向后兼容**：默认行为保持不变（使用 JSON）
 
 这些改进让序列化系统更加健壮、灵活和高效。

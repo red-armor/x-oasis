@@ -1,6 +1,7 @@
 # Buffer 优化变更日志
 
 ## 优化完成时间
+
 2024年（当前）
 
 ## 概述
@@ -14,6 +15,7 @@
 **文件**: `src/types/channel.ts`
 
 **新增**:
+
 - `AbstractChannelProtocolProps` 类型，包含序列化配置选项：
   - `serializationFormat?: string` - 序列化格式配置
   - `readBuffer?: ReadBaseBuffer` - 自定义读 buffer
@@ -26,14 +28,16 @@
 **文件**: `src/protocol/AbstractChannelProtocol.ts`
 
 **改进**:
-- ✅ 使用 `BufferFactory` 统一创建 buffer 实例
-- ✅ 支持通过构造函数配置序列化格式
-- ✅ 实现智能缓存机制（首次创建，后续复用）
-- ✅ 添加格式验证和自动回退机制（不支持时回退到 JSON）
-- ✅ 新增 `setSerializationFormat()` 方法支持运行时切换
-- ✅ 新增 `serializationFormat` getter 获取当前格式
+
+- 使用 `BufferFactory` 统一创建 buffer 实例
+- 支持通过构造函数配置序列化格式
+- 实现智能缓存机制（首次创建，后续复用）
+- 添加格式验证和自动回退机制（不支持时回退到 JSON）
+- 新增 `setSerializationFormat()` 方法支持运行时切换
+- 新增 `serializationFormat` getter 获取当前格式
 
 **之前**:
+
 ```typescript
 get readBuffer() {
   if (this._readBuffer) return this._readBuffer;
@@ -43,6 +47,7 @@ get readBuffer() {
 ```
 
 **现在**:
+
 ```typescript
 get readBuffer(): ReadBaseBuffer {
   if (this._readBuffer) return this._readBuffer;
@@ -54,18 +59,21 @@ get readBuffer(): ReadBaseBuffer {
 
 ### 3. 子类 Channel 优化
 
-**文件**: 
+**文件**:
+
 - `src/protocol/MessageChannel.ts`
 - `src/protocol/WebSocketChannel.ts`
 - `src/protocol/WorkerChannel.ts`
 
 **改进**:
-- ✅ 移除直接创建 buffer 实例的代码
-- ✅ 继承父类的 buffer getter（使用工厂和缓存）
-- ✅ 构造函数支持 `AbstractChannelProtocolProps` 配置
-- ✅ 统一使用父类的缓存机制
+
+- 移除直接创建 buffer 实例的代码
+- 继承父类的 buffer getter（使用工厂和缓存）
+- 构造函数支持 `AbstractChannelProtocolProps` 配置
+- 统一使用父类的缓存机制
 
 **之前**:
+
 ```typescript
 get readBuffer() {
   return new ReadBuffer(); // 每次都创建新实例
@@ -73,6 +81,7 @@ get readBuffer() {
 ```
 
 **现在**:
+
 ```typescript
 // 继承父类实现，使用工厂和缓存
 // 可通过构造函数配置格式
@@ -86,8 +95,9 @@ constructor(options: { port: MessagePort } & AbstractChannelProtocolProps) {
 **文件**: `src/types/messageChannel.ts`
 
 **改进**:
-- ✅ `AbstractChannelProtocolProps` 现在扩展自 `channel.ts` 中的基础定义
-- ✅ 保持向后兼容，添加了序列化相关字段
+
+- `AbstractChannelProtocolProps` 现在扩展自 `channel.ts` 中的基础定义
+- 保持向后兼容，添加了序列化相关字段
 
 ## 使用方式变更
 
@@ -110,14 +120,14 @@ class MyChannel extends AbstractChannelProtocol {
 ```typescript
 // 方式 1: 通过配置指定格式（推荐）
 const channel = new WebSocketChannel(socket, {
-  serializationFormat: 'msgpack'
+  serializationFormat: 'msgpack',
 });
 
 // 方式 2: 使用自定义 buffer
 const channel = new MessageChannel({
   port,
   readBuffer: new MyCustomBuffer(),
-  writeBuffer: new MyCustomBuffer()
+  writeBuffer: new MyCustomBuffer(),
 });
 
 // 方式 3: 运行时切换
@@ -132,7 +142,7 @@ channel.setSerializationFormat('cbor');
 
 ## 向后兼容性
 
-✅ **完全向后兼容**
+**完全向后兼容**
 
 - 默认行为保持不变（使用 JSON）
 - 不传配置时，行为与之前完全一致
@@ -143,6 +153,7 @@ channel.setSerializationFormat('cbor');
 ### 如果之前重写了 buffer getter
 
 **之前**:
+
 ```typescript
 class MyChannel extends AbstractChannelProtocol {
   get readBuffer() {
@@ -152,6 +163,7 @@ class MyChannel extends AbstractChannelProtocol {
 ```
 
 **现在（推荐）**:
+
 ```typescript
 // 方式 1: 使用配置（推荐）
 class MyChannel extends AbstractChannelProtocol {
@@ -187,21 +199,20 @@ class MyChannel extends AbstractChannelProtocol {
 4. **格式切换**: 测试运行时格式切换
 5. **错误处理**: 测试不支持的格式时的回退机制
 
-## 相关文件
+## 相关文档
 
-- `src/buffer/BufferFactory.ts` - 工厂实现
-- `src/buffer/SerializationFormat.ts` - 格式定义
-- `src/buffer/README.md` - 使用文档
-- `src/buffer/ARCHITECTURE.md` - 架构说明
-- `src/buffer/OPTIMIZATION.md` - 优化说明
+- [Buffer 序列化格式](./buffer-serialization.md) - 使用文档
+- [Buffer 架构说明](./buffer-architecture.md) - 架构说明
+- [Buffer 优化说明](./buffer-optimization.md) - 优化说明
 
 ## 总结
 
 本次优化实现了：
-- ✅ 统一的 buffer 管理机制
-- ✅ 灵活的配置方式
-- ✅ 性能优化（缓存）
-- ✅ 易于扩展（工厂模式）
-- ✅ 完全向后兼容
+
+- 统一的 buffer 管理机制
+- 灵活的配置方式
+- 性能优化（缓存）
+- 易于扩展（工厂模式）
+- 完全向后兼容
 
 这些改进让序列化系统更加健壮、灵活和高效，同时保持了良好的向后兼容性。
