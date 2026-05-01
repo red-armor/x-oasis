@@ -2,13 +2,13 @@
  * Constants used for JSONRPC implementation
  */
 
+import isObject from '@x-oasis/is-object';
+
 export const ERROR = 'Error';
 
 export const isArray = Array.isArray;
 
-export const isObject = (val: unknown): val is object => {
-  return val !== null && typeof val === 'object' && !isArray(val);
-};
+export { isObject };
 
 export const isFunction = (val: unknown): val is Function => {
   return typeof val === 'function';

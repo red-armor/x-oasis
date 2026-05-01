@@ -147,6 +147,9 @@ importers:
       '@x-oasis/is-ascii':
         specifier: workspace:*
         version: link:../../assertion/is-ascii
+      '@x-oasis/is-object':
+        specifier: workspace:*
+        version: link:../../assertion/is-object
       '@x-oasis/is-promise':
         specifier: workspace:*
         version: link:../../assertion/is-promise

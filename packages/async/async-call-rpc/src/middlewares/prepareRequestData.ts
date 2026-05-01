@@ -7,27 +7,52 @@ import {
   SendMiddlewareLifecycle,
 } from '../types';
 
+/**
+ * Parse the overloaded arguments of a middleware function into a
+ * normalised structure.
+ *
+ * Supports two calling conventions:
+ *   1. `(requestPath, methodName, ...params)`
+ *   2. `(SendingProps, transfer?)`
+ */
+function parseRequestArgs(
+  props: string | SendingProps,
+  args: any[]
+): {
+  requestPath: string;
+  methodName: string;
+  params: any[];
+  transfer: any[];
+  isOptionsRequest: boolean;
+  requestType: RequestType;
+} {
+  if (typeof props === 'string') {
+    return {
+      requestPath: props,
+      methodName: args[0],
+      params: args.slice(1),
+      transfer: [],
+      isOptionsRequest: false,
+      requestType: RequestType.PromiseRequest,
+    };
+  }
+
+  return {
+    requestPath: props.requestPath,
+    methodName: props.methodName,
+    params: [].concat(props.args),
+    transfer: props.transfer || args[0] || [],
+    isOptionsRequest: !!props.isOptionsRequest,
+    requestType:
+      (props.requestType as RequestType) || RequestType.PromiseRequest,
+  };
+}
+
 export const preparePortData = (channel: AbstractChannelProtocol) => {
   const fn = (props: string | SendingProps, ...args: any[]) => {
-    let requestPath = '';
-    let methodName = '';
-    let params = [] as any[];
-    let transfer = [];
-    let isOptionsRequest = false;
-
     const seqId = channel.seqId;
-
-    if (typeof props === 'string') {
-      requestPath = props;
-      methodName = args[0];
-      params = args.slice(1);
-    } else {
-      requestPath = props.requestPath;
-      methodName = props.methodName;
-      isOptionsRequest = props.isOptionsRequest;
-      params = [].concat(props.args);
-      transfer = args[0] ? args[0] : [];
-    }
+    const { requestPath, methodName, params, transfer, isOptionsRequest } =
+      parseRequestArgs(props, args);
 
     const header: RequestEntryHeader = [
       RequestType.PromiseRequest,
@@ -36,12 +61,11 @@ export const preparePortData = (channel: AbstractChannelProtocol) => {
       methodName,
     ];
 
-    const body = params;
     return {
       seqId,
       transfer,
       isOptionsRequest,
-      data: [header, body],
+      data: [header, params],
     };
   };
 
@@ -49,43 +73,27 @@ export const preparePortData = (channel: AbstractChannelProtocol) => {
   return fn;
 };
 
-export const prepareHostPortData = (channel: AbstractChannelProtocol) => {
+export const prepareHostPortData = (
+  channel: AbstractChannelProtocol & { channelName?: string }
+) => {
   const fn = (props: string | SendingProps, ...args: any[]) => {
-    let requestPath = '';
-    let methodName = '';
-    let params = [] as any[];
-    let transfer = [];
     const seqId = channel.seqId;
-    let isOptionsRequest = false;
-
-    if (typeof props === 'string') {
-      requestPath = props;
-      methodName = args[0];
-      params = args.slice(1);
-    } else {
-      requestPath = props.requestPath;
-      methodName = props.methodName;
-      isOptionsRequest = props.isOptionsRequest;
-      params = [].concat(props.args);
-      transfer = args[0] ? args[0] : [];
-    }
+    const { requestPath, methodName, params, transfer, isOptionsRequest } =
+      parseRequestArgs(props, args);
 
     const header: HostRequestEntryHeader = [
       RequestType.PromiseRequest,
       seqId,
       requestPath,
       methodName,
-      // @ts-ignore
-      channel.channelName,
+      channel.channelName ?? '',
     ];
-
-    const body = params;
 
     return {
       seqId,
       transfer,
       isOptionsRequest,
-      data: [header, body],
+      data: [header, params],
     };
   };
 
@@ -95,29 +103,9 @@ export const prepareHostPortData = (channel: AbstractChannelProtocol) => {
 
 export const prepareNormalData = (channel: AbstractChannelProtocol) => {
   const fn = (props: string | SendingProps, ...args: any[]) => {
-    let requestPath = '';
-    let methodName = '';
-    let params = [] as any[];
     const seqId = channel.seqId;
-    let isOptionsRequest = false;
-    let requestType = RequestType.PromiseRequest;
-
-    if (typeof props === 'string') {
-      requestPath = props;
-      methodName = args[0];
-      params = args.slice(1);
-    } else {
-      requestPath = props.requestPath;
-      methodName = props.methodName;
-      isOptionsRequest = props.isOptionsRequest;
-      // args will convert to array on default
-      params = [].concat(props.args);
-
-      // Support subscription request types
-      if ((props as any).requestType) {
-        requestType = (props as any).requestType;
-      }
-    }
+    const { requestPath, methodName, params, isOptionsRequest, requestType } =
+      parseRequestArgs(props, args);
 
     const header: RequestEntryHeader = [
       requestType,
@@ -126,12 +114,10 @@ export const prepareNormalData = (channel: AbstractChannelProtocol) => {
       methodName,
     ];
 
-    const body = params;
-
     return {
       seqId,
       isOptionsRequest,
-      data: [header, body],
+      data: [header, params],
     };
   };
 

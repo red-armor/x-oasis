@@ -1,5 +1,6 @@
 import { ID, ErrorResponse } from '../error';
-import { ERROR, isArray, isFunction, isObject, UNDEFINED } from './constants';
+import { ERROR, isArray, isFunction, UNDEFINED } from './constants';
+import isObject from '@x-oasis/is-object';
 
 /**
  * JSONRPC version constant
