@@ -32,6 +32,7 @@ class ProxyRPCClient {
 
   setChannel(channel: AbstractChannelProtocol) {
     this.channel = channel;
+    this.channel.on(this.handleMessage.bind(this));
   }
 
   handleMessage(...args: any[]) {

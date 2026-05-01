@@ -287,7 +287,7 @@ const service = serviceHost.registerService('fs', {
   watchFiles: (args: [string], ctx) => {
     const dir = args[0];
     const userId = ctx?.userId; // 可以访问 context
-    
+
     // 返回一个 observable-like 对象
     return {
       subscribe: (observer) => {
@@ -295,11 +295,11 @@ const service = serviceHost.registerService('fs', {
           // 每个文件变更都推送一次
           observer.onData?.({ eventType, filename, userId });
         });
-        
+
         watcher.on('error', (err) => {
           observer.onError?.(err);
         });
-        
+
         // 返回取消订阅接口
         return {
           unsubscribe: () => watcher.close(),
@@ -335,12 +335,13 @@ subscription.unsubscribe();
 **协议消息**：
 
 - `SubscriptionRequest` (`sub`) — 客户端发起订阅
-- `SubscriptionStop` (`unsub`) — 客户端取消订阅  
+- `SubscriptionStop` (`unsub`) — 客户端取消订阅
 - `SubscriptionStopped` (`ss`) — 服务端确认订阅已停止
 - `ReturnSuccess` — 推送数据
 - `ReturnFail` — 报告错误
 
 **特点**：
+
 - ✅ 完整的生命周期管理
 - ✅ 支持错误处理和完成信号
 - ✅ 客户端可主动取消
@@ -363,7 +364,7 @@ class PingService {
       callback(`pong-${Date.now()}`);
     }, 10000);
   }
-  
+
   onProcessStatusChanged(callback) {
     // 监听进程状态变更
     process.on('status', (status) => {
@@ -379,12 +380,10 @@ service.setChannel(channel);
 ```typescript
 // === 客户端 ===
 // 使用 createProxy() 并通过方法调用传入监听函数
-const client = clientHost
-  .registerClient('ping', { channel })
-  .createProxy<{
-    onPing(callback: (data: string) => void): Unsubscribable;
-    onProcessStatusChanged(callback: (status: any) => void): Unsubscribable;
-  }>();
+const client = clientHost.registerClient('ping', { channel }).createProxy<{
+  onPing(callback: (data: string) => void): Unsubscribable;
+  onProcessStatusChanged(callback: (status: any) => void): Unsubscribable;
+}>();
 
 // 返回 unsubscriber 对象，可以调用 unsubscribe() 停止监听
 const pingUnsub = client.onPing((pong) => {
@@ -401,6 +400,7 @@ statusUnsub.unsubscribe();
 ```
 
 **特点**：
+
 - ✅ 实现简单
 - ✅ 对低频事件友好
 - ✅ 支持多次回调
@@ -411,17 +411,17 @@ statusUnsub.unsubscribe();
 
 ### 对比表
 
-| 特性 | 流式订阅 (subscribe) | 事件方法 (onXxx) |
-|------|-----------------|--------------|
-| **方法调用** | `client.subscribe('method', args, observer)` | `const unsub = client.onMethod(callback)` |
-| **推送频率** | 高频（连续流） | 低频（定期事件） |
-| **多次推送** | ✅ 原生支持 | ✅ 支持 |
-| **错误处理** | ✅ onError | ❌ 无 |
-| **完成信号** | ✅ onComplete | ❌ 无 |
-| **主动取消** | ✅ unsub.unsubscribe() | ✅ unsub.unsubscribe() |
-| **Context 支持** | ✅ 支持 | ❌ 不支持 |
-| **生命周期** | ✅ 完整 | ✅ 基础 |
-| **实现复杂度** | 中等 | 简单 |
+| 特性             | 流式订阅 (subscribe)                         | 事件方法 (onXxx)                          |
+| ---------------- | -------------------------------------------- | ----------------------------------------- |
+| **方法调用**     | `client.subscribe('method', args, observer)` | `const unsub = client.onMethod(callback)` |
+| **推送频率**     | 高频（连续流）                               | 低频（定期事件）                          |
+| **多次推送**     | ✅ 原生支持                                  | ✅ 支持                                   |
+| **错误处理**     | ✅ onError                                   | ❌ 无                                     |
+| **完成信号**     | ✅ onComplete                                | ❌ 无                                     |
+| **主动取消**     | ✅ unsub.unsubscribe()                       | ✅ unsub.unsubscribe()                    |
+| **Context 支持** | ✅ 支持                                      | ❌ 不支持                                 |
+| **生命周期**     | ✅ 完整                                      | ✅ 基础                                   |
+| **实现复杂度**   | 中等                                         | 简单                                      |
 
 ### 生命周期管理
 
@@ -434,18 +434,21 @@ channel.disconnect(); // 内部调用 cleanUpSubscriptions()
 ### 何时选用哪种方式
 
 **使用流式订阅 (subscribe)**：
+
 - 数据变更频繁（文件监听、数据库变更）
 - 需要错误处理和完成信号
 - 需要支持context注入（如权限检查、审计）
 - 需要可观察的生命周期
 
-**使用事件方法 (on*)**：
+**使用事件方法 (on\*)**：
+
 - 简单的定期事件（心跳/ping-pong、状态检查）
 - 代码已存在（向后兼容）
 - 实现快速简洁
 - 不需要复杂的错误处理
 
 **两种方式都支持**：
+
 - ✅ 多次数据推送
 - ✅ 主动取消 (unsubscribe)
 
@@ -485,20 +488,25 @@ import {
 
 ## 运行示例
 
+示例项目在 `examples/` 目录下，包含三个 React 应用：
+
 ```bash
+# Worker 示例（最简单，推荐先看）
+cd examples/react-worker-example
+pnpm install && pnpm dev
+
 # WebSocket 示例
-npx tsx examples/node.websocket.server.ts   # 终端 1
-npx serve examples                          # 终端 2
-# 浏览器打开 http://localhost:3000/test-websocket.html
+cd examples/react-websocket-example
+pnpm install
+pnpm run dev:all   # 同时启动 WebSocket server 和 Vite dev server
 
-# Worker 示例
-npx serve examples
-# 浏览器打开 http://localhost:3000/test-worker.html
-
-# MessageChannel 示例
-npx serve examples
-# 浏览器打开 http://localhost:3000/test-messagechannel.html
+# 综合示例（Worker + WebSocket）
+cd examples/react-full-app
+pnpm install
+pnpm run dev:all
 ```
+
+详细说明见 `examples/README.md` 和 `examples/QUICKSTART.md`。
 
 ## 运行测试
 

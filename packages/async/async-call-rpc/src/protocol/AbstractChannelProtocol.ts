@@ -354,8 +354,14 @@ abstract class AbstractChannelProtocol
   ): Deferred | void;
 
   makeRequest(...args: any[]) {
-    const { returnValue } = runMiddlewares(this.senderMiddleware, args);
-    if (returnValue) return returnValue;
+    const result = runMiddlewares(this.senderMiddleware, args);
+    if (result?.returnValue) return result.returnValue;
+    // For event methods (on*), no Deferred is created but the caller
+    // may still need the seqId.  Return a lightweight object so the
+    // caller can identify the request.
+    if (result?.seqId !== undefined) {
+      return { seqId: result.seqId } as any;
+    }
   }
 
   sendReply(...args: any[]) {

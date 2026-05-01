@@ -25,7 +25,6 @@ export const preparePortData = (channel: AbstractChannelProtocol) => {
       requestPath = props.requestPath;
       methodName = props.methodName;
       isOptionsRequest = props.isOptionsRequest;
-      // args will convert to array on default
       params = [].concat(props.args);
       transfer = args[0] ? args[0] : [];
     }
@@ -67,7 +66,6 @@ export const prepareHostPortData = (channel: AbstractChannelProtocol) => {
       requestPath = props.requestPath;
       methodName = props.methodName;
       isOptionsRequest = props.isOptionsRequest;
-      // args will convert to array on default
       params = [].concat(props.args);
       transfer = args[0] ? args[0] : [];
     }

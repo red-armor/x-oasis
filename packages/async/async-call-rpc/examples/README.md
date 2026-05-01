@@ -1,76 +1,381 @@
-# Examples
+# async-call-rpc React Examples (Vite + React)
 
-本目录包含 `async-call-rpc` 的使用示例。
+Complete Vite + React projects demonstrating different RPC patterns with `@x-oasis/async-call-rpc`.
 
-## 前置准备
+## Projects Overview
+
+### 1. **react-worker-example** — Web Worker RPC
+CPU-intensive computation in a Web Worker without blocking the UI.
 
 ```bash
-# 1. 安装依赖
+cd react-worker-example
 pnpm install
-
-# 2. 构建项目
-pnpm run build
+pnpm dev
+# Open http://localhost:5173
 ```
 
-## 示例列表
+**Features:**
+- Fibonacci and prime number calculation
+- Progress tracking
+- Non-blocking computation
+- Real-time UI updates
 
-### WebSocket (Node.js Server + Browser Client)
+**Best for:** Background processing, heavy calculations, data processing
 
-演示通过 WebSocket 实现跨进程 RPC 通信。
+---
+
+### 2. **react-websocket-example** — WebSocket RPC
+Real-time client-server communication over WebSocket.
 
 ```bash
-# 终端 1 — 启动服务器
-npx tsx examples/node.websocket.server.ts
+# Terminal 1: Start WebSocket server
+cd ../
+npx tsx ../node.websocket.server.ts
 
-# 终端 2 — 启动静态文件服务器
-npx serve examples
-
-# 浏览器 — 打开 http://localhost:3000/test-websocket.html
+# Terminal 2: Start React app
+cd react-websocket-example
+pnpm install
+pnpm dev
+# Open http://localhost:5174
 ```
 
-服务器提供以下方法：
+**Features:**
+- Echo messages to server
+- Fetch server time
+- Fetch user data
+- Real-time status updates
+- Request/response pattern
+- Event subscriptions
 
-- `server.echo(x)` — 回显参数
-- `server.now()` — 返回时间戳
-- `server.add(a, b)` — 加法
-- `server.greet(name)` — 问候
+**Best for:** Real-time communication, live updates, backend API calls
 
-### Web Worker (Main Thread + Worker)
+---
 
-演示主线程和 Web Worker 之间的双向 RPC 通信。
+### 3. **react-full-app** — Complete Application
+Multi-pattern example combining WebSocket, Web Worker, and state management.
 
 ```bash
-npx serve examples
-# 打开 http://localhost:3000/test-worker.html
+# Terminal 1: Start WebSocket server
+npx tsx ../node.websocket.server.ts
+
+# Terminal 2: Start React app
+cd react-full-app
+pnpm install
+pnpm dev
+# Open http://localhost:5175
 ```
 
-- 主线程提供 `getTimestamp()`, `getTitle()`
-- Worker 提供 `ping()`, `fibonacci(n)`
+**Features:**
+- **Tasks Panel** — WebSocket for task management
+- **Compute Panel** — Web Worker for calculations
+- **Status Panel** — Real-time event updates
+- Tab-based navigation
+- Error handling and loading states
 
-### MessageChannel (Main Window + Iframe)
+**Best for:** Learning full integration of multiple RPC patterns
 
-演示通过 `MessageChannel` API 实现窗口与 iframe 之间的 RPC 通信。
+---
+
+## Common Setup
+
+### 1. Install Dependencies
+
+Each project uses the same dependencies:
 
 ```bash
-npx serve examples
-# 打开 http://localhost:3000/test-messagechannel.html
+cd <project-directory>
+pnpm install
 ```
 
-## 文件说明
+### 2. Development Server
 
-| 文件                               | 说明                         |
-| ---------------------------------- | ---------------------------- |
-| `node.websocket.server.ts`         | Node.js WebSocket RPC 服务器 |
-| `browser.websocket.client.ts`      | 浏览器 WebSocket 客户端      |
-| `browser.worker-main.ts`           | Web Worker 主线程            |
-| `browser.worker-worker.ts`         | Web Worker 工作线程          |
-| `browser.messagechannel-main.js`   | MessageChannel 主窗口        |
-| `browser.messagechannel-iframe.js` | MessageChannel iframe        |
-| `test-*.html`                      | 浏览器测试页面               |
+```bash
+pnpm dev
+```
 
-> React Query 集成示例已迁移至 [`@x-oasis/async-call-rpc-react`](../../async-call-rpc-react/examples/)。
+Each project runs on a different port:
+- `react-worker-example`: http://localhost:5173
+- `react-websocket-example`: http://localhost:5174
+- `react-full-app`: http://localhost:5175
 
-## 注意事项
+### 3. Build for Production
 
-1. 浏览器示例需要 HTTP 服务器（不能通过 `file://` 打开）
-2. WebSocket 服务器默认使用端口 `3456`
+```bash
+pnpm build
+pnpm preview
+```
+
+### 4. Type Checking
+
+```bash
+pnpm type-check
+```
+
+---
+
+## Project Structure
+
+Each project follows a standard Vite + React structure:
+
+```
+project/
+├── index.html           # HTML entry point
+├── package.json         # Dependencies
+├── tsconfig.json        # TypeScript config
+├── vite.config.ts       # Vite config
+├── src/
+│   ├── main.tsx         # React entry point
+│   ├── App.tsx          # Main component
+│   ├── App.css          # Styles
+│   ├── index.css        # Global styles
+│   ├── components/      # React components
+│   └── worker.ts        # Web Worker (if needed)
+└── public/              # Static assets
+```
+
+---
+
+## RPC Patterns Used
+
+### Pattern 1: Web Worker
+
+Create async proxy and call worker methods:
+
+```tsx
+import { WorkerChannel, clientHost } from '@x-oasis/async-call-rpc'
+
+const worker = new Worker(new URL('./worker.ts', import.meta.url), {
+  type: 'module',
+})
+const channel = new WorkerChannel(worker, { name: 'main-thread' })
+const proxy = clientHost
+  .registerClient('compute', { channel })
+  .createProxy<ComputeService>()
+
+const result = await proxy.fibonacci(35)
+```
+
+### Pattern 2: WebSocket
+
+Connect to server and call RPC methods:
+
+```tsx
+import { WebSocketChannel, clientHost } from '@x-oasis/async-call-rpc'
+
+const ws = new WebSocket('ws://localhost:3456')
+const channel = new WebSocketChannel(ws, { name: 'client' })
+const api = clientHost
+  .registerClient('api', { channel })
+  .createProxy<ApiService>()
+
+const result = await api.echo('hello')
+```
+
+### Pattern 3: Event Subscription
+
+Listen to real-time updates:
+
+```tsx
+const unsub = proxy.onStatusChanged((status) => {
+  console.log('Status:', status)
+})
+
+// Cleanup
+unsub.unsubscribe()
+```
+
+---
+
+## React Hooks Integration
+
+### useEffect with Cleanup
+
+```tsx
+useEffect(() => {
+  const ws = new WebSocket(url)
+  const channel = new WebSocketChannel(ws)
+  const proxy = createProxy(channel)
+
+  return () => {
+    proxy.unsubscribe?.()
+    ws.close()
+  }
+}, [])
+```
+
+### useState for State Management
+
+```tsx
+const [connected, setConnected] = useState(false)
+const [result, setResult] = useState<T | null>(null)
+const [loading, setLoading] = useState(false)
+const [error, setError] = useState<string | null>(null)
+```
+
+### useRef for Persistent Objects
+
+```tsx
+const proxyRef = useRef<ApiService | null>(null)
+
+useEffect(() => {
+  proxyRef.current = createProxy(channel)
+  return () => proxyRef.current?.cleanup()
+}, [])
+```
+
+---
+
+## Error Handling
+
+```tsx
+import { RPCError, JSONRPCErrorCode } from '@x-oasis/async-call-rpc'
+
+try {
+  await proxy.someMethod()
+} catch (err) {
+  if (err instanceof RPCError) {
+    if (err.code === JSONRPCErrorCode.MethodNotFound) {
+      // Handle specific error
+    }
+  }
+  setError(err instanceof Error ? err.message : 'Unknown error')
+}
+```
+
+---
+
+## Best Practices
+
+### ✅ Do's
+
+- **Initialize in useEffect** — Create proxies in effect hooks
+- **Cleanup on unmount** — Unsubscribe and close connections
+- **Store in useRef** — Keep proxies stable across renders
+- **Handle errors** — Always wrap calls in try-catch
+- **Show loading states** — Provide UI feedback
+- **Type your services** — Use TypeScript interfaces
+
+### ❌ Don'ts
+
+- Don't create new proxies on every render
+- Don't forget to unsubscribe from events
+- Don't ignore connection errors
+- Don't block the UI with long-running operations
+- Don't store proxy in state
+- Don't mix multiple RPC libraries
+
+---
+
+## Testing WebSocket
+
+To test WebSocket examples locally:
+
+1. **Start the test server:**
+
+```bash
+cd ../
+npx tsx ../node.websocket.server.ts
+```
+
+This provides:
+- `echo(message)` — Echo messages back
+- `now()` — Return current server time
+- `getCurrentUser()` — Return mock user data
+- `onServerStatusChanged()` — Real-time status updates
+
+2. **Connect from React app:**
+
+The app automatically connects to `ws://localhost:3456`
+
+3. **Monitor in browser DevTools:**
+
+Open DevTools → Network → WS to see messages
+
+---
+
+## Environment Variables
+
+Create `.env.local` to override defaults:
+
+```env
+# react-websocket-example
+VITE_WS_URL=ws://localhost:3456
+```
+
+---
+
+## Performance Tips
+
+1. **Memoize callbacks** — Use `useCallback` for event handlers
+2. **Debounce rapid calls** — Prevent server overload
+3. **Batch requests** — Group multiple calls
+4. **Cancel pending requests** — On unmount or navigation
+5. **Cache results** — Avoid redundant calls
+
+---
+
+## Troubleshooting
+
+### WebSocket Connection Fails
+
+Check that the server is running:
+
+```bash
+npx tsx ../node.websocket.server.ts
+```
+
+Look for "Server is listening on port 3456"
+
+### Worker Loading Issues
+
+Ensure Worker path uses `import.meta.url`:
+
+```tsx
+// ✅ Correct
+new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
+
+// ❌ Wrong
+new Worker('./worker.ts')
+```
+
+### TypeScript Errors
+
+Make sure `tsconfig.json` includes DOM types:
+
+```json
+{
+  "compilerOptions": {
+    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+  }
+}
+```
+
+---
+
+## Next Steps
+
+1. **Start with `react-worker-example`** — No server needed
+2. **Try `react-websocket-example`** — Add server communication
+3. **Explore `react-full-app`** — Combine multiple patterns
+4. **Read main README** — Full API documentation
+5. **Check async-call-rpc package** — Implementation details
+
+---
+
+## Resources
+
+- [Main async-call-rpc README](../README.md)
+- [MDN Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
+- [MDN WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+- [Vite Documentation](https://vitejs.dev/)
+- [React Documentation](https://react.dev/)
+
+---
+
+## License
+
+ISC
+
+---
+
+**Questions?** Check the examples or the main package README for more details.

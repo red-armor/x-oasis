@@ -7,9 +7,5 @@
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "diff-match-patch-example",
-    "html-fragment-diff-example",
-    "map-diff-range-example"
-  ]
+  "ignore": ["*example*", "@x-oasis/*example*"]
 }
