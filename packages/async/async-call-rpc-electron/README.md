@@ -127,14 +127,45 @@ const channel = new ElectronUtilityProcessChannel({
 ```typescript
 new IPCMainChannel(props: {
   channelName: string;
-  webContents: WebContents;
+  webContents?: WebContents;       // acceptAllSenders 为 true 时可省略
+  acceptAllSenders?: boolean;      // 默认 false
 } & AbstractChannelProtocolProps)
 ```
+
+两种工作模式：
+
+**1. 绑定模式（默认）**
 
 - 每个实例绑定一个 `WebContents`，多窗口需创建多个实例
 - `channelName` 需与渲染进程侧的 `IPCRendererChannel` 一致
 - 自动过滤非目标 `WebContents` 的消息
 - `WebContents` 销毁时自动断开
+
+**2. 广播模式（`acceptAllSenders: true`）**
+
+接收 `channelName` 上**任意发送方**的消息，回复时定位到"最近一次发送方"。适合 broker 通道（多个渲染进程都向主进程申请 port 等）：
+
+```typescript
+const broker = new IPCMainChannel({
+  channelName: 'rpc-broker',
+  acceptAllSenders: true, // ⬅
+  // 不必传 webContents
+});
+
+// 任意 renderer 发到 'rpc-broker' 的消息都会进入此通道，
+// 回复自动 send 给最近发送的那个 webContents。
+```
+
+广播模式下不再绑 `destroyed`（没有"唯一发送方"可追踪）。
+
+**传输列表（transfer）**
+
+`send(data, transfer?)` 在 `transfer` 非空时改用 `webContents.postMessage(channelName, data, transfer)`，可传递 `MessagePortMain`：
+
+```typescript
+const { port1, port2 } = new MessageChannelMain();
+channel.send({ kind: 'port' }, [port2]); // port2 transfer 给渲染进程
+```
 
 ### `IPCRendererChannel`
 
@@ -148,18 +179,44 @@ new IPCRendererChannel(props: {
 
 - `projectName` 用于命名空间隔离
 - `disconnect()` 会移除该 channelName 上的所有监听器
+- `send(data, transfer?)`：`transfer` 非空时改用 `ipcRenderer.postMessage` 转发 `MessagePort`
 
 ### `ElectronMessagePortMainChannel`
 
 ```typescript
-new ElectronMessagePortMainChannel(props: {
-  port: MainPort;
+new ElectronMessagePortMainChannel(props?: {
+  port?: MainPort;        // 可省略，之后 bindPort 绑定
 } & AbstractChannelProtocolProps)
 ```
 
-- 构造时自动调用 `port.start()`
+- 构造时（或 `bindPort` 时）自动调用 `port.start()`
 - 远端关闭时自动断开
 - `send()` 支持 `transfer` 参数
+
+#### 延迟端口绑定（bindPort）
+
+主进程的 broker 流程经常出现"先注册服务、后拿到 port"的情况。`bindPort` 让通道可以先与 service host / client 关联，等 port 真正到达再绑：
+
+```typescript
+import { ElectronMessagePortMainChannel } from '@x-oasis/async-call-rpc-electron';
+import { serviceHost } from '@x-oasis/async-call-rpc';
+
+// 先建未绑 port 的通道，挂上 service host
+const channel = new ElectronMessagePortMainChannel({
+  description: 'pending-broker-port',
+});
+channel.setServiceHost(serviceHost);
+
+// 等 port 通过其他通道转发过来：
+brokerChannel.on((event) => {
+  if (event.data?.kind === 'port' && event.ports?.[0]) {
+    channel.bindPort(event.ports[0]);
+    // 此前 send 进 pendingSendEntries 的请求会自动 flush
+  }
+});
+```
+
+`bindPort` 是幂等的：通道已绑定 port 时再次调用是 no-op。绑定前 `send()` 会打 warn 并丢弃数据（业务一般通过 `pendingSendEntries` 排队，不会触发）。
 
 ### `ElectronUtilityProcessChannel`
 

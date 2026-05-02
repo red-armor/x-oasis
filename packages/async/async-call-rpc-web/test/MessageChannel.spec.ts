@@ -196,4 +196,80 @@ describe('RPCMessageChannel', () => {
       expect(result).toBe(middlewares);
     });
   });
+
+  describe('late port binding (bindPort)', () => {
+    /**
+     * Mirror of the Electron-side bindPort coverage. The web channel
+     * supports the same "construct now, bind later" flow used when a
+     * port arrives via a later transferred MessageEvent.
+     */
+    test('constructed without a port: starts disconnected, activates on bindPort', () => {
+      const channel = new RPCMessageChannel({ sender: mockSender });
+      expect(channel.isConnected()).toBe(false);
+      expect(mockPort.start).not.toHaveBeenCalled();
+
+      channel.bindPort(mockPort as unknown as MessagePort);
+      expect(mockPort.start).toHaveBeenCalled();
+      expect(channel.isConnected()).toBe(true);
+    });
+
+    test('bindPort flushes any queued send entries', () => {
+      const channel = new RPCMessageChannel({ sender: mockSender });
+      // Simulate a pending entry the way handleDisconnectedRequest would.
+      channel.addPendingSendEntry({ middlewareContext: {} } as any);
+      expect(channel.pendingSendEntries.size).toBe(1);
+
+      channel.bindPort(mockPort as unknown as MessagePort);
+      expect(channel.pendingSendEntries.size).toBe(0);
+    });
+
+    test('bindPort wires a previously-registered listener', () => {
+      const channel = new RPCMessageChannel({ sender: mockSender });
+      const listener = vi.fn();
+
+      // Listener registered BEFORE the port arrives — common when
+      // setServiceHost is called early.
+      channel.on(listener);
+      expect(mockPort.addEventListener).not.toHaveBeenCalled();
+
+      channel.bindPort(mockPort as unknown as MessagePort);
+      expect(mockPort.addEventListener).toHaveBeenCalledWith(
+        'message',
+        expect.any(Function)
+      );
+
+      const handler = mockPort.addEventListener.mock.calls[0][1];
+      const mockEvent = { data: 'late-msg' } as MessageEvent;
+      handler(mockEvent);
+      expect(listener).toHaveBeenCalledWith(mockEvent);
+    });
+
+    test('bindPort is a no-op when a port is already bound', () => {
+      const channel = new RPCMessageChannel({
+        port: mockPort as unknown as MessagePort,
+        sender: mockSender,
+      });
+      const otherPort = {
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        postMessage: vi.fn(),
+        start: vi.fn(),
+        close: vi.fn(),
+      };
+      channel.bindPort(otherPort as unknown as MessagePort);
+      // The second port is ignored — its start() must NOT fire.
+      expect(otherPort.start).not.toHaveBeenCalled();
+    });
+
+    test('send before bindPort warns and is a no-op (does not throw)', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const channel = new RPCMessageChannel({ sender: mockSender });
+      expect(() => channel.send({ x: 1 })).not.toThrow();
+      expect(warn).toHaveBeenCalledWith(
+        '[RPCMessageChannel] send called before port was bound.'
+      );
+      expect(mockPort.postMessage).not.toHaveBeenCalled();
+      warn.mockRestore();
+    });
+  });
 });

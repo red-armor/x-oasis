@@ -234,6 +234,131 @@ describe('RPC Endpoint Classes', () => {
       expect(serviceHost.getService('/service1')).toBeDefined();
       expect(serviceHost.getService('/service2')).toBeDefined();
     });
+
+    test('registerService overrides serviceHost option with self', () => {
+      // The host always owns its services — even if the caller passes
+      // some other host in options, registerService should rebind to `this`.
+      const otherHost = new RPCServiceHost();
+      const service = serviceHost.registerService('/svc', {
+        handlers: { ping: vi.fn() },
+        serviceHost: otherHost,
+      });
+      expect(service.serviceHost).toBe(serviceHost);
+    });
+
+    describe('registerServiceHandler (multi-service-per-channel)', () => {
+      test('registers a service from a plain handler-map (every value is a function)', () => {
+        const ping = vi.fn().mockReturnValue('pong');
+        const service = serviceHost.registerServiceHandler('/m', { ping });
+
+        expect(service.servicePath).toBe('/m');
+        expect(service.serviceHost).toBe(serviceHost);
+        // No channel binding in this mode.
+        expect(serviceHost.getHandler('/m', 'ping')).toBe(ping);
+      });
+
+      test('registers a class instance and resolves prototype methods', () => {
+        class Greeter {
+          // own property — not a function — forces the "instance" branch
+          greeting = 'hi';
+          hello() {
+            return `${this.greeting} world`;
+          }
+        }
+        serviceHost.registerServiceHandler('/g', new Greeter());
+
+        const handler = serviceHost.getHandler('/g', 'hello');
+        expect(typeof handler).toBe('function');
+        expect(handler!()).toBe('hi world');
+      });
+
+      test('binds method to the instance (preserves `this`)', () => {
+        // Without rebinding, calling Greeter.hello() through a plain
+        // function reference would lose `this` and throw.
+        class Greeter {
+          private name = 'oasis';
+          hello() {
+            return this.name;
+          }
+        }
+        serviceHost.registerServiceHandler('/g', new Greeter());
+        const handler = serviceHost.getHandler('/g', 'hello');
+        expect(handler!()).toBe('oasis');
+      });
+
+      test('returns undefined for unknown methods on the instance', () => {
+        class Greeter {
+          hello() {
+            return 'hi';
+          }
+        }
+        serviceHost.registerServiceHandler('/g', new Greeter());
+        expect(serviceHost.getHandler('/g', 'nope')).toBeUndefined();
+      });
+
+      test('returns undefined for unknown service paths (no Method-not-found)', () => {
+        // Critical for shared-transport routing: unknown paths must
+        // *not* synthesize a reply.
+        expect(serviceHost.getHandler('/never', 'whatever')).toBeUndefined();
+      });
+    });
+  });
+
+  describe('RPCService instance fallback', () => {
+    test('explicit handler wins over instance method with the same name', () => {
+      class Greeter {
+        hello() {
+          return 'from-instance';
+        }
+      }
+      const explicit = vi.fn().mockReturnValue('from-handler');
+      const service = new RPCService('/g', {
+        handlers: { hello: explicit },
+        instance: new Greeter(),
+      });
+
+      const handler = service.getHandler('hello');
+      expect(handler!()).toBe('from-handler');
+    });
+
+    test('falls back to instance method when no explicit handler exists', () => {
+      class Greeter {
+        hello() {
+          return 'from-instance';
+        }
+      }
+      const service = new RPCService('/g', { instance: new Greeter() });
+      const handler = service.getHandler('hello');
+      expect(handler!()).toBe('from-instance');
+    });
+
+    test('setInstance late-binds an instance after construction', () => {
+      const service = new RPCService('/g');
+      expect(service.getHandler('hello')).toBeUndefined();
+
+      class Greeter {
+        hello() {
+          return 'late-bound';
+        }
+      }
+      service.setInstance(new Greeter());
+      expect(service.getHandler('hello')!()).toBe('late-bound');
+    });
+
+    test('non-function instance properties are not treated as handlers', () => {
+      const service = new RPCService('/g', {
+        instance: { name: 'oasis', age: 1 },
+      });
+      expect(service.getHandler('name')).toBeUndefined();
+      expect(service.getHandler('age')).toBeUndefined();
+    });
+
+    test('constructs without channel/handlers/instance (everything optional)', () => {
+      const service = new RPCService('/empty');
+      expect(service.servicePath).toBe('/empty');
+      expect(service.handlersMap.size).toBe(0);
+      expect(service.getHandler('whatever')).toBeUndefined();
+    });
   });
 
   describe('RPCClientHost', () => {

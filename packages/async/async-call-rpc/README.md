@@ -271,6 +271,73 @@ channel.disconnect(); // 后续请求进入 pendingSendEntries
 channel.activate(); // 自动 replay 所有排队请求
 ```
 
+## 多服务路由（单通道多服务）
+
+默认 1-channel-1-service 的写法（`service.setChannel(channel)`）适合单一服务。如果需要在**同一条传输层**上承载多个服务（例如同一个 WebSocket / MessagePort 暴露多个业务模块），请改用 `RPCServiceHost.registerServiceHandler` 配合 `channel.setServiceHost(host)`：
+
+```typescript
+import {
+  RPCServiceHost,
+  serviceHost, // 默认单例
+} from '@x-oasis/async-call-rpc';
+
+// 1. 注册多个服务处理器（不绑 channel）
+serviceHost.registerServiceHandler('/auth', {
+  login: (args, ctx) => ({ ok: true }),
+  logout: () => ({ ok: true }),
+});
+
+// 也支持直接传入类实例 — 通过原型链按方法名解析
+class FsService {
+  read(path: string) { /* ... */ }
+  write(path: string, data: string) { /* ... */ }
+}
+serviceHost.registerServiceHandler('/fs', new FsService());
+
+// 2. 让 channel 通过 host 路由请求
+channel.setServiceHost(serviceHost);
+```
+
+**关键语义**：
+
+- 客户端调用时按 `requestPath` 路由到对应服务，再按方法名查找 handler
+- 当 `requestPath` 不在 host 中，请求会被**静默忽略**（不会回 `Method not found`）
+  - 这正是允许多个 host / channel 共用一条物理传输层而不会"串台"的原因
+- 同一 channel 既可绑定 service（旧用法）也可绑定 service host（新用法），优先走 host
+- `setServiceHost` 是幂等的：同一 host 多次绑定不会重复注册监听器
+
+**何时使用**：
+
+- ✅ 一个传输层暴露多个独立模块（路由风格的 API）
+- ✅ 不希望为每个模块单独建立 channel
+- ❌ 单一服务场景请继续使用 `serviceHost.registerService(path, { channel, handlers })`
+
+## Port 回传（handler 返回 MessagePort）
+
+handler 的返回值如果是 MessagePort-like 对象（任何带 `postMessage` 方法的对象，如 Web `MessagePort`、Electron `MessagePortMain`），框架会自动以 `PortSuccess` 协议帧 + transfer list 形式回传，客户端会拿到这个 port：
+
+```typescript
+// 服务端
+serviceHost.registerServiceHandler('/broker', {
+  acquirePort: () => {
+    const { port1, port2 } = new MessageChannel();
+    setupOn(port1);
+    return port2; // ⬅ 自动作为 transferable 回传
+  },
+});
+
+// 客户端
+const broker = clientHost.registerClient('/broker', { channel }).createProxy<{
+  acquirePort(): Promise<MessagePort>;
+}>();
+
+const port = await broker.acquirePort();
+// 拿到 port 后可继续构造下游 RPC 通道：
+const sub = new RPCMessageChannel({ port });
+```
+
+适用于 broker 模式：通过一个长生命周期的 IPC 通道按需分发独立的 MessagePort 给业务子通道，避免反复握手。
+
 ## 订阅
 
 支持两种订阅模式，适用于不同的场景：
@@ -474,6 +541,7 @@ import {
   // Endpoint
   ProxyRPCClient,
   RPCService,
+  RPCServiceHost, // 类（自定义实例时使用，默认用 serviceHost 单例即可）
   clientHost, // 单例，管理所有客户端
   serviceHost, // 单例，管理所有服务
 
@@ -485,6 +553,20 @@ import {
   type SubscriptionObserver,
 } from '@x-oasis/async-call-rpc';
 ```
+
+### `RPCServiceHost`
+
+| 方法                                          | 说明                                                       |
+| --------------------------------------------- | ---------------------------------------------------------- |
+| `registerService(path, options)`              | 1-channel-1-service 模式，service 自带 `channel` 绑定      |
+| `registerServiceHandler(path, instanceOrMap)` | 多服务模式，service 不绑 channel；通过 `setServiceHost` 路由 |
+| `getService(path)`                            | 获取已注册的 service                                        |
+| `getHandler(path, methodName)`                | 路由查表：返回方法处理函数（找不到时返回 `undefined`）       |
+
+`registerServiceHandler` 自动判别入参：
+
+- 若所有 own 属性都是函数 → 当作 handler map
+- 否则 → 当作类实例，handler 通过 `instance[methodName].bind(instance)` 解析（保留 `this`）
 
 ## 运行示例
 

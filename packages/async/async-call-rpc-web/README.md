@@ -154,16 +154,40 @@ new WebSocketChannel(socket: WebSocket, options?: {
 ### `RPCMessageChannel`
 
 ```typescript
-new RPCMessageChannel(options: {
-  port: MessagePort;
+new RPCMessageChannel(options?: {
+  port?: MessagePort;     // 可省略，之后用 bindPort 绑定
   sender?: any;           // 默认 window
   targetOrigin?: string;  // 默认 '*'
 } & AbstractChannelProtocolProps)
 ```
 
-- `port` — `MessagePort` 实例
-- 构造时自动调用 `port.start()`
+- `port` — `MessagePort` 实例。**可选**：省略时通道以"未连接"状态创建，`send()` 会暂存到 `pendingSendEntries`，`bindPort` 触发后自动 flush
+- 构造时（或 `bindPort` 时）自动调用 `port.start()`
 - `send()` 支持 `transfer` 参数传递 `Transferable` 对象
+- 同时导出别名：`MessageChannel` 与 `RPCMessageChannel` 指向同一类（前者保持向后兼容，后者避免与 DOM 同名 `MessageChannel` 混淆）
+
+#### 延迟端口绑定（bindPort）
+
+> 当 port 通过后续 `MessageEvent` 的 transfer list 才到达时使用此模式：先把通道挂到服务/客户端上，等 port 到了再绑。
+
+```typescript
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
+import { serviceHost } from '@x-oasis/async-call-rpc';
+
+// 1. 创建未绑定 port 的通道
+const channel = new RPCMessageChannel();
+channel.setServiceHost(serviceHost); // 注册路由
+
+// 2. 等待 port 通过 message 事件到达
+window.addEventListener('message', (event) => {
+  if (event.data === 'rpc-port' && event.ports[0]) {
+    channel.bindPort(event.ports[0]);
+    // bindPort 调用后，channel 进入连接态，此前 queued 的 send 自动 flush
+  }
+});
+```
+
+`bindPort` 是幂等的：重复调用或对已绑定通道再调用都是 no-op。在绑定前调用 `send()` 会打 warn 并丢弃数据（业务一般不会触发，因为正常路径都是通过 `pendingSendEntries` 排队）。
 
 ## 运行测试
 
