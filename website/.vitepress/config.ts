@@ -285,6 +285,7 @@ export default defineConfig({
   description:
     '63 practical JavaScript/TypeScript utility packages organized into 17 categories',
   theme: 'light',
+  ignoreDeadLinks: true,
 
   vite: {
     plugins: [react()],

@@ -615,4 +615,4 @@ observer.onComplete?.();      // 表示完成
 - [RequestType 定义](../src/types/rpc.ts)
 - [handleRequest 实现](../src/middlewares/handleRequest.ts)
 - [protocol 配置](../src/types/protocol.ts)
-- [示例代码](../examples)
+- [示例代码](/packages/async/async-call-rpc/examples)
