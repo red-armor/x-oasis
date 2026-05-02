@@ -3,22 +3,16 @@ import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
 
-// Try to load auto-generated sidebar, fallback to manual config
+// Load auto-generated sidebar from JSON
 let sidebarPackages: any[] = [];
 
-const autoSidebarPath = path.resolve(__dirname, 'sidebar-auto.ts');
-if (fs.existsSync(autoSidebarPath)) {
+const sidebarJsonPath = path.resolve(__dirname, 'sidebar-auto.json');
+if (fs.existsSync(sidebarJsonPath)) {
   try {
-    const sidebarContent = fs.readFileSync(autoSidebarPath, 'utf-8');
-    // Extract the array from the generated code
-    const match = sidebarContent.match(
-      /export const sidebarConfig = (\[[\s\S]*?\]) as const/
-    );
-    if (match) {
-      sidebarPackages = JSON.parse(match[1]);
-    }
+    const sidebarContent = fs.readFileSync(sidebarJsonPath, 'utf-8');
+    sidebarPackages = JSON.parse(sidebarContent);
   } catch (err) {
-    console.warn('Failed to load auto-generated sidebar, using fallback');
+    console.warn('Failed to load auto-generated sidebar JSON:', err);
   }
 }
 
@@ -298,7 +292,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Packages', link: '/packages/' },
       { text: 'Skills', link: '/skills/' },
-      { text: 'GitHub', link: 'https://github.com/d-band/x-oasis' },
+      { text: 'GitHub', link: 'https://github.com/red-armor/x-oasis' },
     ],
 
     sidebar: {
@@ -306,7 +300,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/d-band/x-oasis' },
+      { icon: 'github', link: 'https://github.com/red-armor/x-oasis' },
     ],
 
     footer: {
