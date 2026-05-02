@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run sync-docs && npm run sync-docs:watch & vitepress dev src",
+    "dev": "npm run sync-docs && (npm run sync-docs:watch & vitepress dev src)",
     "build": "npm run sync-docs && vitepress build src",
     "preview": "vitepress preview src",
     "sync-docs": "tsx scripts/sync-docs.ts",

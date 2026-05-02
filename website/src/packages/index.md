@@ -57,4 +57,4 @@ Each package documentation includes:
 
 - Check the [skills](/skills/) section for problem-domain guides
 - Browse [examples](/packages/async/async-call-rpc/examples) for common patterns
-- Visit the [GitHub repository](https://github.com/d-band/x-oasis)
+- Visit the [GitHub repository](https://github.com/red-armor/x-oasis)
