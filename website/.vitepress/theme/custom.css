@@ -1,0 +1,17 @@
+:root {
+  --vp-c-brand: #646cff;
+  --vp-c-brand-light: #747bff;
+  --vp-c-brand-lighter: #929dff;
+  --vp-c-brand-lightest: #c9d1ff;
+  --vp-c-brand-dark: #535bf2;
+  --vp-c-brand-darker: #454ce1;
+}
+
+html.dark {
+  --vp-c-brand: #515eff;
+  --vp-c-brand-light: #646cff;
+  --vp-c-brand-lighter: #747bff;
+  --vp-c-brand-lightest: #929dff;
+  --vp-c-brand-dark: #454ce1;
+  --vp-c-brand-darker: #3a3acf;
+}

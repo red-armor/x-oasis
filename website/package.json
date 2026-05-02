@@ -1,0 +1,30 @@
+{
+  "name": "@x-oasis/website",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run sync-docs && npm run sync-docs:watch & vitepress dev src",
+    "build": "npm run sync-docs && vitepress build src",
+    "preview": "vitepress preview src",
+    "sync-docs": "tsx scripts/sync-docs.ts",
+    "sync-docs:watch": "tsx scripts/watch-docs.ts",
+    "generate-sidebar": "tsx scripts/generate-sidebar.ts"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "chokidar": "^3.5.3",
+    "glob": "^10.3.10",
+    "gray-matter": "^4.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "vitepress": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
