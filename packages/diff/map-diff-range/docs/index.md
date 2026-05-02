@@ -27,7 +27,7 @@ import { /* exports */ } from '@x-oasis/map-diff-range';
 
 ### Main Exports
 
-See the source code on [GitHub](https://github.com/d-band/x-oasis/tree/main/packages/diff/map-diff-range)
+See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/packages/diff/map-diff-range)
 
 ## Usage Examples
 
@@ -95,8 +95,8 @@ This package is optimized for:
 
 - [Package Category](/packages/diff/)
 - [All Packages](/packages/)
-- [GitHub Issues](https://github.com/d-band/x-oasis/issues)
-- [Discussions](https://github.com/d-band/x-oasis/discussions)
+- [GitHub Issues](https://github.com/red-armor/x-oasis/issues)
+- [Discussions](https://github.com/red-armor/x-oasis/discussions)
 
 ## License
 

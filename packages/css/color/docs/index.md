@@ -27,7 +27,7 @@ import { /* exports */ } from '@x-oasis/color';
 
 ### Main Exports
 
-See the source code on [GitHub](https://github.com/d-band/x-oasis/tree/main/packages/css/color)
+See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/packages/css/color)
 
 ## Usage Examples
 
@@ -95,8 +95,8 @@ This package is optimized for:
 
 - [Package Category](/packages/css/)
 - [All Packages](/packages/)
-- [GitHub Issues](https://github.com/d-band/x-oasis/issues)
-- [Discussions](https://github.com/d-band/x-oasis/discussions)
+- [GitHub Issues](https://github.com/red-armor/x-oasis/issues)
+- [Discussions](https://github.com/red-armor/x-oasis/discussions)
 
 ## License
 

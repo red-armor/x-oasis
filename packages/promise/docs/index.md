@@ -45,4 +45,4 @@ npm install @x-oasis/package1 @x-oasis/package2
 
 - [All Packages](/packages/)
 - [Skills](/skills/)
-- [GitHub](https://github.com/d-band/x-oasis)
+- [GitHub](https://github.com/red-armor/x-oasis)

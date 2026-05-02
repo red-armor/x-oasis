@@ -208,5 +208,5 @@ MIT
 
 - [All Packages](/packages/async/)
 - [Skills](/skills/)
-- [GitHub Issues](https://github.com/d-band/x-oasis/issues)
-- [Discussions](https://github.com/d-band/x-oasis/discussions)
+- [GitHub Issues](https://github.com/red-armor/x-oasis/issues)
+- [Discussions](https://github.com/red-armor/x-oasis/discussions)

@@ -27,7 +27,7 @@ import { /* exports */ } from '@x-oasis/get-map-key-by-value';
 
 ### Main Exports
 
-See the source code on [GitHub](https://github.com/d-band/x-oasis/tree/main/packages/functional/get-map-key-by-value)
+See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/packages/functional/get-map-key-by-value)
 
 ## Usage Examples
 
@@ -95,8 +95,8 @@ This package is optimized for:
 
 - [Package Category](/packages/functional/)
 - [All Packages](/packages/)
-- [GitHub Issues](https://github.com/d-band/x-oasis/issues)
-- [Discussions](https://github.com/d-band/x-oasis/discussions)
+- [GitHub Issues](https://github.com/red-armor/x-oasis/issues)
+- [Discussions](https://github.com/red-armor/x-oasis/discussions)
 
 ## License
 
