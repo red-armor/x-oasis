@@ -21,13 +21,5 @@ export function mapDocPath(
     };
   }
 
-  if (parts.length >= 3 && parts[1] === 'docs') {
-    const [category, , ...rest] = parts;
-    return {
-      relativeFromPackages,
-      targetPath: path.join(websitePackagesDir, category, ...rest),
-    };
-  }
-
   return null;
 }

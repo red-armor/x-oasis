@@ -63,16 +63,13 @@ async function regenerateSidebar(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const docsPatterns = [
-    `${PACKAGES_DIR}/*/docs/**/*.md`,
-    `${PACKAGES_DIR}/*/*/docs/**/*.md`,
-  ];
+  const docsPattern = `${PACKAGES_DIR}/*/*/docs/**/*.md`;
 
   console.log('👀 Watching for documentation changes...');
-  for (const p of docsPatterns) console.log(`  pattern: ${p}`);
+  console.log(`  pattern: ${docsPattern}`);
   console.log('');
 
-  const watcher = chokidar.watch(docsPatterns, {
+  const watcher = chokidar.watch(docsPattern, {
     ignored: '**/node_modules/**',
     persistent: true,
     ignoreInitial: true,

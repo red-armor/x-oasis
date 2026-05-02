@@ -161,6 +161,7 @@ packages_data = {
 }
 
 base_dir = "/Users/ryuyutyo/Documents/code/red/x-oasis/packages"
+website_packages_dir = "/Users/ryuyutyo/Documents/code/red/x-oasis/website/src/packages"
 
 def create_category_index(category, data):
     """Create category index.md"""
@@ -224,11 +225,11 @@ npm install @x-oasis/package1 @x-oasis/package2
 - [GitHub](https://github.com/red-armor/x-oasis)
 """
 
-    docs_dir = os.path.join(base_dir, category, "docs")
-    os.makedirs(docs_dir, exist_ok=True)
-    with open(os.path.join(docs_dir, "index.md"), "w") as f:
+    category_dir = os.path.join(website_packages_dir, category)
+    os.makedirs(category_dir, exist_ok=True)
+    with open(os.path.join(category_dir, "index.md"), "w") as f:
         f.write(content)
-    print(f"✅ Created packages/{category}/docs/index.md")
+    print(f"✅ Created website/src/packages/{category}/index.md")
 
 def create_package_doc(category, package_name, description):
     """Create individual package doc"""

@@ -37,7 +37,7 @@ src/.vitepress/dist
 src/.vitepress/sidebar-auto.json
 generate-docs.ts
 
-# Derived package docs — synced from packages/*/docs and packages/*/*/docs.
-# Only the hand-written packages overview lives in source.
-src/packages/*
-!src/packages/index.md
+# Derived per-package docs — synced from packages/*/*/docs.
+# Category indexes (src/packages/*/index.md) and the root overview are
+# hand-written and tracked.
+src/packages/*/*/

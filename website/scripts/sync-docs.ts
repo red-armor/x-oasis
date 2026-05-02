@@ -19,7 +19,7 @@ async function ensureDir(dir: string): Promise<void> {
 async function syncDocs(): Promise<void> {
   console.log('🔄 Synchronizing package documentation...');
 
-  const docFiles = globSync(`${PACKAGES_DIR}/*/{docs,*/docs}/**/*.md`, {
+  const docFiles = globSync(`${PACKAGES_DIR}/*/*/docs/**/*.md`, {
     ignore: '**/node_modules/**',
   });
 
