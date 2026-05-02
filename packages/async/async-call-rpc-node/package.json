@@ -12,7 +12,10 @@
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json"
+    "compile": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "publishConfig": {
     "access": "public"
@@ -20,7 +23,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "tsdx": "^0.14.1"
+    "tsdx": "^0.14.1",
+    "vitest": "^1.0.0"
   },
   "dependencies": {
     "@x-oasis/async-call-rpc": "workspace:*"

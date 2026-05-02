@@ -3,19 +3,15 @@
  *
  * This server implements the FileService interface and runs on port 3456.
  * It uses ws to handle WebSocket connections and @x-oasis/async-call-rpc for RPC.
+ *
+ * IMPORTANT: The RPC framework passes only `body[0]` to each handler,
+ * so every method must accept a single parameter. For multi-argument
+ * methods, wrap the arguments in an object.
  */
 
-import http from 'http';
 import { WebSocketServer } from 'ws';
-import { WebSocketChannel, serviceHost } from '@x-oasis/async-call-rpc';
-
-// Service interface
-interface FileService {
-  readFile(path: string): Promise<string>;
-  writeFile(path: string, content: string): Promise<void>;
-  listFiles(dir: string): Promise<string[]>;
-  getFileSize(path: string): Promise<number>;
-}
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
+import { serviceHost } from '@x-oasis/async-call-rpc';
 
 // Mock file system
 const mockFiles: Record<string, string> = {
@@ -26,53 +22,67 @@ const mockFiles: Record<string, string> = {
   '/package.json': '{"name": "example", "version": "1.0.0"}',
 };
 
-// Implementation
-const fileService: FileService = {
-  async readFile(path: string): Promise<string> {
-    await new Promise((resolve) => setTimeout(resolve, 100)); // Simulate network latency
-    return mockFiles[path] || `File not found: ${path}`;
-  },
-
-  async writeFile(path: string, content: string): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    mockFiles[path] = content;
-    console.log(`[Server] Wrote to ${path}`);
-  },
-
-  async listFiles(dir: string): Promise<string[]> {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    return Object.keys(mockFiles)
-      .filter((path) => path.startsWith(dir))
-      .map((path) => path.replace(dir, '').replace(/^\//, ''));
-  },
-
-  async getFileSize(path: string): Promise<number> {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    const content = mockFiles[path];
-    return content ? content.length : 0;
-  },
-};
-
 // Set up WebSocket server
-const httpServer = http.createServer();
-const wss = new WebSocketServer({ server: httpServer });
+const wss = new WebSocketServer({ port: 3456 });
+
+wss.on('listening', () => {
+  console.log('[Server] WebSocket server running on ws://localhost:3456');
+});
 
 wss.on('connection', (ws) => {
   console.log('[Server] Client connected');
 
   const channel = new WebSocketChannel(ws as any, {
     name: 'file-service-channel',
+    connected: true,
   });
 
-  // Register the service
-  serviceHost.registerServer(channel, fileService, 'file-service');
+  channel.activate();
+
+  // Register the service using the real API.
+  // Each handler receives exactly ONE argument (the first element of
+  // the wire body array). Multi-arg methods use an object parameter.
+  serviceHost.registerService('file-service', {
+    channel,
+    serviceHost,
+    handlers: {
+      async readFile(path: string): Promise<string> {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        return mockFiles[path] || `File not found: ${path}`;
+      },
+
+      async writeFile(params: {
+        path: string;
+        content: string;
+      }): Promise<void> {
+        const { path, content } = params;
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        mockFiles[path] = content;
+        console.log(`[Server] Wrote to ${path}`);
+      },
+
+      async listFiles(dir: string): Promise<string[]> {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        return Object.keys(mockFiles)
+          .filter((p) => p.startsWith(dir))
+          .map((p) => p.replace(dir, '').replace(/^\//, ''));
+      },
+
+      async getFileSize(path: string): Promise<number> {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        const content = mockFiles[path];
+        return content ? content.length : 0;
+      },
+    },
+  });
 
   ws.on('close', () => {
     console.log('[Server] Client disconnected');
+    channel.disconnect();
   });
 });
 
-const PORT = 3456;
-httpServer.listen(PORT, () => {
-  console.log(`[Server] WebSocket server running on ws://localhost:${PORT}`);
+process.on('SIGINT', () => {
+  console.log('\nShutting down...');
+  wss.close(() => process.exit(0));
 });
