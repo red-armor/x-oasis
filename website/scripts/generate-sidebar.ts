@@ -14,18 +14,6 @@ interface SidebarItem {
   items?: SidebarItem[];
 }
 
-interface CategoryMap {
-  [categoryName: string]: {
-    packages: {
-      [packageName: string]: {
-        docs: SidebarItem[];
-        order?: number;
-      };
-    };
-    order?: number;
-  };
-}
-
 async function readFrontmatter(
   filePath: string
 ): Promise<Record<string, any> | null> {
@@ -38,15 +26,148 @@ async function readFrontmatter(
   }
 }
 
-function formatLink(filePath: string): string {
-  // Convert file path to URL path
-  // /path/to/packages/category/package/index.md -> /packages/category/package/
-  const urlPath = filePath
-    .replace(/\\/g, '/') // normalize windows paths
-    .replace(/\/index\.md$/, '/') // remove index.md
-    .replace(/\.md$/, '/'); // add trailing slash for non-index files
+function getDisplayTitle(
+  filePath: string,
+  frontmatter: Record<string, any>
+): string {
+  // Prefer frontmatter title, fallback to filename
+  if (frontmatter?.title) {
+    return frontmatter.title;
+  }
 
-  return urlPath;
+  const basename = path.basename(filePath, '.md');
+  // Convert kebab-case to Title Case
+  return basename
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function getPathLink(relativePathFromWebsiteSrc: string): string {
+  // Convert file path to URL path
+  // async/async-call-rpc/index.md -> /packages/async/async-call-rpc/
+  // async/async-call-rpc/api.md -> /packages/async/async-call-rpc/api/
+  // async/async-call-rpc/middleware/overview.md -> /packages/async/async-call-rpc/middleware/overview/
+
+  const normalized = relativePathFromWebsiteSrc.replace(/\\/g, '/'); // Windows support
+  let link = `/packages/${normalized}`;
+
+  // Remove .md extension
+  link = link.replace(/\.md$/, '');
+
+  // For index files, keep directory structure and add trailing slash
+  if (!link.endsWith('/')) {
+    link += '/';
+  }
+
+  return link;
+}
+
+interface DocFile {
+  relativePath: string; // relative to package dir
+  fullPath: string; // absolute path
+  frontmatter: Record<string, any>;
+}
+
+async function buildHierarchy(docFiles: DocFile[]): Promise<SidebarItem[]> {
+  // Group files by directory
+  const hierarchy = new Map<string, DocFile[]>();
+
+  for (const file of docFiles) {
+    const dir = path.dirname(file.relativePath);
+    const key = dir === '.' ? 'root' : dir;
+
+    if (!hierarchy.has(key)) {
+      hierarchy.set(key, []);
+    }
+    hierarchy.get(key)!.push(file);
+  }
+
+  // Sort root files specially - index.md first, then others
+  const rootFiles = hierarchy.get('root') || [];
+  rootFiles.sort((a, b) => {
+    const aIsIndex = path.basename(a.relativePath) === 'index.md' ? -1 : 1;
+    const bIsIndex = path.basename(b.relativePath) === 'index.md' ? -1 : 1;
+    if (aIsIndex !== bIsIndex) return aIsIndex - bIsIndex;
+
+    const aOrder = a.frontmatter?.order ?? 999;
+    const bOrder = b.frontmatter?.order ?? 999;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+
+    return getDisplayTitle(a.fullPath, a.frontmatter).localeCompare(
+      getDisplayTitle(b.fullPath, b.frontmatter)
+    );
+  });
+
+  const items: SidebarItem[] = [];
+
+  // Process root files
+  for (const file of rootFiles) {
+    const basename = path.basename(file.relativePath);
+    if (basename === 'index.md') {
+      // Skip index.md - it's the package itself
+      continue;
+    }
+
+    const relativeFromWebsite = path.relative(
+      WEBSITE_PACKAGES_DIR,
+      file.fullPath
+    );
+    const link = getPathLink(relativeFromWebsite);
+    const title = getDisplayTitle(file.fullPath, file.frontmatter);
+
+    items.push({
+      text: title,
+      link,
+    });
+  }
+
+  // Process subdirectories
+  const subdirs = Array.from(hierarchy.entries())
+    .filter(([key]) => key !== 'root')
+    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+
+  for (const [dirName, files] of subdirs) {
+    // Sort files in this directory
+    files.sort((a, b) => {
+      const aOrder = a.frontmatter?.order ?? 999;
+      const bOrder = b.frontmatter?.order ?? 999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+
+      return getDisplayTitle(a.fullPath, a.frontmatter).localeCompare(
+        getDisplayTitle(b.fullPath, b.frontmatter)
+      );
+    });
+
+    const subItems: SidebarItem[] = [];
+
+    for (const file of files) {
+      const relativeFromWebsite = path.relative(
+        WEBSITE_PACKAGES_DIR,
+        file.fullPath
+      );
+      const link = getPathLink(relativeFromWebsite);
+      const title = getDisplayTitle(file.fullPath, file.frontmatter);
+
+      subItems.push({
+        text: title,
+        link,
+      });
+    }
+
+    // Add directory with its items
+    const dirDisplay = dirName
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    items.push({
+      text: dirDisplay,
+      items: subItems,
+    });
+  }
+
+  return items;
 }
 
 async function processPackageDocs(
@@ -58,65 +179,29 @@ async function processPackageDocs(
     categoryName,
     packageName
   );
+
   const docFiles = globSync(`${packageDocDir}/**/*.md`).sort();
 
-  const fileMap = new Map<
-    string,
-    { file: string; data: Record<string, any> }
-  >();
+  if (docFiles.length === 0) {
+    return [];
+  }
 
-  // Read all files and their metadata
+  // Read all files with metadata
+  const filesWithMetadata: DocFile[] = [];
+
   for (const filePath of docFiles) {
-    const frontmatter = await readFrontmatter(filePath);
     const relativePath = path.relative(packageDocDir, filePath);
+    const frontmatter = await readFrontmatter(filePath);
 
-    fileMap.set(relativePath, {
-      file: filePath,
-      data: frontmatter || {},
+    filesWithMetadata.push({
+      relativePath,
+      fullPath: filePath,
+      frontmatter: frontmatter || {},
     });
   }
 
-  // Sort files by frontmatter order or alphabetically
-  const sortedFiles = Array.from(fileMap.entries()).sort(([, a], [, b]) => {
-    const orderA = a.data.order ?? 999;
-    const orderB = b.data.order ?? 999;
-    if (orderA !== orderB) {
-      return orderA - orderB;
-    }
-    return a.data.title?.localeCompare(b.data.title ?? '') ?? 0;
-  });
-
-  // Build hierarchy
-  const nestedMap = new Map<string, SidebarItem[]>();
-  nestedMap.set('root', []);
-
-  for (const [relativePath, { file, data }] of sortedFiles) {
-    const title = data.title || path.basename(file, '.md');
-    const link = formatLink(path.relative(WEBSITE_PACKAGES_DIR, file));
-
-    const dirPath = path.dirname(relativePath);
-    const parentKey = dirPath === '.' ? 'root' : dirPath;
-
-    if (!nestedMap.has(parentKey)) {
-      nestedMap.set(parentKey, []);
-    }
-
-    const parent = nestedMap.get(parentKey);
-    if (parent) {
-      parent.push({
-        text: title,
-        link,
-      });
-    }
-  }
-
-  // For single-file packages, just return the item
-  if (docFiles.length === 1) {
-    return nestedMap.get('root') || [];
-  }
-
-  // For multi-file packages, create hierarchy
-  return nestedMap.get('root') || [];
+  // Build hierarchy structure
+  return buildHierarchy(filesWithMetadata);
 }
 
 async function generateSidebar(): Promise<void> {
@@ -126,32 +211,6 @@ async function generateSidebar(): Promise<void> {
     onlyDirectories: true,
   }).sort();
 
-  const categoryMap: CategoryMap = {};
-
-  // Process all categories and packages
-  for (const categoryDir of categoryDirs) {
-    const categoryName = path.basename(categoryDir);
-    const packageDirs = globSync(`${categoryDir}/*`, {
-      onlyDirectories: true,
-    }).sort();
-
-    categoryMap[categoryName] = {
-      packages: {},
-      order: 999,
-    };
-
-    for (const packageDir of packageDirs) {
-      const packageName = path.basename(packageDir);
-      const docs = await processPackageDocs(categoryName, packageName);
-
-      categoryMap[categoryName].packages[packageName] = {
-        docs,
-        order: 999,
-      };
-    }
-  }
-
-  // Build sidebar structure
   const sidebar: SidebarItem[] = [
     {
       text: 'Overview',
@@ -164,12 +223,15 @@ async function generateSidebar(): Promise<void> {
     },
   ];
 
-  // Add categories and packages
-  const sortedCategories = Object.entries(categoryMap).sort(
-    ([, a], [, b]) => (a.order ?? 999) - (b.order ?? 999)
-  );
+  let totalPackages = 0;
 
-  for (const [categoryName, categoryData] of sortedCategories) {
+  // Process each category
+  for (const categoryDir of categoryDirs) {
+    const categoryName = path.basename(categoryDir);
+    const packageDirs = globSync(`${categoryDir}/*`, {
+      onlyDirectories: true,
+    }).sort();
+
     const categoryItem: SidebarItem = {
       text: categoryName
         .split('-')
@@ -183,31 +245,36 @@ async function generateSidebar(): Promise<void> {
       ],
     };
 
-    const sortedPackages = Object.entries(categoryData.packages).sort(
-      ([, a], [, b]) => (a.order ?? 999) - (b.order ?? 999)
-    );
+    // Process each package in this category
+    for (const packageDir of packageDirs) {
+      const packageName = path.basename(packageDir);
+      totalPackages += 1;
 
-    for (const [packageName, packageData] of sortedPackages) {
-      const items = categoryItem.items;
-      if (!items) continue;
+      const docs = await processPackageDocs(categoryName, packageName);
 
-      if (packageData.docs.length === 0) {
-        // Package with no docs, just add link to overview
-        items.push({
+      const packageItems = categoryItem.items;
+      if (!packageItems) continue;
+
+      if (docs.length === 0) {
+        // Package with no docs
+        packageItems.push({
           text: packageName,
           link: `/packages/${categoryName}/${packageName}/`,
         });
-      } else if (packageData.docs.length === 1 && packageData.docs[0].link) {
+      } else if (docs.length === 1 && !docs[0].items) {
         // Single doc file
-        items.push({
-          text: packageData.docs[0].text || packageName,
-          link: packageData.docs[0].link,
+        packageItems.push({
+          text: docs[0].text,
+          link: docs[0].link,
         });
       } else {
-        // Multiple doc files, create nested structure
-        items.push({
-          text: packageName,
-          items: packageData.docs,
+        // Multiple docs or nested structure - create hierarchy
+        packageItems.push({
+          text: packageName
+            .split('-')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' '),
+          items: docs,
         });
       }
     }
@@ -229,13 +296,8 @@ export const sidebarConfig = ${JSON.stringify(sidebar, null, 2)} as const;
   await fs.writeFile(SIDEBAR_OUTPUT, code, 'utf-8');
 
   console.log(`✅ Sidebar configuration generated: ${SIDEBAR_OUTPUT}`);
-  console.log(`   Categories: ${sortedCategories.length}`);
-  console.log(
-    `   Total packages: ${Object.values(categoryMap).reduce(
-      (sum, cat) => sum + Object.keys(cat.packages).length,
-      0
-    )}`
-  );
+  console.log(`   Categories: ${sidebar.length - 1}`);
+  console.log(`   Total packages: ${totalPackages}`);
 }
 
 export { generateSidebar };
