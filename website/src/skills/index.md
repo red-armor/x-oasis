@@ -122,4 +122,4 @@ More skills are being documented to cover:
 
 - [Packages](/packages/) - Browse all packages
 - [async-call-rpc](/packages/async/async-call-rpc/) - Deep dive into RPC communication
-- [GitHub](https://github.com/d-band/x-oasis) - Source code and issues
+- [GitHub](https://github.com/red-armor/x-oasis) - Source code and issues
