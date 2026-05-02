@@ -1,4 +1,5 @@
-import { WorkerChannel, serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost } from '@x-oasis/async-call-rpc';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web';
 
 const channel = new WorkerChannel(self, { name: 'worker-thread' });
 

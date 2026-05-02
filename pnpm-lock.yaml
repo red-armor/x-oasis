@@ -410,6 +410,9 @@ importers:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
         version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -447,6 +450,9 @@ importers:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
         version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -475,6 +481,9 @@ importers:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
         version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -512,6 +521,9 @@ importers:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
         version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -549,6 +561,9 @@ importers:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
         version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -917,7 +932,7 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
 
-  packages/proto/can-I-use-proxy:
+  packages/proto/can-i-use-proxy:
     devDependencies:
       tsdx:
         specifier: ^0.14.1
@@ -12554,7 +12569,10 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:

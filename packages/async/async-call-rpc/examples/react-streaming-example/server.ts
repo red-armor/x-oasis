@@ -9,7 +9,8 @@
  */
 
 import { WebSocketServer } from 'ws';
-import { WebSocketChannel, serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost } from '@x-oasis/async-call-rpc';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
 
 const PORT = 3457;
 

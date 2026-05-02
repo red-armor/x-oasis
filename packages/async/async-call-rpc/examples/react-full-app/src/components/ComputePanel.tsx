@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { WorkerChannel, clientHost } from '@x-oasis/async-call-rpc';
+import { clientHost } from '@x-oasis/async-call-rpc';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web';
 
 function ComputePanel() {
   const [result, setResult] = useState<number | null>(null);

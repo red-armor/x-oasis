@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import {
-  WebSocketChannel,
-  clientHost,
-  RPCError,
-} from '@x-oasis/async-call-rpc';
+import { clientHost, RPCError } from '@x-oasis/async-call-rpc';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
 import './App.css';
 
 type ApiService = {

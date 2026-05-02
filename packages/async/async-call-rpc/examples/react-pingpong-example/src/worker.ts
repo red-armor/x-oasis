@@ -6,7 +6,8 @@
  * The client receives an { unsubscribe } handle to stop listening.
  */
 
-import { WorkerChannel, serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost } from '@x-oasis/async-call-rpc';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web';
 
 const channel = new WorkerChannel(self, { name: 'pingpong-worker' });
 
