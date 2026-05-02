@@ -160,7 +160,7 @@ packages_data = {
     },
 }
 
-base_dir = "/Users/ryuyutyo/Documents/code/red/x-oasis/website/src/packages"
+base_dir = "/Users/ryuyutyo/Documents/code/red/x-oasis/packages"
 
 def create_category_index(category, data):
     """Create category index.md"""
@@ -221,13 +221,14 @@ npm install @x-oasis/package1 @x-oasis/package2
 
 - [All Packages](/packages/)
 - [Skills](/skills/)
-- [GitHub](https://github.com/d-band/x-oasis)
+- [GitHub](https://github.com/red-armor/x-oasis)
 """
 
-    os.makedirs(os.path.join(base_dir, category), exist_ok=True)
-    with open(os.path.join(base_dir, category, "index.md"), "w") as f:
+    docs_dir = os.path.join(base_dir, category, "docs")
+    os.makedirs(docs_dir, exist_ok=True)
+    with open(os.path.join(docs_dir, "index.md"), "w") as f:
         f.write(content)
-    print(f"✅ Created /packages/{category}/index.md")
+    print(f"✅ Created packages/{category}/docs/index.md")
 
 def create_package_doc(category, package_name, description):
     """Create individual package doc"""
@@ -262,7 +263,7 @@ import {{ /* exports */ }} from '@x-oasis/{package_name}';
 
 ### Main Exports
 
-See the source code on [GitHub](https://github.com/d-band/x-oasis/tree/main/packages/{category}/{package_name})
+See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/packages/{category}/{package_name})
 
 ## Usage Examples
 
@@ -330,19 +331,19 @@ This package is optimized for:
 
 - [Package Category](/packages/{category}/)
 - [All Packages](/packages/)
-- [GitHub Issues](https://github.com/d-band/x-oasis/issues)
-- [Discussions](https://github.com/d-band/x-oasis/discussions)
+- [GitHub Issues](https://github.com/red-armor/x-oasis/issues)
+- [Discussions](https://github.com/red-armor/x-oasis/discussions)
 
 ## License
 
 MIT
 """
 
-    pkg_dir = os.path.join(base_dir, category, package_name)
-    os.makedirs(pkg_dir, exist_ok=True)
-    with open(os.path.join(pkg_dir, "index.md"), "w") as f:
+    docs_dir = os.path.join(base_dir, category, package_name, "docs")
+    os.makedirs(docs_dir, exist_ok=True)
+    with open(os.path.join(docs_dir, "index.md"), "w") as f:
         f.write(content)
-    print(f"✅ Created /packages/{category}/{package_name}/index.md")
+    print(f"✅ Created packages/{category}/{package_name}/docs/index.md")
 
 # Generate all docs
 for category, data in packages_data.items():

@@ -34,5 +34,10 @@ src/.vitepress/cache
 src/.vitepress/dist
 
 # Generated files
-.vitepress/sidebar-auto.ts
+src/.vitepress/sidebar-auto.json
 generate-docs.ts
+
+# Derived package docs — synced from packages/*/docs and packages/*/*/docs.
+# Only the hand-written packages overview lives in source.
+src/packages/*
+!src/packages/index.md
