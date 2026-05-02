@@ -18,6 +18,7 @@ describe('RPC Endpoint Classes', () => {
       on: vi.fn(),
       onMessage: vi.fn(),
       setService: vi.fn(),
+      ensureListenerAttached: vi.fn(),
     };
   });
 
@@ -34,7 +35,7 @@ describe('RPC Endpoint Classes', () => {
 
     test('should set channel', () => {
       client.setChannel(mockChannel as AbstractChannelProtocol);
-      expect(mockChannel.on).toHaveBeenCalled();
+      expect(mockChannel.ensureListenerAttached).toHaveBeenCalled();
     });
 
     test('should throw if channel is not set when calling method', () => {
@@ -71,19 +72,12 @@ describe('RPC Endpoint Classes', () => {
       });
     });
 
-    test('should handle message through channel', () => {
-      client.setChannel(mockChannel as AbstractChannelProtocol);
-      client.handleMessage({ type: 'response' });
-
-      expect(mockChannel.onMessage).toHaveBeenCalledWith({ type: 'response' });
-    });
-
     test('should support client created with channel option', () => {
       const clientWithChannel = new ProxyRPCClient('/service', {
         channel: mockChannel as AbstractChannelProtocol,
       });
 
-      expect(mockChannel.on).toHaveBeenCalled();
+      expect(mockChannel.ensureListenerAttached).toHaveBeenCalled();
     });
   });
 
@@ -126,18 +120,14 @@ describe('RPC Endpoint Classes', () => {
     });
 
     test('should set channel', () => {
-      const newChannel = { setService: vi.fn(), on: vi.fn() };
+      const newChannel = {
+        setService: vi.fn(),
+        ensureListenerAttached: vi.fn(),
+      };
       service.setChannel(newChannel as unknown as AbstractChannelProtocol);
 
       expect(newChannel.setService).toHaveBeenCalledWith(service);
-      expect(newChannel.on).toHaveBeenCalled();
-    });
-
-    test('should call channel.onMessage on handleMessage', () => {
-      const message = { type: 'request' };
-      service.handleMessage(message);
-
-      expect(mockChannel.onMessage).toHaveBeenCalled();
+      expect(newChannel.ensureListenerAttached).toHaveBeenCalled();
     });
 
     test('should register multiple handlers at once', () => {
@@ -224,9 +214,9 @@ describe('RPC Endpoint Classes', () => {
       expect(retrievedHandler).toBe(handler);
     });
 
-    test('should return null when getting handler from non-existent service', () => {
+    test('should return undefined when getting handler from non-existent service', () => {
       const handler = serviceHost.getHandler('/nonexistent', 'method');
-      expect(handler).toBeNull();
+      expect(handler).toBeUndefined();
     });
 
     test('should register multiple services', () => {

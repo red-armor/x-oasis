@@ -14,12 +14,27 @@ import {
  * RPC communication between browsing contexts — iframes, windows,
  * or a renderer ↔ worker.
  *
+ * ## Late port binding
+ *
+ * The `port` may be supplied at construction time, or attached later via
+ * {@link bindPort}. The "construct now, bind later" pattern is useful
+ * when the port arrives on a `MessageEvent` transfer after a service
+ * has already been registered. While unbound, the channel is in the
+ * disconnected state — sends queue and flush on {@link bindPort}.
+ *
  * @example
  * ```ts
  * const { port1, port2 } = new MessageChannel();
  *
  * const channelA = new RPCMessageChannel({ port: port1 });
  * const channelB = new RPCMessageChannel({ port: port2 });
+ *
+ * // Or: bind later
+ * const pending = new RPCMessageChannel({});
+ * pending.setServiceHost(host);
+ * window.addEventListener('message', (e) => {
+ *   if (e.data === 'port') pending.bindPort(e.ports[0]);
+ * });
  * ```
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MessageChannel
@@ -28,56 +43,78 @@ export default class RPCMessageChannel
   extends AbstractChannelProtocol
   implements IMessageChannel
 {
-  private readonly port: MessagePort;
+  private port: MessagePort | null;
   private sender: any;
   private targetOrigin: string;
+  private _detachListener: (() => void) | null;
+  private _pendingListener: ((event: MessageEvent) => void) | null;
 
   constructor(
     options: {
-      port: MessagePort;
+      port?: MessagePort;
       sender?: any;
       targetOrigin?: string;
-    } & AbstractChannelProtocolProps
+    } & AbstractChannelProtocolProps = {}
   ) {
-    // Extract channel-specific options and pass the rest to parent
-    const {
-      port,
-      sender = window,
-      targetOrigin = '*',
-      ...protocolOptions
-    } = options;
-    super(protocolOptions);
-    this.port = port;
-    this.targetOrigin = targetOrigin;
-    this.sender = sender;
-    // MessagePort 需要调用 start() 才能开始接收消息（当使用 addEventListener 时）
-    if (this.port.start) {
-      this.port.start();
-    }
-  }
-
-  on(listener: (event: MessageEvent) => void): void | (() => void) {
-    const f = (ev: MessageEvent): void => {
-      listener(ev);
-    };
-    this.port.addEventListener('message', f);
-    return () => this.port.removeEventListener('message', f);
+    // No port → start disconnected so sends queue.
+    super(
+      options.port
+        ? (options as AbstractChannelProtocolProps)
+        : { ...(options as AbstractChannelProtocolProps), connected: false }
+    );
+    this.port = null;
+    this._detachListener = null;
+    this._pendingListener = null;
+    this.targetOrigin = options.targetOrigin || '*';
+    this.sender =
+      options.sender !== undefined
+        ? options.sender
+        : typeof window !== 'undefined'
+        ? window
+        : undefined;
+    if (options.port) this._attachPort(options.port);
   }
 
   /**
-   * 发送消息通过 MessagePort
+   * Attach a `MessagePort` to a previously-unbound channel and activate
+   * it. Queued sends will flush via the framework's `resumePendingEntry`
+   * on the `onDidConnected` event.
    *
-   * 注意：MessagePort.postMessage() 的签名是 (message, transferList)
-   * 不同于 Window.postMessage() 的签名 (message, targetOrigin)
+   * No-op if a port is already bound.
+   */
+  bindPort(port: MessagePort): void {
+    if (this.port) return;
+    this._attachPort(port);
+    this.activate();
+  }
+
+  on(listener: (event: MessageEvent) => void): void | (() => void) {
+    if (!this.port) {
+      this._pendingListener = listener;
+      return () => {
+        if (this._pendingListener === listener) this._pendingListener = null;
+        if (this._detachListener) {
+          this._detachListener();
+          this._detachListener = null;
+        }
+      };
+    }
+    return this._wireListener(this.port, listener);
+  }
+
+  /**
+   * Send a message through the underlying `MessagePort`.
    *
-   * 虽然构造函数中定义了 targetOrigin 参数，但在 MessagePort 的场景下不需要使用：
-   * - MessagePort 是通过 MessageChannel 创建的成对端口，通信双方身份已确定
-   * - 消息只能在持有对应 port 引用的对象之间传递，天然是安全的点对点通道
-   * - targetOrigin 在此场景下不适用，因为 MessagePort API 本身不支持该参数
-   *
-   * targetOrigin 字段的保留是为了 API 的灵活性和未来的兼容性扩展
+   * Note: `MessagePort.postMessage(message, transferList)` differs from
+   * `Window.postMessage(message, targetOrigin)`. `targetOrigin` is kept
+   * on the constructor for API flexibility but is unused for ports —
+   * a `MessagePort` is already a point-to-point channel.
    */
   send(message: any, transfer?: Transferable[]) {
+    if (!this.port) {
+      console.warn('[RPCMessageChannel] send called before port was bound.');
+      return;
+    }
     if (transfer && transfer.length > 0) {
       this.port.postMessage(message, transfer);
     } else {
@@ -97,5 +134,26 @@ export default class RPCMessageChannel
     if (this.port) {
       this.port.close();
     }
+    super.disconnect();
+  }
+
+  private _attachPort(port: MessagePort): void {
+    this.port = port;
+    if (port.start) port.start();
+    if (this._pendingListener) {
+      this._detachListener = this._wireListener(port, this._pendingListener);
+      this._pendingListener = null;
+    }
+  }
+
+  private _wireListener(
+    port: MessagePort,
+    listener: (event: MessageEvent) => void
+  ): () => void {
+    const f = (ev: MessageEvent): void => {
+      listener(ev);
+    };
+    port.addEventListener('message', f);
+    return () => port.removeEventListener('message', f);
   }
 }

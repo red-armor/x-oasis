@@ -62,7 +62,12 @@ export interface ParentPort extends NodeJS.EventEmitter {
 // ─── Props types ─────────────────────────────────────────────────────────────
 
 export type MessagePortMainChannelProps = {
-  port: MainPort;
+  /**
+   * The `MessagePortMain` to wrap. May be omitted to construct a
+   * disconnected channel that queues sends; bind the port later via
+   * {@link ElectronMessagePortMainChannel.bindPort}.
+   */
+  port?: MainPort;
 } & AbstractChannelProtocolProps;
 
 export type UtilityProcessChannelProps = {
@@ -75,7 +80,21 @@ export type UtilityProcessParentPortChannelProps = {
 
 export type IPCMainChannelProps = {
   channelName: string;
-  webContents: WebContents;
+  /**
+   * The renderer to talk to. Omit when `acceptAllSenders: true` — the
+   * channel will then talk back to whichever sender most recently sent
+   * a message on `channelName`.
+   */
+  webContents?: WebContents;
+  /**
+   * Listen on `channelName` regardless of which `webContents` sent the
+   * message, and reply via `event.sender`. Useful for broker channels
+   * where many renderers ask the main process to wire up ports.
+   *
+   * When true, `webContents` may be omitted; `disconnect`-on-destroyed
+   * is a no-op (there's no single sender to track).
+   */
+  acceptAllSenders?: boolean;
 } & AbstractChannelProtocolProps;
 
 export type IPCRendererChannelProps = {

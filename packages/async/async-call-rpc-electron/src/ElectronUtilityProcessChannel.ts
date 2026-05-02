@@ -96,9 +96,16 @@ export default class ElectronUtilityProcessChannel extends AbstractChannelProtoc
     };
   }
 
-  send(data: unknown): void {
+  send(data: unknown, transfer?: any[]): void {
     if (typeof this._target.postMessage === 'function') {
-      this._target.postMessage(data);
+      if (transfer && transfer.length) {
+        (this._target.postMessage as (d: unknown, t?: any[]) => void)(
+          data,
+          transfer
+        );
+      } else {
+        this._target.postMessage(data);
+      }
     } else {
       console.warn(
         '[ElectronUtilityProcessChannel] Cannot send: postMessage is not available.'

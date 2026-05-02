@@ -11,13 +11,24 @@ import { MainPort, MessagePortMainChannelProps } from './types';
  * - Renderer <-> Renderer (via main as relay)
  *
  * This class wraps a `MessagePortMain` for use in the **main process**.
- * For the renderer side, use `MessageChannel` from `@x-oasis/async-call-rpc-web`
- * which works with the standard Web `MessagePort` API.
+ * For the renderer side, use `RPCMessageChannel` from
+ * `@x-oasis/async-call-rpc-web` which works with the standard Web
+ * `MessagePort` API.
+ *
+ * ## Late port binding
+ *
+ * The port may be supplied at construction time, or attached later via
+ * {@link bindPort}. The "construct now, bind later" pattern is useful
+ * for the port-broker flow: a service registers handlers and starts
+ * accepting requests before the actual `MessagePortMain` arrives on a
+ * transfer. While the port is unbound the channel is in the
+ * disconnected state, so sends queue into `pendingSendEntries` and
+ * flush automatically when {@link bindPort} fires `activate()`.
  *
  * ## Usage
  *
  * ```ts
- * import { MessageChannelMain, BrowserWindow } from 'electron';
+ * import { MessageChannelMain } from 'electron';
  * import { ElectronMessagePortMainChannel } from '@x-oasis/async-call-rpc-electron';
  *
  * const { port1, port2 } = new MessageChannelMain();
@@ -30,48 +41,72 @@ import { MainPort, MessagePortMainChannelProps } from './types';
  *   port: port1,
  *   description: 'main↔renderer (MessagePortMain)',
  * });
- * ```
  *
- * @remarks
- * - `MessagePortMain` uses Node.js `EventEmitter`-style API
- *   (`on`/`off`/`once`) instead of `addEventListener`.
- * - `port.start()` is called automatically in the constructor.
- * - The port auto-closes on `disconnect()`.
+ * // Or: bind later
+ * const pending = new ElectronMessagePortMainChannel({ description: 'pending' });
+ * pending.setServiceHost(host);
+ * // ...later, when the port arrives:
+ * pending.bindPort(port);
+ * ```
  *
  * @see https://www.electronjs.org/docs/latest/api/message-channel-main
  * @see https://www.electronjs.org/docs/latest/api/message-port-main
  */
 export default class ElectronMessagePortMainChannel extends AbstractChannelProtocol {
-  private _port: MainPort;
+  private _port: MainPort | null;
+  private _detachListener: (() => void) | null;
+  private _pendingListener: ((data: unknown) => void) | null;
 
-  constructor(props: MessagePortMainChannelProps) {
+  constructor(props: MessagePortMainChannelProps = {}) {
+    // When no port is supplied, start disconnected so sends queue.
     const { port, ...protocolOptions } = props;
-    super(protocolOptions);
-    this._port = port;
+    super(port ? protocolOptions : { ...protocolOptions, connected: false });
+    this._port = null;
+    this._detachListener = null;
+    this._pendingListener = null;
 
-    // MessagePortMain requires start() to begin receiving messages
-    if (this._port.start) {
-      this._port.start();
+    if (port) {
+      this._attachPort(port);
     }
+  }
 
-    // Auto-disconnect when the remote end closes
-    this._port.on('close', () => {
-      this.disconnect();
-    });
+  /**
+   * Attach a `MessagePortMain` to a previously-unbound channel and
+   * activate it. Queued sends will flush via the framework's
+   * `resumePendingEntry` on the `onDidConnected` event.
+   *
+   * No-op if a port is already bound.
+   */
+  bindPort(port: MainPort): void {
+    if (this._port) return;
+    this._attachPort(port);
+    this.activate();
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
-    const handler = (messageEvent: MessageEvent): void => {
-      listener(messageEvent);
-    };
-
-    this._port.on('message', handler);
-    return () => {
-      this._port.removeListener('message', handler);
-    };
+    if (!this._port) {
+      // Defer: the listener will be wired once bindPort attaches a port.
+      this._pendingListener = listener;
+      return () => {
+        if (this._pendingListener === listener) {
+          this._pendingListener = null;
+        }
+        if (this._detachListener) {
+          this._detachListener();
+          this._detachListener = null;
+        }
+      };
+    }
+    return this._wireListener(this._port, listener);
   }
 
   send(data: unknown, transfer?: MainPort[]): void {
+    if (!this._port) {
+      console.warn(
+        '[ElectronMessagePortMainChannel] send called before port was bound.'
+      );
+      return;
+    }
     if (transfer && transfer.length > 0) {
       this._port.postMessage(data, transfer);
     } else {
@@ -84,5 +119,28 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
       this._port.close();
     }
     super.disconnect();
+  }
+
+  private _attachPort(port: MainPort): void {
+    this._port = port;
+    if (port.start) port.start();
+    port.on('close', () => this.disconnect());
+    if (this._pendingListener) {
+      this._detachListener = this._wireListener(port, this._pendingListener);
+      this._pendingListener = null;
+    }
+  }
+
+  private _wireListener(
+    port: MainPort,
+    listener: (data: unknown) => void
+  ): () => void {
+    const handler = (messageEvent: MessageEvent): void => {
+      listener(messageEvent);
+    };
+    port.on('message', handler);
+    return () => {
+      port.removeListener('message', handler);
+    };
   }
 }

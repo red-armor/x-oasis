@@ -71,8 +71,12 @@ export default class IPCRendererChannel extends AbstractChannelProtocol {
     };
   }
 
-  send(data: unknown): void {
-    this._ipcRenderer.send(this._channelName, data);
+  send(data: unknown, transfer?: any[]): void {
+    if (transfer && transfer.length) {
+      (this._ipcRenderer as any).postMessage(this._channelName, data, transfer);
+    } else {
+      this._ipcRenderer.send(this._channelName, data);
+    }
   }
 
   disconnect(): void {

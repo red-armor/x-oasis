@@ -152,4 +152,73 @@ describe('ElectronMessagePortMainChannel', () => {
       expect(mockPort.close).toHaveBeenCalled();
     });
   });
+
+  describe('late port binding (bindPort)', () => {
+    test('constructed without a port: starts disconnected, activates on bindPort', () => {
+      // Construct without a port — channel starts disconnected so the
+      // framework's queueing middleware (handleDisconnectedRequest, when
+      // present) will park sends in pendingSendEntries.
+      const channel = new ElectronMessagePortMainChannel();
+      expect(channel.isConnected()).toBe(false);
+      expect(mockPort.start).not.toHaveBeenCalled();
+
+      // bindPort attaches the port and activates → fires onDidConnected,
+      // which the framework hooks to flush pendingSendEntries.
+      channel.bindPort(mockPort as any);
+      expect(mockPort.start).toHaveBeenCalled();
+      expect(channel.isConnected()).toBe(true);
+    });
+
+    test('bindPort flushes any queued send entries', () => {
+      const channel = new ElectronMessagePortMainChannel();
+      // Simulate a queued entry the way handleDisconnectedRequest would.
+      // We just verify that bindPort triggers resumePendingEntry by
+      // observing that pendingSendEntries gets emptied.
+      const fakeEntry = {
+        middlewareContext: {},
+      } as any;
+      channel.addPendingSendEntry(fakeEntry);
+      expect(channel.pendingSendEntries.size).toBe(1);
+
+      channel.bindPort(mockPort as any);
+      // resumePendingEntry deletes entries as it processes them.
+      expect(channel.pendingSendEntries.size).toBe(0);
+    });
+
+    test('bindPort wires a previously-registered listener', () => {
+      const channel = new ElectronMessagePortMainChannel();
+      const listener = vi.fn();
+
+      // Register a listener BEFORE the port is bound — this is what
+      // setServiceHost does when called early.
+      channel.on(listener);
+      expect(mockPort.on).not.toHaveBeenCalledWith(
+        'message',
+        expect.anything()
+      );
+
+      // Bind the port — pending listener should now be wired up.
+      channel.bindPort(mockPort as any);
+      const messageCall = mockPort.on.mock.calls.find(
+        (c: any[]) => c[0] === 'message'
+      );
+      expect(messageCall).toBeDefined();
+
+      const handler = messageCall![1];
+      const mockEvent = { data: 'late-msg' };
+      handler(mockEvent);
+      expect(listener).toHaveBeenCalledWith(mockEvent);
+    });
+
+    test('bindPort is a no-op when a port is already bound', () => {
+      const channel = new ElectronMessagePortMainChannel({
+        port: mockPort as any,
+      });
+      const otherPort = { ...mockPort, start: vi.fn(), on: vi.fn() };
+      channel.bindPort(otherPort as any);
+      // The original mock still has start called (from constructor) but the
+      // second port should NOT be started.
+      expect(otherPort.start).not.toHaveBeenCalled();
+    });
+  });
 });

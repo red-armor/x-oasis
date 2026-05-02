@@ -19,7 +19,8 @@ describe('IPCRendererChannel', () => {
       removeListener: vi.fn(),
       removeAllListeners: vi.fn(),
       send: vi.fn(),
-    };
+      postMessage: vi.fn(),
+    } as any;
   });
 
   describe('constructor', () => {
@@ -133,6 +134,38 @@ describe('IPCRendererChannel', () => {
         method: 'test',
         params: [],
       });
+    });
+
+    test('should use postMessage when transfer list is provided', () => {
+      const channel = new IPCRendererChannel({
+        channelName: 'test-rpc',
+        ipcRenderer: mockIpcRenderer as any,
+        projectName: 'my-app',
+      });
+
+      const port = { fake: 'port' };
+      channel.send({ envelope: 'with-port' }, [port as any]);
+
+      expect((mockIpcRenderer as any).postMessage).toHaveBeenCalledWith(
+        'test-rpc',
+        { envelope: 'with-port' },
+        [port]
+      );
+      expect(mockIpcRenderer.send).not.toHaveBeenCalled();
+    });
+
+    test('should fall back to send when transfer list is empty', () => {
+      const channel = new IPCRendererChannel({
+        channelName: 'test-rpc',
+        ipcRenderer: mockIpcRenderer as any,
+        projectName: 'my-app',
+      });
+
+      channel.send({ data: 1 }, []);
+      expect(mockIpcRenderer.send).toHaveBeenCalledWith('test-rpc', {
+        data: 1,
+      });
+      expect((mockIpcRenderer as any).postMessage).not.toHaveBeenCalled();
     });
   });
 

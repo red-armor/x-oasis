@@ -21,7 +21,16 @@ export type ProxyRPCClientProps = {
 export type ServiceHandlers = Record<string, (...args: any[]) => any>;
 
 export type RPCServiceOptions = {
-  channel: AbstractChannelProtocol;
-  handlers: ServiceHandlers;
-  serviceHost: RPCServiceHost;
+  /** Bind this service to a channel (1-channel-1-service mode). Optional. */
+  channel?: AbstractChannelProtocol;
+  /** Explicit handler map. Optional when `instance` is provided. */
+  handlers?: ServiceHandlers;
+  /** Owning service host (for back-reference). Optional. */
+  serviceHost?: RPCServiceHost;
+  /**
+   * A class instance used as a fallback bag of methods. When set,
+   * `getHandler(methodName)` falls back to `instance[methodName].bind(instance)`
+   * if no entry exists in `handlers`.
+   */
+  instance?: object;
 };

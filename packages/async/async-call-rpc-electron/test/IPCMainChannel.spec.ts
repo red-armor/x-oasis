@@ -237,4 +237,88 @@ describe('IPCMainChannel', () => {
       expect(() => destroyedHandler![1]()).not.toThrow();
     });
   });
+
+  describe('acceptAllSenders (broadcast mode)', () => {
+    test('does not bind a destroyed listener when no webContents passed', () => {
+      // No webContents argument — destroyed listener should not be wired
+      // (there's no single sender to track).
+      new IPCMainChannel({
+        channelName: 'broker',
+        acceptAllSenders: true,
+      });
+      expect(mockWebContents.on).not.toHaveBeenCalled();
+    });
+
+    test('forwards messages from any sender (no filter)', () => {
+      const channel = new IPCMainChannel({
+        channelName: 'broker',
+        acceptAllSenders: true,
+      });
+      const listener = vi.fn();
+      channel.on(listener);
+
+      const handler = mockIpcMain.on.mock.calls[0][1];
+      const senderA = { id: 1, send: vi.fn(), isDestroyed: () => false };
+      const senderB = { id: 2, send: vi.fn(), isDestroyed: () => false };
+
+      handler({ sender: senderA }, 'fromA');
+      handler({ sender: senderB }, 'fromB');
+
+      expect(listener).toHaveBeenCalledTimes(2);
+      expect(listener).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ data: 'fromA', sender: senderA })
+      );
+      expect(listener).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ data: 'fromB', sender: senderB })
+      );
+    });
+
+    test('reply targets the most-recently-seen sender', () => {
+      const channel = new IPCMainChannel({
+        channelName: 'broker',
+        acceptAllSenders: true,
+      });
+      channel.on(vi.fn());
+
+      const handler = mockIpcMain.on.mock.calls[0][1];
+      const senderA = { send: vi.fn(), isDestroyed: () => false };
+      const senderB = { send: vi.fn(), isDestroyed: () => false };
+
+      handler({ sender: senderA }, 'msg1');
+      channel.send({ reply: 'to-a' });
+      expect(senderA.send).toHaveBeenCalledWith('broker', { reply: 'to-a' });
+      expect(senderB.send).not.toHaveBeenCalled();
+
+      handler({ sender: senderB }, 'msg2');
+      channel.send({ reply: 'to-b' });
+      expect(senderB.send).toHaveBeenCalledWith('broker', { reply: 'to-b' });
+    });
+
+    test('uses postMessage with transfer list when provided', () => {
+      const channel = new IPCMainChannel({
+        channelName: 'broker',
+        acceptAllSenders: true,
+      });
+      channel.on(vi.fn());
+      const handler = mockIpcMain.on.mock.calls[0][1];
+      const sender = {
+        send: vi.fn(),
+        postMessage: vi.fn(),
+        isDestroyed: () => false,
+      };
+      handler({ sender }, 'hi');
+
+      const port = { fake: 'port' };
+      channel.send({ envelope: 'with-port' }, [port as any]);
+
+      expect(sender.postMessage).toHaveBeenCalledWith(
+        'broker',
+        { envelope: 'with-port' },
+        [port]
+      );
+      expect(sender.send).not.toHaveBeenCalled();
+    });
+  });
 });

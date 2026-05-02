@@ -10,10 +10,23 @@ import {
  * RPC channel protocol for Electron's `ipcMain` side.
  *
  * This channel runs in the **main process** and communicates with
- * a specific `BrowserWindow`'s renderer process via a named IPC channel.
+ * a renderer process via a named IPC channel.
+ *
+ * Two modes:
+ *
+ * 1. **Bound** (default): pass a specific `webContents`. Messages from
+ *    other senders on the same channel are filtered out, and the channel
+ *    auto-disconnects when that `WebContents` is destroyed.
+ *
+ * 2. **Broadcast** (`acceptAllSenders: true`): listen on the channel
+ *    regardless of source, capture each incoming `event.sender` and use
+ *    it as the reply target. Useful for broker channels where many
+ *    renderers may ask the main process to wire up ports.
  *
  * Messages are sent through `webContents.send(channelName, data)` and
- * received via `ipcMain.on(channelName, ...)`.
+ * received via `ipcMain.on(channelName, ...)`. When a transfer list is
+ * provided, `webContents.postMessage(channelName, data, transfer)` is
+ * used instead.
  *
  * ## Usage
  *
@@ -29,31 +42,33 @@ import {
  * });
  * ```
  *
- * @remarks
- * - Each `IPCMainChannel` is bound to **one** `WebContents` instance.
- *   For multiple windows, create one channel per window.
- * - The `channelName` must match the one used by the corresponding
- *   {@link IPCRendererChannel} in the renderer process.
- * - Messages from other windows on the same channel are filtered out
- *   by comparing `event.sender` with the bound `webContents`.
- * - Auto-disconnects when the `WebContents` is destroyed.
- *
  * @see {@link IPCRendererChannel} for the renderer-side counterpart
  */
 export default class IPCMainChannel extends AbstractChannelProtocol {
   private _channelName: string;
-  private _webContents: WebContents;
+  private _webContents?: WebContents;
+  private _acceptAllSenders: boolean;
+  private _lastSender?: WebContents;
 
   constructor(props: IPCMainChannelProps) {
-    const { channelName, webContents, ...protocolOptions } = props;
+    const {
+      channelName,
+      webContents,
+      acceptAllSenders = false,
+      ...protocolOptions
+    } = props;
     super(protocolOptions);
     this._channelName = channelName;
     this._webContents = webContents;
+    this._acceptAllSenders = acceptAllSenders;
 
-    // Auto-disconnect when the WebContents is destroyed
-    this._webContents.on('destroyed', () => {
-      this.disconnect();
-    });
+    // Auto-disconnect when the bound WebContents is destroyed.
+    // Skipped in broadcast mode — no single sender to track.
+    if (!acceptAllSenders && this._webContents) {
+      this._webContents.on('destroyed', () => {
+        this.disconnect();
+      });
+    }
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
@@ -70,8 +85,11 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
     }
 
     const handler = (_event: IpcMainEvent, ...args: unknown[]): void => {
-      // Filter: only accept messages from the bound WebContents
-      if (_event.sender !== this._webContents) {
+      if (this._acceptAllSenders) {
+        // Broadcast mode: remember sender so replies route back to it.
+        this._lastSender = _event.sender;
+      } else if (_event.sender !== this._webContents) {
+        // Bound mode: filter out other senders.
         return;
       }
       const data = args.length === 1 ? args[0] : args;
@@ -84,14 +102,27 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
     };
   }
 
-  send(data: unknown): void {
-    if (this._webContents.isDestroyed()) {
+  send(data: unknown, transfer?: any[]): void {
+    const target = this._acceptAllSenders
+      ? this._lastSender
+      : this._webContents;
+    if (!target) {
+      console.warn(
+        `[IPCMainChannel] Cannot send on "${this._channelName}": no target WebContents.`
+      );
+      return;
+    }
+    if (target.isDestroyed && target.isDestroyed()) {
       console.warn(
         `[IPCMainChannel] Cannot send on "${this._channelName}": WebContents is destroyed.`
       );
       return;
     }
-    this._webContents.send(this._channelName, data);
+    if (transfer && transfer.length) {
+      (target as any).postMessage(this._channelName, data, transfer);
+    } else {
+      target.send(this._channelName, data);
+    }
   }
 
   disconnect(): void {

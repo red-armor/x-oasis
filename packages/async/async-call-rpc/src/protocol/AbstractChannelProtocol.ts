@@ -14,6 +14,7 @@ import {
   Unsubscribable,
 } from '../types';
 import { runMiddlewares, sendRequest } from '../middlewares';
+import { handleDisconnectedRequest } from '../middlewares/handleDisconnectedRequest';
 import ReadBaseBuffer from '../buffer/ReadBaseBuffer';
 import WriteBaseBuffer from '../buffer/WriteBaseBuffer';
 import { BufferFactory } from '../buffer/BufferFactory';
@@ -23,6 +24,7 @@ import { resumeMiddlewares } from '../middlewares/utils';
 import { deserialize, serialize } from '../middlewares/buffer';
 import { handleResponse } from '../middlewares/handleResponse';
 import RPCService from '../endpoint/RPCService';
+import RPCServiceHost from '../endpoint/RPCServiceHost';
 import { prepareNormalData } from '../middlewares/prepareRequestData';
 import { updateSeqInfo } from '../middlewares/updateSeqInfo';
 import { normalizeMessageChannelRawMessage } from '../middlewares/normalize';
@@ -155,6 +157,10 @@ abstract class AbstractChannelProtocol
 
   private _service: RPCService;
 
+  private _serviceHost: RPCServiceHost | null = null;
+
+  private _listenerAttached = false;
+
   readonly _description: string;
 
   private _seqId: RequestRawSequenceId = -1;
@@ -169,6 +175,7 @@ abstract class AbstractChannelProtocol
   private _senderMiddleware: SenderMiddleware[] = [
     prepareNormalData,
     updateSeqInfo,
+    handleDisconnectedRequest,
     serialize,
     sendRequest,
   ];
@@ -270,6 +277,40 @@ abstract class AbstractChannelProtocol
 
   setService(service: RPCService) {
     this._service = service;
+  }
+
+  get serviceHost(): RPCServiceHost | null {
+    return this._serviceHost;
+  }
+
+  /**
+   * Bind this channel to an `RPCServiceHost`, enabling multi-service routing.
+   * The `handleRequest` middleware will look up handlers via
+   * `host.getHandler(requestPath, methodName)`. When a request's
+   * `requestPath` is not in the host, the request is silently ignored —
+   * which is what makes it safe to share one transport across multiple
+   * channels (each bound to a different host) without producing
+   * "Method not found" cross-talk.
+   *
+   * Idempotent: calling twice with the same host is a no-op.
+   */
+  setServiceHost(host: RPCServiceHost) {
+    if (this._serviceHost === host) return;
+    this._serviceHost = host;
+    this.ensureListenerAttached();
+  }
+
+  /**
+   * Idempotently attach this channel's `onMessage` to the underlying
+   * transport. Called by `setServiceHost`, `RPCService.setChannel`, and
+   * `ProxyRPCClient.setChannel` so that a single channel shared between
+   * a service host and one or more clients only ever has one listener
+   * — preventing every incoming message from being processed twice.
+   */
+  ensureListenerAttached(): void {
+    if (this._listenerAttached) return;
+    this._listenerAttached = true;
+    this.on(this.onMessage.bind(this));
   }
 
   get senderMiddleware() {
@@ -404,7 +445,9 @@ abstract class AbstractChannelProtocol
     return this._isConnected;
   }
 
-  send(..._args: any[]) {
+  send(_data: any, _transfer?: any[]): void;
+  send(..._args: any[]): void;
+  send(..._args: any[]): void {
     throw new Error('send method is not implemented');
   }
 
@@ -473,8 +516,10 @@ abstract class AbstractChannelProtocol
     }
   }
 
-  sendReply(...args: any[]) {
-    this.send(...args);
+  sendReply(data: any, transfer?: any[]): void;
+  sendReply(...args: any[]): void;
+  sendReply(...args: any[]): void {
+    (this.send as (...a: any[]) => void)(...args);
   }
 
   onMessage(...args: any[]) {

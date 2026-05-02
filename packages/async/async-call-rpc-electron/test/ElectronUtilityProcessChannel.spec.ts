@@ -153,6 +153,30 @@ describe('ElectronUtilityProcessChannel', () => {
       expect(port.postMessage).toHaveBeenCalledWith('data');
     });
 
+    test('should pass transfer list to postMessage when provided', () => {
+      const proc = createMockUtilityProcess();
+      const channel = new ElectronUtilityProcessChannel({
+        process: proc as any,
+      });
+
+      const fakePort = { id: 'port-1' };
+      channel.send({ envelope: 'with-port' }, [fakePort as any]);
+
+      expect(proc.postMessage).toHaveBeenCalledWith({ envelope: 'with-port' }, [
+        fakePort,
+      ]);
+    });
+
+    test('should not pass transfer when empty', () => {
+      const port = createMockParentPort();
+      const channel = new ElectronUtilityProcessChannel({
+        parentPort: port as any,
+      });
+
+      channel.send('data', []);
+      expect(port.postMessage).toHaveBeenCalledWith('data');
+    });
+
     test('should warn when postMessage is not available', () => {
       const target = {
         on: vi.fn(),

@@ -33,4 +33,4 @@ export { JSONRPCErrorCode, RPCError } from './error';
 
 const serviceHost = new RPCServiceHost();
 
-export { ProxyRPCClient, RPCService, clientHost, serviceHost };
+export { ProxyRPCClient, RPCService, RPCServiceHost, clientHost, serviceHost };
