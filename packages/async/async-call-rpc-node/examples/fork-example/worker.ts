@@ -7,8 +7,8 @@
  *   - 客户端：调用父进程的 getTimestamp 方法
  */
 
-import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node';
-import { clientHost, RPCServiceHost } from '@x-oasis/async-call-rpc';
+import { NodeProcessChannel } from '../../src/index';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
 // ---------- 1. 创建 IPC Channel ----------
 
@@ -29,10 +29,9 @@ function fibonacci(n: number): number {
   return b;
 }
 
-const localServiceHost = new RPCServiceHost();
-localServiceHost.registerService('worker', {
+serviceHost.registerService('worker', {
   channel,
-  serviceHost: localServiceHost,
+  serviceHost,
   handlers: {
     compute: (n: number) => n * 2,
     ping: () => 'pong',

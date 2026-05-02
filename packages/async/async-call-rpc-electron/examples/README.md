@@ -1,8 +1,23 @@
 # @x-oasis/async-call-rpc-electron 示例
 
-本目录包含 `@x-oasis/async-call-rpc-electron` 的代码片段示例，展示如何在 Electron 各进程间建立 RPC 通信。
+本目录包含 `@x-oasis/async-call-rpc-electron` 的可运行示例，展示如何在 Electron 各进程间建立 RPC 通信。
 
-> **注意**：这些示例是代码片段，不是可独立运行的脚本。需要在完整的 Electron 项目中使用。
+> **注意**：运行这些示例需要安装 Electron（约 90MB 下载）。
+
+### 启动方式
+
+```bash
+# 在项目根目录安装依赖
+pnpm install
+
+# ipc-example：主进程 ↔ 渲染进程通信
+cd packages/async/async-call-rpc-electron/examples/ipc-example
+pnpm start
+
+# utility-process-example：主进程 ↔ Utility 进程通信
+cd packages/async/async-call-rpc-electron/examples/utility-process-example
+pnpm start
+```
 
 ## 概述
 
@@ -36,15 +51,25 @@
 
 最常用的 Electron IPC 模式。主进程作为 Service 提供方法，渲染进程作为 Client 调用。
 
-- `main-process.ts` - 主进程：创建窗口、注册 RPC 服务
-- `renderer-process.ts` - 渲染进程：创建 RPC 客户端、调用远程方法
+| 文件                  | 说明                                                |
+| --------------------- | --------------------------------------------------- |
+| `main-process.ts`     | 主进程：创建窗口、注册 RPC 服务                     |
+| `renderer-process.js` | 渲染进程：创建 RPC 客户端、调用远程方法（纯 JS）    |
+| `renderer-process.ts` | TypeScript 参考版本（不直接运行）                   |
+| `index.html`          | 渲染进程页面，通过 `<script>` 加载 renderer-process |
+| `package.json`        | 项目配置，`npm start` 启动 Electron                 |
+
+> **注意**：渲染进程使用 `.js` 文件，因为 Electron 渲染进程的 V8 环境不支持 `tsx` 等 TypeScript 运行时编译器（Worker 线程不可用）。主进程通过 `NODE_OPTIONS='--import tsx'` 运行 TypeScript。
 
 ### 2. `utility-process-example/` - UtilityProcess 通信
 
-用于将 CPU 密集型任务卸载到独立进程。
+用于将 CPU 密集型任务卸载到独立进程，不需要 UI 窗口。
 
-- `main-process.ts` - 主进程：fork 子进程、双向 RPC 通信
-- `utility-worker.ts` - Utility 进程：注册计算服务
+| 文件                | 说明                                       |
+| ------------------- | ------------------------------------------ |
+| `main-process.ts`   | 主进程：fork 子进程、双向 RPC 通信         |
+| `utility-worker.ts` | Utility 进程：注册计算服务、回调主进程方法 |
+| `package.json`      | 项目配置，`npm start` 启动 Electron        |
 
 ---
 
@@ -299,6 +324,27 @@ function setupWindowRPC(win: BrowserWindow) {
 
   // WebContents 销毁时 Channel 自动断开，无需手动清理
 }
+```
+
+### Handler 参数约定
+
+RPC 框架在调用 handler 时，只传递客户端 `args` 数组的**第一个元素**作为 handler 的参数。因此：
+
+- **单参数方法**：直接传递即可，如 `readConfig(key)` → handler 接收 `key`
+- **多参数方法**：必须用对象包装，如 `updateConfig({ key, value })` → handler 接收 `{ key, value }`
+
+```typescript
+// ❌ 错误：多参数会丢失
+handlers: {
+  updateConfig: (key: string, value: unknown) => { ... }
+}
+api.updateConfig('theme', 'light'); // value 为 undefined
+
+// ✅ 正确：用对象包装
+handlers: {
+  updateConfig: (params: { key: string; value: unknown }) => { ... }
+}
+api.updateConfig({ key: 'theme', value: 'light' }); // 正确
 ```
 
 ### 与 @x-oasis/async-call-rpc-web 配合使用

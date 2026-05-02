@@ -8,15 +8,11 @@
  */
 
 import { fork } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node';
-import { clientHost, RPCServiceHost } from '@x-oasis/async-call-rpc';
+import { resolve } from 'path';
+import { NodeProcessChannel } from '../../src/index';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
 // ---------- 1. fork 子进程 ----------
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const child = fork(resolve(__dirname, 'worker.ts'), [], {
   execArgv: ['--import', 'tsx'],
@@ -34,10 +30,9 @@ const channel = new NodeProcessChannel({
 
 // ---------- 3. 注册本地服务（供子进程调用） ----------
 
-const localServiceHost = new RPCServiceHost();
-localServiceHost.registerService('main', {
+serviceHost.registerService('main', {
   channel,
-  serviceHost: localServiceHost,
+  serviceHost,
   handlers: {
     getTimestamp: () => Date.now(),
     getEnv: (key: string) => process.env[key] ?? `<${key} not set>`,

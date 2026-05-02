@@ -8,7 +8,10 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "declaration": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "paths": {
+      "@x-oasis/async-call-rpc": ["../../../async-call-rpc/src"]
+    }
   },
   "include": ["*.ts"]
 }

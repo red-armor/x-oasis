@@ -541,3 +541,124 @@ x-oasis 技能系统使代理能够：
 通过遵循此架构，代理可以有效利用技能系统来帮助用户解决 x-oasis 包的问题。
 
 更多关于特定技能的详情，见 `skills/SKILLS_INDEX.md`。
+
+## 文档策略
+
+### 文档位置约束
+
+所有涉及 x-oasis 子项目的文档应放在顶层 `website/` 中集中管理：
+
+#### ✅ 正确做法
+
+- **包级文档** → `website/src/packages/{category}/{package-name}/`
+  - 包概览（index.md）
+  - API 参考
+  - 使用示例
+  - 集成指南
+
+- **跨包指南** → `website/src/guides/`
+  - 最佳实践
+  - 架构模式
+  - 故障排查
+  - 性能优化
+
+- **Middleware 文档** → `website/src/packages/async/async-call-rpc/middleware/`
+  - Middleware 概览
+  - 发送管道详解
+  - 接收管道详解
+  - 自定义 Middleware 指南
+
+- **技能文档** → `website/src/skills/`
+  - 迁移现有 skills/ 文档
+  - 统一访问和版本管理
+
+#### ❌ 不推荐做法
+
+- ❌ 在 `packages/{name}/docs` 中维护文档
+  - 分散管理，难以同步
+  - 不利于全局导航
+
+- ❌ 在 `packages/{name}/README.md` 中放置大量文档
+  - README 应该简洁，仅包含安装和链接
+
+- ❌ 混合存储不同类型的文档
+  - 包文档在 website，技能文档在 skills/
+  - 导致用户困惑
+
+### 包级 README.md 约定
+
+每个包的 README.md 应仅包含：
+
+```markdown
+# @x-oasis/package-name
+
+简要描述（1-2 句）
+
+## Installation
+
+\`\`\`bash
+npm install @x-oasis/package-name
+\`\`\`
+
+## Documentation
+
+完整文档见：[x-oasis Website](../../website)
+
+- [包文档](../../website/src/packages/category/package-name)
+- [API 参考](../../website/src/packages/category/package-name/api.md)
+- [示例](../../website/src/packages/category/package-name/examples.md)
+
+## License
+
+MIT
+```
+
+### 网站发布流程
+
+1. **编写** - 在 `website/src/` 中编写或更新文档
+2. **构建** - `npm run docs:build`
+3. **预览** - `npm run docs:preview`
+4. **发布** - 提交 PR 审核后合并
+
+### 文档更新流程
+
+当修改包代码时：
+
+1. 检查是否需要更新文档
+2. 编辑 `website/src/packages/{category}/{package}/*.md`
+3. 同时更新包 README.md 的链接（如需要）
+4. 在 commit 消息中引用相关文档变更
+5. 确保构建通过：`npm run docs:build`
+
+### 文档与代码同步
+
+为确保文档不会过时：
+
+- **代码更新** → 立即更新文档
+- **API 变更** → 更新 API 参考页面
+- **新功能** → 添加示例和最佳实践
+- **Bug 修复** → 更新故障排查部分（如适用）
+
+### 代理文档指引
+
+当代理帮助用户时：
+
+1. 优先指向 `website/` 中的文档
+2. 提供准确的文档链接
+3. 不要创建临时的文档副本
+4. 建议用户查看官方文档获取最新信息
+
+```
+用户："如何使用 async-call-rpc 的 middleware?"
+
+代理应该说：
+✅ "见网站文档：website/src/packages/async/async-call-rpc/middleware/"
+❌ 不应该说：仅在对话中重新编写文档
+```
+
+### 文档版本管理
+
+- 文档与代码版本同步
+- 在发布新版本时更新文档
+- 使用 changesets 追踪文档变更
+- 维护向后兼容性文档（如需要）

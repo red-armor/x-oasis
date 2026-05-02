@@ -1,8 +1,7 @@
 /**
  * @x-oasis/async-call-rpc-electron — UtilityProcess 示例（Utility 进程侧）
  *
- * 这是代码片段示例，不是可独立运行的脚本。
- * 需要通过 Electron 主进程的 utilityProcess.fork() 启动。
+ * 本文件由主进程通过 utilityProcess.fork() 启动。
  *
  * 本示例展示：
  * 1. 使用 process.parentPort 建立与主进程的 RPC 通道
@@ -10,7 +9,7 @@
  * 3. 反向调用主进程提供的回调方法
  */
 
-import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron';
+import { ElectronUtilityProcessChannel } from '../../src/index.ts';
 import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
 
 import crypto from 'crypto';
@@ -24,8 +23,8 @@ const deflate = promisify(zlib.deflate);
 // ─── 主进程回调接口（与主进程 registerService 的 handlers 对应） ───────────────
 
 interface MainCallbacks {
-  reportProgress(taskId: string, progress: number): Promise<void>;
-  log(level: string, message: string): Promise<void>;
+  reportProgress(params: { taskId: string; progress: number }): Promise<void>;
+  log(params: { level: string; message: string }): Promise<void>;
 }
 
 // ─── 建立 RPC 通道 ───────────────────────────────────────────────────────────
@@ -44,30 +43,51 @@ serviceHost.registerService('worker', {
     /**
      * 处理图片（模拟）
      * 实际项目中可使用 sharp 等库
+     *
+     * 注意：RPC handler 只接收一个参数（body[0]），
+     * 多参数需要用对象包装。
      */
-    processImage: async (
-      imagePath: string,
-      options: { width: number; height: number; quality: number }
-    ) => {
-      // 通知主进程进度
-      await mainCallbacks.reportProgress('image-process', 10);
-      await mainCallbacks.log('info', `Processing image: ${imagePath}`);
+    processImage: async (params: {
+      imagePath: string;
+      options: { width: number; height: number; quality: number };
+    }) => {
+      const { imagePath, options } = params;
+
+      // 通知主进程进度（同样需要用对象包装）
+      await mainCallbacks.reportProgress({
+        taskId: 'image-process',
+        progress: 10,
+      });
+      await mainCallbacks.log({
+        level: 'info',
+        message: `Processing image: ${imagePath}`,
+      });
 
       // 模拟图片处理耗时
       await new Promise((resolve) => setTimeout(resolve, 100));
-      await mainCallbacks.reportProgress('image-process', 50);
+      await mainCallbacks.reportProgress({
+        taskId: 'image-process',
+        progress: 50,
+      });
 
-      // 模拟返回处理后的数据
-      const buffer = Buffer.alloc(options.width * options.height * 4);
-      await mainCallbacks.reportProgress('image-process', 100);
+      // 模拟返回处理后的数据（使用 plain object，因为 Buffer 不能直接 JSON 序列化）
+      const dataSize = options.width * options.height * 4;
+      await mainCallbacks.reportProgress({
+        taskId: 'image-process',
+        progress: 100,
+      });
 
-      return buffer;
+      return { dataSize, width: options.width, height: options.height };
     },
 
     /**
      * 压缩文本数据
      */
-    compress: async (data: string, algorithm: 'gzip' | 'deflate') => {
+    compress: async (params: {
+      data: string;
+      algorithm: 'gzip' | 'deflate';
+    }) => {
+      const { data, algorithm } = params;
       const input = Buffer.from(data, 'utf-8');
       const compressed =
         algorithm === 'gzip' ? await gzip(input) : await deflate(input);
@@ -126,9 +146,7 @@ const mainCallbacks = clientHost
 
 // ─── 说明 ────────────────────────────────────────────────────────────────────
 //
-// 本文件需要编译为 JS 后，由主进程通过以下方式启动：
-//
-//   const child = utilityProcess.fork('./utility-worker.js');
+// 本文件由主进程通过 utilityProcess.fork() 启动。
 //
 // Utility 进程是一个独立的 Node.js 进程（不含 Chromium），
 // 适合执行 CPU 密集型任务，不会阻塞主进程和渲染进程的 UI。

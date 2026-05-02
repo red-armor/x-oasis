@@ -1,8 +1,10 @@
 /**
  * @x-oasis/async-call-rpc-electron — ipcMain + ipcRenderer 示例（主进程侧）
  *
- * 这是代码片段示例，不是可独立运行的脚本。
- * 需要在完整的 Electron 主进程环境中使用。
+ * 启动方式：
+ *   cd packages/async/async-call-rpc-electron/examples/ipc-example
+ *   npm install    # 安装 electron（约 90MB 下载）
+ *   npm start      # 启动 Electron 应用
  *
  * 本示例展示：
  * 1. 创建 BrowserWindow
@@ -11,8 +13,9 @@
  */
 
 import { app, BrowserWindow, dialog } from 'electron';
-import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron';
+import { IPCMainChannel } from '../../src/index.ts';
 import { serviceHost } from '@x-oasis/async-call-rpc';
+import path from 'path';
 
 // ─── 模拟的应用配置 ─────────────────────────────────────────────────────────
 
@@ -30,15 +33,16 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      // 生产环境推荐使用 preload + contextBridge
-      // 此处为简化示例直接开启 nodeIntegration
       nodeIntegration: true,
       contextIsolation: false,
     },
   });
 
   // 加载渲染进程页面
-  win.loadFile('index.html');
+  win.loadFile(path.join(__dirname, 'index.html'));
+
+  // 开发调试：打开 DevTools（取消下行注释可以查看渲染进程日志）
+  // win.webContents.openDevTools();
 
   // ── 创建 RPC 通道 ──
   // channelName 必须与渲染进程的 IPCRendererChannel 一致
@@ -104,11 +108,12 @@ function createWindow() {
 
       /**
        * 更新配置项
-       * @param key - 配置键名
-       * @param value - 配置值
+       * 注意：RPC 框架只传递第一个参数给 handler，
+       * 所以多参数需要用对象包装。
+       * @param params - { key: 配置键名, value: 配置值 }
        */
-      updateConfig: (key: string, value: unknown) => {
-        appConfig[key] = value;
+      updateConfig: (params: { key: string; value: unknown }) => {
+        appConfig[params.key] = params.value;
         return true;
       },
     },

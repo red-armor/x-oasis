@@ -37,7 +37,24 @@ export type SendingProps = {
  */
 export type AbstractChannelProtocolProps = {
   description?: string;
-  masterProcessName?: string;
+  /**
+   * Identifier for the channel (e.g., process name, port, connection ID).
+   * Used for logging and debugging purposes.
+   */
+  identifier?: string;
+  /**
+   * Extensible metadata object for storing arbitrary channel context.
+   * Can be used by middleware and logging utilities.
+   * @example
+   * ```ts
+   * metadata: {
+   *   processName: 'main',
+   *   environment: 'production',
+   *   version: '1.0.0',
+   * }
+   * ```
+   */
+  metadata?: Record<string, any>;
   connected?: boolean;
   /**
    * Serialization format for buffer encoding/decoding

@@ -1,8 +1,10 @@
 /**
  * @x-oasis/async-call-rpc-electron — UtilityProcess 示例（主进程侧）
  *
- * 这是代码片段示例，不是可独立运行的脚本。
- * 需要在完整的 Electron 主进程环境中使用。
+ * 启动方式：
+ *   cd packages/async/async-call-rpc-electron/examples/utility-process-example
+ *   npm install    # 安装 electron（约 90MB 下载）
+ *   npm start      # 启动 Electron 应用
  *
  * 本示例展示：
  * 1. 使用 utilityProcess.fork() 创建子进程
@@ -11,8 +13,8 @@
  * 4. 主进程同时作为 Service 供 Utility 进程回调
  */
 
-import { utilityProcess } from 'electron';
-import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron';
+import { app, utilityProcess } from 'electron';
+import { ElectronUtilityProcessChannel } from '../../src/index.ts';
 import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
 
 import path from 'path';
@@ -21,18 +23,17 @@ import path from 'path';
 
 /** Utility 进程提供的计算服务接口 */
 interface WorkerService {
-  /** 处理图片并返回处理后的 Buffer */
-  processImage(
-    imagePath: string,
-    options: {
-      width: number;
-      height: number;
-      quality: number;
-    }
-  ): Promise<Buffer>;
+  /** 处理图片并返回处理结果 */
+  processImage(params: {
+    imagePath: string;
+    options: { width: number; height: number; quality: number };
+  }): Promise<{ dataSize: number; width: number; height: number }>;
 
   /** 压缩文本数据 */
-  compress(data: string, algorithm: 'gzip' | 'deflate'): Promise<string>;
+  compress(params: {
+    data: string;
+    algorithm: 'gzip' | 'deflate';
+  }): Promise<string>;
 
   /** 计算文件哈希 */
   hashFile(filePath: string): Promise<string>;
@@ -49,8 +50,10 @@ interface WorkerService {
 
 function createWorker() {
   // fork 一个 Utility 进程
-  // 注意：入口文件路径需要是编译后的 JS 文件
-  const child = utilityProcess.fork(path.join(__dirname, 'utility-worker.js'));
+  // Electron 的 utilityProcess.fork 不支持 execArgv，
+  // 但 Electron 主进程已通过 --import tsx 注册了 tsx loader，
+  // 子进程会继承这个设置
+  const child = utilityProcess.fork(path.join(__dirname, 'utility-worker.ts'));
 
   // 使用 ElectronUtilityProcessChannel 包装子进程
   // 主进程侧传入 `process` 参数
@@ -72,13 +75,13 @@ function createWorker() {
     serviceHost,
     handlers: {
       /** 报告进度 */
-      reportProgress: (taskId: string, progress: number) => {
-        console.log(`[Task ${taskId}] Progress: ${progress}%`);
+      reportProgress: (params: { taskId: string; progress: number }) => {
+        console.log(`[Task ${params.taskId}] Progress: ${params.progress}%`);
       },
 
       /** 记录日志到主进程 */
-      log: (level: string, message: string) => {
-        console.log(`[Utility][${level}] ${message}`);
+      log: (params: { level: string; message: string }) => {
+        console.log(`[Utility][${params.level}] ${params.message}`);
       },
     },
   });
@@ -89,50 +92,43 @@ function createWorker() {
 // ─── 使用示例 ────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { worker, child } = createWorker();
+  // utilityProcess.fork() 只能在 app ready 之后调用
+  await app.whenReady();
 
-  // 等待子进程就绪（可根据实际情况调整）
+  const { worker, child, channel } = createWorker();
+
+  // 等待子进程就绪
   await new Promise<void>((resolve) => {
     child.on('spawn', resolve);
   });
 
   try {
-    // 1. 调用图片处理
-    const result = await worker.processImage('/path/to/image.png', {
-      width: 800,
-      height: 600,
-      quality: 85,
+    // 1. 数据压缩（多参数用对象包装）
+    const compressed = await worker.compress({
+      data: 'Hello, World! '.repeat(1000),
+      algorithm: 'gzip',
     });
-    console.log('Image processed, buffer size:', result.length);
-
-    // 2. 数据压缩
-    const compressed = await worker.compress(
-      'Hello, World! '.repeat(1000),
-      'gzip'
-    );
     console.log('Compressed data length:', compressed.length);
 
-    // 3. 文件哈希
-    const hash = await worker.hashFile('/path/to/large-file.bin');
-    console.log('File hash:', hash);
-
-    // 4. 数据分析
+    // 2. 数据分析（单参数直接传）
     const stats = await worker.analyzeData([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     console.log('Analysis result:', stats);
     // { mean: 5.5, median: 5.5, stddev: 2.87 }
+
+    // 3. 调用图片处理（模拟，多参数用对象包装）
+    const result = await worker.processImage({
+      imagePath: '/tmp/test-image.png',
+      options: { width: 100, height: 100, quality: 85 },
+    });
+    console.log('Image processed:', result);
   } catch (error) {
     console.error('Worker error:', error);
+  } finally {
+    // 清理：断开通道并退出
+    channel.disconnect();
+    console.log('Worker terminated, exiting.');
+    app.quit();
   }
 }
 
 main().catch(console.error);
-
-// ─── 生命周期说明 ────────────────────────────────────────────────────────────
-//
-// - 调用 channel.disconnect() 会自动 kill 子进程
-// - 子进程异常退出时，channel 会自动断开
-// - 建议在 app.quit 时手动清理：
-//
-// app.on('will-quit', () => {
-//   channel.disconnect();
-// });

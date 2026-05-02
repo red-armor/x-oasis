@@ -76,8 +76,18 @@ export default class ElectronUtilityProcessChannel extends AbstractChannelProtoc
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
-    const handler = (messageEvent: MessageEvent): void => {
-      listener(messageEvent);
+    const isMainSide = this.isUtilityProcess(this._target);
+
+    const handler = (messageEventOrValue: MessageEvent | unknown): void => {
+      if (isMainSide) {
+        // Main process side: UtilityProcess.on('message', (value) => ...)
+        // The callback receives the raw message value directly.
+        listener({ data: messageEventOrValue });
+      } else {
+        // Utility process side: parentPort.on('message', (messageEvent) => ...)
+        // The callback receives a MessageEvent with a .data property.
+        listener(messageEventOrValue);
+      }
     };
 
     this._target.on('message', handler);

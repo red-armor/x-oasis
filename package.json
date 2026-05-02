@@ -15,7 +15,10 @@
     "lint": "eslint --ext js,ts,tsx .",
     "prepare": "husky install",
     "version": "changeset version && pnpm install --no-frozen-lockfile",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "docs:dev": "cd website && pnpm dev",
+    "docs:build": "cd website && pnpm build",
+    "docs:preview": "cd website && pnpm preview"
   },
   "husky": {
     "hooks": {

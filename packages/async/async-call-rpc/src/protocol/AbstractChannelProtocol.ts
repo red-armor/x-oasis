@@ -147,7 +147,9 @@ abstract class AbstractChannelProtocol
   extends Disposable
   implements IMessageChannel
 {
-  private readonly _masterProcessName: string;
+  private readonly _identifier: string;
+
+  private readonly _metadata: Record<string, any>;
 
   private _key: string;
 
@@ -225,7 +227,8 @@ abstract class AbstractChannelProtocol
     super();
     const {
       description = '',
-      masterProcessName,
+      identifier = '',
+      metadata = {},
       connected = true,
       serializationFormat = SerializationFormat.JSON,
       readBuffer,
@@ -235,7 +238,8 @@ abstract class AbstractChannelProtocol
 
     this._description = description;
     this._isConnected = connected;
-    this._masterProcessName = masterProcessName;
+    this._identifier = identifier;
+    this._metadata = metadata;
     this._serializationFormat = serializationFormat;
     this._createContext = createContext || null;
 
@@ -349,8 +353,12 @@ abstract class AbstractChannelProtocol
     return this._description;
   }
 
-  get masterProcessName() {
-    return this._masterProcessName;
+  get identifier() {
+    return this._identifier;
+  }
+
+  get metadata() {
+    return this._metadata;
   }
 
   addPendingSendEntry(entry: PendingSendEntry) {
