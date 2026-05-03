@@ -1,5 +1,17 @@
 # @x-oasis/batchinator
 
+## 0.4.0
+
+### Minor Changes
+
+- 6d79ee1: feat: bump version
+
+### Patch Changes
+
+- Updated dependencies [6d79ee1]
+  - @x-oasis/default-boolean-value@0.4.0
+  - @x-oasis/debounce@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes

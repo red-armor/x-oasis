@@ -1,5 +1,11 @@
 # @x-oasis/find-parent-element
 
+## 0.4.0
+
+### Minor Changes
+
+- 6d79ee1: feat: bump version
+
 ## 0.3.0
 
 ### Minor Changes

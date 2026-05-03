@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.5.0
+
+### Minor Changes
+
+- 6d79ee1: feat: bump version
+
 ## 0.4.0
 
 ### Minor Changes
