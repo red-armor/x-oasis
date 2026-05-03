@@ -1,5 +1,16 @@
 # @x-oasis/shallow-equal
 
+## 0.4.0
+
+### Minor Changes
+
+- 6d79ee1: feat: bump version
+
+### Patch Changes
+
+- Updated dependencies [6d79ee1]
+  - @x-oasis/is@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes

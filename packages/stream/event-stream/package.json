@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/event-stream",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Push-pull bridged async event stream with final result aggregation",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

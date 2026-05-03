@@ -1,5 +1,17 @@
 # @x-oasis/emitter
 
+## 0.4.0
+
+### Minor Changes
+
+- 6d79ee1: feat: bump version
+
+### Patch Changes
+
+- Updated dependencies [6d79ee1]
+  - @x-oasis/is-object@0.4.0
+  - @x-oasis/disposable@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
