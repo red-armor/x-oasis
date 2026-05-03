@@ -1,6 +1,7 @@
 import { Deferred } from '@x-oasis/deferred';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 import { RequestType, Unsubscribable } from '../types';
+import { isEventMethod } from '../common';
 
 /**
  * Subscription callbacks.
@@ -31,19 +32,19 @@ class ProxyRPCClient {
 
   setChannel(channel: AbstractChannelProtocol) {
     this.channel = channel;
-  }
-
-  handleMessage(...args: any[]) {
-    this.channel.onMessage(...args);
+    this.channel.ensureListenerAttached();
   }
 
   /**
    * Create a type-safe proxy object that forwards method calls as RPC requests.
    *
    * The proxy intercepts property access and returns a function that:
-   * 1. Calls `channel.makeRequest()` to send the RPC request
-   * 2. Returns the promise from the `updateSeqInfo` middleware
-   *    (which sets `returnValue` as a Deferred on the request)
+   * 1. For regular methods: calls `channel.makeRequest()` and returns a promise
+   * 2. For event methods (on*): stores the callback client-side and returns an unsubscriber function
+   *
+   * Event methods (ping-pong pattern):
+   *   const unsub = client.onPing((data) => console.log(data));
+   *   unsub();  // Stop listening
    */
   createProxy<
     T extends Record<string, (...args: any[]) => any> = Record<
@@ -60,6 +61,48 @@ class ProxyRPCClient {
               `Call setChannel() before making RPC calls.`
           );
         }
+
+        // Handle ping-pong event methods (on*).
+        // These methods take a callback and return an unsubscriber function.
+        if (isEventMethod(methodName)) {
+          const callback = args[0];
+
+          // Send request without args (callback cannot be serialized)
+          const result = this.channel.makeRequest({
+            requestPath: this.requestPath,
+            methodName,
+            args: [], // Event method args are not serialized
+          });
+
+          const deferred = result as Deferred;
+          const seqId = (deferred as any).seqId;
+
+          // Store the callback on the client side so handleResponse can invoke it
+          if (seqId && typeof callback === 'function') {
+            this.channel.requestEvents.set(seqId, callback);
+          }
+
+          // Return unsubscriber function
+          const channel = this.channel;
+          return {
+            unsubscribe: () => {
+              // Clean up client-side callback
+              if (seqId) {
+                channel.requestEvents.delete(seqId);
+              }
+
+              // Send EventMethodStop to server
+              channel.makeRequest({
+                requestPath: this.requestPath,
+                methodName,
+                args: [],
+                requestType: RequestType.EventMethodStop,
+              } as any);
+            },
+          };
+        }
+
+        // Regular method: return promise
         const result = this.channel.makeRequest({
           requestPath: this.requestPath,
           methodName,

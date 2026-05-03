@@ -14,6 +14,7 @@ import {
   Unsubscribable,
 } from '../types';
 import { runMiddlewares, sendRequest } from '../middlewares';
+import { handleDisconnectedRequest } from '../middlewares/handleDisconnectedRequest';
 import ReadBaseBuffer from '../buffer/ReadBaseBuffer';
 import WriteBaseBuffer from '../buffer/WriteBaseBuffer';
 import { BufferFactory } from '../buffer/BufferFactory';
@@ -23,6 +24,7 @@ import { resumeMiddlewares } from '../middlewares/utils';
 import { deserialize, serialize } from '../middlewares/buffer';
 import { handleResponse } from '../middlewares/handleResponse';
 import RPCService from '../endpoint/RPCService';
+import RPCServiceHost from '../endpoint/RPCServiceHost';
 import { prepareNormalData } from '../middlewares/prepareRequestData';
 import { updateSeqInfo } from '../middlewares/updateSeqInfo';
 import { normalizeMessageChannelRawMessage } from '../middlewares/normalize';
@@ -42,17 +44,124 @@ export type CreateContextFn<TContext = Record<string, unknown>> = (opts: {
   methodName: string;
 }) => TContext | Promise<TContext>;
 
+/**
+ * Abstract base class for all RPC channel protocols.
+ *
+ * `AbstractChannelProtocol` provides the core framework for bidirectional
+ * RPC communication over any transport layer. Subclasses only need to
+ * implement two methods — {@link send} and {@link on} — to adapt a
+ * specific transport (MessagePort, WebSocket, IPC, process, etc.).
+ *
+ * ## Architecture
+ *
+ * ```
+ *  Caller                                              Callee
+ *  ──────                                              ──────
+ *  makeRequest(path, method, ...args)
+ *       │
+ *       ▼
+ *  ┌─────────────────────────────────┐
+ *  │  Sender Middleware Pipeline     │
+ *  │  1. prepareNormalData           │  ← build request envelope
+ *  │  2. updateSeqInfo               │  ← assign seqId
+ *  │  3. serialize                   │  ← encode via WriteBuffer
+ *  │  4. sendRequest                 │  ← call this.send()
+ *  └─────────────────────────────────┘
+ *       │                                    │
+ *       │  ← transport (send/on) →           │
+ *       │                                    ▼
+ *                                  ┌─────────────────────────────────┐
+ *                                  │  Receive Middleware Pipeline    │
+ *                                  │  1. normalizeRawMessage        │  ← extract data
+ *                                  │  2. deserialize                │  ← decode via ReadBuffer
+ *                                  │  3. handleRequest              │  ← dispatch to service
+ *                                  │  4. handleResponse             │  ← resolve Deferred
+ *                                  └─────────────────────────────────┘
+ * ```
+ *
+ * ## Subclass Contract
+ *
+ * Every concrete protocol **must** override:
+ *
+ * - **`send(data, transfer?)`** — Transmit serialized data over the transport.
+ * - **`on(listener)`** — Register a listener for incoming messages and return
+ *   a cleanup function (or `void`).
+ *
+ * Optionally override:
+ *
+ * - **`decorateSendMiddleware(middlewares)`** — Prepend/append custom sender
+ *   middleware (e.g. compression, encryption).
+ * - **`decorateOnMessageMiddleware(middlewares)`** — Swap or extend receive
+ *   middleware (e.g. replace the normalizer for a different raw format).
+ * - **`disconnect()`** — Perform transport-specific teardown (close socket,
+ *   port, etc.) then call `super.disconnect()`.
+ *
+ * ## Built-in Transports
+ *
+ * | Class                         | Transport                              | Environment           |
+ * |-------------------------------|----------------------------------------|-----------------------|
+ * | `RPCMessageChannel`           | `MessagePort` (Web API)                | Browser / Worker      |
+ * | `WebSocketChannel`            | `WebSocket`                            | Browser / Node.js     |
+ * | `WorkerChannel`               | `Worker.postMessage`                   | Browser               |
+ * | `NodeProcessChannel`          | `child_process.fork` IPC               | Node.js               |
+ * | `ElectronUtilityProcessChannel` | Electron `UtilityProcess`            | Electron (main)       |
+ * | `IPCMainChannel`              | Electron `ipcMain` / `WebContents`     | Electron (main)       |
+ * | `IPCRendererChannel`          | Electron `ipcRenderer`                 | Electron (renderer)   |
+ * | `ElectronMessagePortMainChannel` | Electron `MessagePortMain`          | Electron (main)       |
+ *
+ * ## Key Features
+ *
+ * - **Middleware pipeline** — Pluggable send/receive pipelines (similar to
+ *   Express/Koa middleware).
+ * - **Offline queueing** — Requests made while disconnected are queued in
+ *   {@link pendingSendEntries} and automatically replayed on reconnection.
+ * - **Subscription lifecycle** — Server-side subscriptions are tracked in
+ *   {@link subscriptions} and cleaned up on disconnect.
+ * - **Context injection** — Per-request context via {@link createContext},
+ *   inspired by tRPC's `createContext`.
+ * - **Serialization** — Configurable via `serializationFormat`; defaults to
+ *   JSON with lazy-initialized {@link ReadBaseBuffer}/{@link WriteBaseBuffer}.
+ *
+ * @example
+ * ```ts
+ * // Implementing a custom transport
+ * class MyCustomChannel extends AbstractChannelProtocol {
+ *   constructor(private transport: MyTransport, opts?: AbstractChannelProtocolProps) {
+ *     super(opts);
+ *   }
+ *
+ *   send(data: unknown): void {
+ *     this.transport.write(data);
+ *   }
+ *
+ *   on(listener: (data: unknown) => void): () => void {
+ *     this.transport.onData(listener);
+ *     return () => this.transport.offData(listener);
+ *   }
+ * }
+ * ```
+ *
+ * @see {@link RPCService} for registering service handlers
+ * @see {@link SendingProps} for the request envelope shape
+ * @see {@link CreateContextFn} for per-request context injection
+ */
 abstract class AbstractChannelProtocol
   extends Disposable
   implements IMessageChannel
 {
-  private readonly _masterProcessName: string;
+  private readonly _identifier: string;
+
+  private readonly _metadata: Record<string, any>;
 
   private _key: string;
 
   private _service: RPCService;
 
-  private readonly _description: string;
+  private _serviceHost: RPCServiceHost | null = null;
+
+  private _listenerAttached = false;
+
+  readonly _description: string;
 
   private _seqId: RequestRawSequenceId = -1;
 
@@ -66,6 +175,7 @@ abstract class AbstractChannelProtocol
   private _senderMiddleware: SenderMiddleware[] = [
     prepareNormalData,
     updateSeqInfo,
+    handleDisconnectedRequest,
     serialize,
     sendRequest,
   ];
@@ -102,6 +212,12 @@ abstract class AbstractChannelProtocol
   public subscriptions: Map<string, Unsubscribable> = new Map();
 
   /**
+   * Tracks active event method (ping-pong) listeners on the server side, keyed by seqId.
+   * Used to prevent sending responses after the client has unsubscribed.
+   */
+  public activeEventMethods: Set<string> = new Set();
+
+  /**
    * Optional context factory for injecting per-request data into handlers.
    */
   private _createContext: CreateContextFn | null = null;
@@ -117,8 +233,9 @@ abstract class AbstractChannelProtocol
   constructor(props?: AbstractChannelProtocolProps) {
     super();
     const {
-      description,
-      masterProcessName,
+      description = '',
+      identifier = '',
+      metadata = {},
       connected = true,
       serializationFormat = SerializationFormat.JSON,
       readBuffer,
@@ -128,7 +245,8 @@ abstract class AbstractChannelProtocol
 
     this._description = description;
     this._isConnected = connected;
-    this._masterProcessName = masterProcessName;
+    this._identifier = identifier;
+    this._metadata = metadata;
     this._serializationFormat = serializationFormat;
     this._createContext = createContext || null;
 
@@ -159,6 +277,40 @@ abstract class AbstractChannelProtocol
 
   setService(service: RPCService) {
     this._service = service;
+  }
+
+  get serviceHost(): RPCServiceHost | null {
+    return this._serviceHost;
+  }
+
+  /**
+   * Bind this channel to an `RPCServiceHost`, enabling multi-service routing.
+   * The `handleRequest` middleware will look up handlers via
+   * `host.getHandler(requestPath, methodName)`. When a request's
+   * `requestPath` is not in the host, the request is silently ignored —
+   * which is what makes it safe to share one transport across multiple
+   * channels (each bound to a different host) without producing
+   * "Method not found" cross-talk.
+   *
+   * Idempotent: calling twice with the same host is a no-op.
+   */
+  setServiceHost(host: RPCServiceHost) {
+    if (this._serviceHost === host) return;
+    this._serviceHost = host;
+    this.ensureListenerAttached();
+  }
+
+  /**
+   * Idempotently attach this channel's `onMessage` to the underlying
+   * transport. Called by `setServiceHost`, `RPCService.setChannel`, and
+   * `ProxyRPCClient.setChannel` so that a single channel shared between
+   * a service host and one or more clients only ever has one listener
+   * — preventing every incoming message from being processed twice.
+   */
+  ensureListenerAttached(): void {
+    if (this._listenerAttached) return;
+    this._listenerAttached = true;
+    this.on(this.onMessage.bind(this));
   }
 
   get senderMiddleware() {
@@ -242,8 +394,12 @@ abstract class AbstractChannelProtocol
     return this._description;
   }
 
-  get masterProcessName() {
-    return this._masterProcessName;
+  get identifier() {
+    return this._identifier;
+  }
+
+  get metadata() {
+    return this._metadata;
   }
 
   addPendingSendEntry(entry: PendingSendEntry) {
@@ -289,7 +445,9 @@ abstract class AbstractChannelProtocol
     return this._isConnected;
   }
 
-  send(..._args: any[]) {
+  send(_data: any, _transfer?: any[]): void;
+  send(..._args: any[]): void;
+  send(..._args: any[]): void {
     throw new Error('send method is not implemented');
   }
 
@@ -348,12 +506,20 @@ abstract class AbstractChannelProtocol
   ): Deferred | void;
 
   makeRequest(...args: any[]) {
-    const { returnValue } = runMiddlewares(this.senderMiddleware, args);
-    if (returnValue) return returnValue;
+    const result = runMiddlewares(this.senderMiddleware, args);
+    if (result?.returnValue) return result.returnValue;
+    // For event methods (on*), no Deferred is created but the caller
+    // may still need the seqId.  Return a lightweight object so the
+    // caller can identify the request.
+    if (result?.seqId !== undefined) {
+      return { seqId: result.seqId } as any;
+    }
   }
 
-  sendReply(...args: any[]) {
-    this.send(...args);
+  sendReply(data: any, transfer?: any[]): void;
+  sendReply(...args: any[]): void;
+  sendReply(...args: any[]): void {
+    (this.send as (...a: any[]) => void)(...args);
   }
 
   onMessage(...args: any[]) {

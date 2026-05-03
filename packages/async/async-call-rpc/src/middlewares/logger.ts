@@ -5,7 +5,9 @@ export const createSenderLogger =
   (logService: any) =>
   (channel: AbstractChannelProtocol) =>
   (value: NormalizedRawMessageOutput) => {
-    logService.info(`${channel.masterProcessName} send message`, value.data);
+    const label =
+      channel.identifier || channel.metadata?.processName || 'unknown';
+    logService.info(`[${label}] send message`, value.data);
     return value;
   };
 
@@ -14,8 +16,10 @@ export const createClientLogger =
   (channel: AbstractChannelProtocol) =>
   (value: NormalizedRawMessageOutput) => {
     const { data } = value;
+    const label =
+      channel.identifier || channel.metadata?.processName || 'unknown';
     logService.info(
-      `${channel.masterProcessName} receive message from ${channel.description}`,
+      `[${label}] receive message from ${channel.description}`,
       data
     );
     return value;

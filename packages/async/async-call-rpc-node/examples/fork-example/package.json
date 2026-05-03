@@ -1,0 +1,16 @@
+{
+  "name": "node-fork-rpc-example",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "start": "tsx parent.ts"
+  },
+  "dependencies": {
+    "@x-oasis/async-call-rpc-node": "workspace:*",
+    "@x-oasis/async-call-rpc": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.3.3"
+  }
+}

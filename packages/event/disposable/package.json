@@ -25,6 +25,7 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
+    "@x-oasis/is-function": "workspace:*",
     "@x-oasis/is-object": "workspace:*"
   }
 }

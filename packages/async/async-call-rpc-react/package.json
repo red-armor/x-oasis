@@ -13,6 +13,9 @@
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "example:dev": "cd examples/react-query-app && pnpm dev",
     "example:build": "cd examples/react-query-app && pnpm build"
   },
@@ -23,6 +26,7 @@
   "license": "ISC",
   "devDependencies": {
     "tsdx": "^0.14.1",
+    "vitest": "^1.0.0",
     "@x-oasis/async-call-rpc": "workspace:*",
     "@tanstack/react-query": ">=5.0.0"
   },

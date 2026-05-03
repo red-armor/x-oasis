@@ -13,6 +13,7 @@
     "react-dom": "^18.2.0",
     "@tanstack/react-query": "^5.0.0",
     "@x-oasis/async-call-rpc": "workspace:*",
+    "@x-oasis/async-call-rpc-web": "workspace:*",
     "@x-oasis/async-call-rpc-react": "workspace:*",
     "ws": "^8.13.0"
   },

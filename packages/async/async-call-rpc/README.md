@@ -271,26 +271,103 @@ channel.disconnect(); // 后续请求进入 pendingSendEntries
 channel.activate(); // 自动 replay 所有排队请求
 ```
 
+## 多服务路由（单通道多服务）
+
+默认 1-channel-1-service 的写法（`service.setChannel(channel)`）适合单一服务。如果需要在**同一条传输层**上承载多个服务（例如同一个 WebSocket / MessagePort 暴露多个业务模块），请改用 `RPCServiceHost.registerServiceHandler` 配合 `channel.setServiceHost(host)`：
+
+```typescript
+import {
+  RPCServiceHost,
+  serviceHost, // 默认单例
+} from '@x-oasis/async-call-rpc';
+
+// 1. 注册多个服务处理器（不绑 channel）
+serviceHost.registerServiceHandler('/auth', {
+  login: (args, ctx) => ({ ok: true }),
+  logout: () => ({ ok: true }),
+});
+
+// 也支持直接传入类实例 — 通过原型链按方法名解析
+class FsService {
+  read(path: string) { /* ... */ }
+  write(path: string, data: string) { /* ... */ }
+}
+serviceHost.registerServiceHandler('/fs', new FsService());
+
+// 2. 让 channel 通过 host 路由请求
+channel.setServiceHost(serviceHost);
+```
+
+**关键语义**：
+
+- 客户端调用时按 `requestPath` 路由到对应服务，再按方法名查找 handler
+- 当 `requestPath` 不在 host 中，请求会被**静默忽略**（不会回 `Method not found`）
+  - 这正是允许多个 host / channel 共用一条物理传输层而不会"串台"的原因
+- 同一 channel 既可绑定 service（旧用法）也可绑定 service host（新用法），优先走 host
+- `setServiceHost` 是幂等的：同一 host 多次绑定不会重复注册监听器
+
+**何时使用**：
+
+- ✅ 一个传输层暴露多个独立模块（路由风格的 API）
+- ✅ 不希望为每个模块单独建立 channel
+- ❌ 单一服务场景请继续使用 `serviceHost.registerService(path, { channel, handlers })`
+
+## Port 回传（handler 返回 MessagePort）
+
+handler 的返回值如果是 MessagePort-like 对象（任何带 `postMessage` 方法的对象，如 Web `MessagePort`、Electron `MessagePortMain`），框架会自动以 `PortSuccess` 协议帧 + transfer list 形式回传，客户端会拿到这个 port：
+
+```typescript
+// 服务端
+serviceHost.registerServiceHandler('/broker', {
+  acquirePort: () => {
+    const { port1, port2 } = new MessageChannel();
+    setupOn(port1);
+    return port2; // ⬅ 自动作为 transferable 回传
+  },
+});
+
+// 客户端
+const broker = clientHost.registerClient('/broker', { channel }).createProxy<{
+  acquirePort(): Promise<MessagePort>;
+}>();
+
+const port = await broker.acquirePort();
+// 拿到 port 后可继续构造下游 RPC 通道：
+const sub = new RPCMessageChannel({ port });
+```
+
+适用于 broker 模式：通过一个长生命周期的 IPC 通道按需分发独立的 MessagePort 给业务子通道，避免反复握手。
+
 ## 订阅
 
-支持两种订阅模式：
+支持两种订阅模式，适用于不同的场景：
 
-### 1. 正式 Subscription 协议（推荐）
+### 1. 流式订阅 (SubscriptionRequest) — 推荐用于数据流
 
-使用 `ProxyRPCClient.subscribe()` 方法启动流式订阅。服务端 handler 返回一个 observable-like 对象（带 `subscribe({ next, error, complete })` 方法）：
+使用 `client.subscribe()` 方法启动高频数据流。服务端 handler 返回一个 observable-like 对象，支持多次数据推送、错误处理和完成信号：
+
+**适用场景**：文件监听、数据库变更、实时推送、传感器数据等
 
 ```typescript
 // === 服务端 ===
 const service = serviceHost.registerService('fs', {
-  watchFiles: (args: [string]) => {
+  watchFiles: (args: [string], ctx) => {
     const dir = args[0];
+    const userId = ctx?.userId; // 可以访问 context
+
     // 返回一个 observable-like 对象
     return {
-      subscribe: ({ next, error, complete }) => {
+      subscribe: (observer) => {
         const watcher = fs.watch(dir, (eventType, filename) => {
-          next({ eventType, filename });
+          // 每个文件变更都推送一次
+          observer.onData?.({ eventType, filename, userId });
         });
-        // 返回 Unsubscribable
+
+        watcher.on('error', (err) => {
+          observer.onError?.(err);
+        });
+
+        // 返回取消订阅接口
         return {
           unsubscribe: () => watcher.close(),
         };
@@ -305,39 +382,142 @@ service.setChannel(channel);
 // === 客户端 ===
 const client = clientHost.registerClient('fs', { channel });
 
+// 使用 subscribe() 方法
 const subscription = client.subscribe('watchFiles', ['/src'], {
-  onData: (event) => console.log('File changed:', event),
-  onError: (err) => console.error('Watch error:', err),
-  onComplete: () => console.log('Watch ended'),
+  onData: (event) => {
+    console.log('File changed:', event);
+  },
+  onError: (err) => {
+    console.error('Watch error:', err);
+  },
+  onComplete: () => {
+    console.log('Watch ended');
+  },
 });
 
-// 取消订阅 — 发送 SubscriptionStop 到服务端
+// 主动取消订阅 — 发送 SubscriptionStop 到服务端
 subscription.unsubscribe();
 ```
 
-协议消息类型：
+**协议消息**：
 
 - `SubscriptionRequest` (`sub`) — 客户端发起订阅
 - `SubscriptionStop` (`unsub`) — 客户端取消订阅
 - `SubscriptionStopped` (`ss`) — 服务端确认订阅已停止
+- `ReturnSuccess` — 推送数据
+- `ReturnFail` — 报告错误
 
-### 2. 事件方法约定
+**特点**：
 
-使用 `on*` 方法名约定的事件式订阅（向后兼容）：
+- ✅ 完整的生命周期管理
+- ✅ 支持错误处理和完成信号
+- ✅ 客户端可主动取消
+- ✅ 多次数据推送
+- ✅ 支持 context 注入
+
+### 2. 事件方法 (Ping-Pong) — 用于简单事件监听
+
+使用 `on*` 方法名约定进行低频事件监听。这是一种更简单的"监听与触发"模式，适合定期事件。客户端可以通过返回的 unsubscriber 主动停止监听：
+
+**适用场景**：心跳/ping-pong、定期状态更新、简单事件通知等
 
 ```typescript
-proxy.onDataChanged((data) => {
-  console.log('Data changed:', data);
-});
+// === 服务端 ===
+class PingService {
+  // 方法名以 "on" 开头，被识别为事件方法
+  onPing(callback) {
+    // 定期触发回调
+    setInterval(() => {
+      callback(`pong-${Date.now()}`);
+    }, 10000);
+  }
+
+  onProcessStatusChanged(callback) {
+    // 监听进程状态变更
+    process.on('status', (status) => {
+      callback(status);
+    });
+  }
+}
+
+const service = serviceHost.registerService('ping', new PingService());
+service.setChannel(channel);
 ```
+
+```typescript
+// === 客户端 ===
+// 使用 createProxy() 并通过方法调用传入监听函数
+const client = clientHost.registerClient('ping', { channel }).createProxy<{
+  onPing(callback: (data: string) => void): Unsubscribable;
+  onProcessStatusChanged(callback: (status: any) => void): Unsubscribable;
+}>();
+
+// 返回 unsubscriber 对象，可以调用 unsubscribe() 停止监听
+const pingUnsub = client.onPing((pong) => {
+  console.log('Received:', pong);
+});
+
+const statusUnsub = client.onProcessStatusChanged((status) => {
+  console.log('Status changed:', status);
+});
+
+// 稍后可以取消监听
+pingUnsub.unsubscribe();
+statusUnsub.unsubscribe();
+```
+
+**特点**：
+
+- ✅ 实现简单
+- ✅ 对低频事件友好
+- ✅ 支持多次回调
+- ✅ 支持主动取消（EventMethodStop）
+- ✅ 向后兼容
+- ❌ 无错误处理
+- ❌ 无完成信号
+
+### 对比表
+
+| 特性             | 流式订阅 (subscribe)                         | 事件方法 (onXxx)                          |
+| ---------------- | -------------------------------------------- | ----------------------------------------- |
+| **方法调用**     | `client.subscribe('method', args, observer)` | `const unsub = client.onMethod(callback)` |
+| **推送频率**     | 高频（连续流）                               | 低频（定期事件）                          |
+| **多次推送**     | ✅ 原生支持                                  | ✅ 支持                                   |
+| **错误处理**     | ✅ onError                                   | ❌ 无                                     |
+| **完成信号**     | ✅ onComplete                                | ❌ 无                                     |
+| **主动取消**     | ✅ unsub.unsubscribe()                       | ✅ unsub.unsubscribe()                    |
+| **Context 支持** | ✅ 支持                                      | ❌ 不支持                                 |
+| **生命周期**     | ✅ 完整                                      | ✅ 基础                                   |
+| **实现复杂度**   | 中等                                         | 简单                                      |
 
 ### 生命周期管理
 
-断开连接时自动清理所有活跃订阅：
+断开连接时自动清理所有活跃订阅和事件监听：
 
 ```typescript
 channel.disconnect(); // 内部调用 cleanUpSubscriptions()
 ```
+
+### 何时选用哪种方式
+
+**使用流式订阅 (subscribe)**：
+
+- 数据变更频繁（文件监听、数据库变更）
+- 需要错误处理和完成信号
+- 需要支持context注入（如权限检查、审计）
+- 需要可观察的生命周期
+
+**使用事件方法 (on\*)**：
+
+- 简单的定期事件（心跳/ping-pong、状态检查）
+- 代码已存在（向后兼容）
+- 实现快速简洁
+- 不需要复杂的错误处理
+
+**两种方式都支持**：
+
+- ✅ 多次数据推送
+- ✅ 主动取消 (unsubscribe)
 
 ## API 参考
 
@@ -361,6 +541,7 @@ import {
   // Endpoint
   ProxyRPCClient,
   RPCService,
+  RPCServiceHost, // 类（自定义实例时使用，默认用 serviceHost 单例即可）
   clientHost, // 单例，管理所有客户端
   serviceHost, // 单例，管理所有服务
 
@@ -373,22 +554,51 @@ import {
 } from '@x-oasis/async-call-rpc';
 ```
 
+### `RPCServiceHost`
+
+| 方法                                          | 说明                                                       |
+| --------------------------------------------- | ---------------------------------------------------------- |
+| `registerService(path, options)`              | 1-channel-1-service 模式，service 自带 `channel` 绑定      |
+| `registerServiceHandler(path, instanceOrMap)` | 多服务模式，service 不绑 channel；通过 `setServiceHost` 路由 |
+| `getService(path)`                            | 获取已注册的 service                                        |
+| `getHandler(path, methodName)`                | 路由查表：返回方法处理函数（找不到时返回 `undefined`）       |
+
+`registerServiceHandler` 自动判别入参：
+
+- 若所有 own 属性都是函数 → 当作 handler map
+- 否则 → 当作类实例，handler 通过 `instance[methodName].bind(instance)` 解析（保留 `this`）
+
 ## 运行示例
 
+示例项目在 `examples/` 目录下，包含五个 React 应用：
+
 ```bash
+# Worker 示例（最简单，推荐先看）
+cd examples/react-worker-example
+pnpm install && pnpm dev
+
 # WebSocket 示例
-npx tsx examples/node.websocket.server.ts   # 终端 1
-npx serve examples                          # 终端 2
-# 浏览器打开 http://localhost:3000/test-websocket.html
+cd examples/react-websocket-example
+pnpm install
+pnpm run dev:all   # 同时启动 WebSocket server 和 Vite dev server
 
-# Worker 示例
-npx serve examples
-# 浏览器打开 http://localhost:3000/test-worker.html
+# 综合示例（Worker + WebSocket）
+cd examples/react-full-app
+pnpm install
+pnpm run dev:all
 
-# MessageChannel 示例
-npx serve examples
-# 浏览器打开 http://localhost:3000/test-messagechannel.html
+# 事件方法 (on* Ping-Pong) — Worker-based，展示 on* 事件订阅
+cd examples/react-pingpong-example
+pnpm install && pnpm dev
+
+# 流式订阅 (subscribe) — WebSocket-based，展示 observable 数据流
+cd examples/react-streaming-example
+pnpm install
+npx tsx server.ts &   # 启动 WebSocket server (端口 3457)
+pnpm dev
 ```
+
+详细说明见 `examples/README.md` 和 `examples/QUICKSTART.md`。
 
 ## 运行测试
 

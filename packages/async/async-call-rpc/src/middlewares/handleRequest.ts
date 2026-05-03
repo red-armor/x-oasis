@@ -9,6 +9,7 @@ import {
   AsyncCallErrorDetail,
 } from '../utils/jsonrpc';
 import { JSONRPCErrorCode } from '../error';
+import { isEventMethod } from '../common';
 
 /**
  * Create standardized error response body
@@ -46,10 +47,19 @@ const safeSendReply = (protocol: AbstractChannelProtocol, data: any): void => {
   protocol.sendReply(data);
 };
 
+/**
+ * Detect a MessagePort-like return value (Web `MessagePort`, Electron
+ * `MessagePortMain`, or any duck-typed equivalent). Such values must be
+ * transferred via the channel's transfer list rather than serialized.
+ */
+const isPortLike = (v: any): boolean =>
+  !!v && typeof v === 'object' && typeof (v as any).postMessage === 'function';
+
 export const handleRequest =
   (protocol: AbstractChannelProtocol) =>
   (message: DeserializedMessageOutput) => {
     const service = protocol.service;
+    const serviceHost = protocol.serviceHost;
 
     const { data } = message;
     const header = data[0];
@@ -86,17 +96,118 @@ export const handleRequest =
       return message;
     }
 
-    const handler = service.getHandler(methodName);
-
-    if (!handler) {
-      const errorResponse = ErrorResponseMethodNotFound(seqId);
-      const responseHeader = [ResponseType.ReturnFail, seqId];
-      const responseBody = [errorResponse.error];
-
+    // Handle EventMethodStop — cancel an active ping-pong event method listener
+    if (type === RequestType.EventMethodStop) {
+      // Mark this event method as inactive so remoteCallback stops sending
+      protocol.activeEventMethods.delete(seqId);
+      // Clean up the client's callback reference
+      protocol.requestEvents.delete(seqId);
+      // Send EventMethodStopped acknowledgement
       safeSendReply(
         protocol,
-        protocol.writeBuffer.encode([responseHeader, responseBody])
+        protocol.writeBuffer.encode([
+          [ResponseType.EventMethodStopped, seqId],
+          [],
+        ])
       );
+      return message;
+    }
+
+    // Multi-service routing: prefer host lookup (by requestPath + methodName)
+    // when a serviceHost is bound to this channel. If the host doesn't know
+    // this requestPath, silently no-op — multiple channels may share one
+    // transport, and this avoids cross-talk "Method not found" replies.
+    let handler: ((...a: any[]) => any) | undefined;
+    if (serviceHost) {
+      handler = serviceHost.getHandler(requestPath, methodName);
+      if (!handler) return message;
+    } else {
+      handler = service?.getHandler(methodName);
+      if (!handler) {
+        const errorResponse = ErrorResponseMethodNotFound(seqId);
+        const responseHeader = [ResponseType.ReturnFail, seqId];
+        const responseBody = [errorResponse.error];
+
+        safeSendReply(
+          protocol,
+          protocol.writeBuffer.encode([responseHeader, responseBody])
+        );
+        return message;
+      }
+    }
+
+    /**
+     * Handle ping-pong event methods (on* methods).
+     *
+     * Ping-pong is a simple listen & fire pattern, distinct from streaming subscriptions:
+     * - Client registers a callback via createProxy().onMethod(callback)
+     * - Server calls the callback whenever it has data to send
+     * - Client can later send EventMethodStop to cancel the listener
+     *
+     * The callback function is wrapped in a "remote callback" that serializes
+     * and sends responses back to the client through the protocol. The server
+     * tracks active listeners using activeEventMethods set, allowing graceful
+     * cleanup when the client unsubscribes.
+     *
+     * Example:
+     *   Service: onPing(callback) { setInterval(() => callback('ping'), 1000); }
+     *   Client:  const unsub = client.onPing((data) => console.log(data));
+     *            // Later: unsub(); // Stop listening
+     */
+    if (isEventMethod(methodName)) {
+      // Register this event method as active.
+      // The client can later send EventMethodStop to deactivate it.
+      protocol.activeEventMethods.add(seqId);
+
+      // Create a remote callback function that the handler can invoke.
+      // Each invocation sends a ReturnSuccess response to the client.
+      // Before sending, check if this listener is still active (not cancelled by client).
+      const remoteCallback = (...callbackArgs: any[]) => {
+        // Skip if client has already cancelled this listener via EventMethodStop
+        if (!protocol.activeEventMethods.has(seqId)) {
+          return;
+        }
+
+        const responseHeader = [ResponseType.ReturnSuccess, seqId];
+        let sendData: any = null;
+
+        try {
+          // Encode the callback arguments as the response body
+          sendData = protocol.writeBuffer.encode([
+            responseHeader,
+            callbackArgs.length === 1 ? [callbackArgs[0]] : callbackArgs,
+          ]);
+        } catch (err) {
+          // If encoding fails, send empty response and log the error
+          sendData = protocol.writeBuffer.encode([responseHeader, []]);
+          console.error(
+            `[handleRequest] Encode error for ${requestPath}.${methodName}:`,
+            err
+          );
+        }
+
+        safeSendReply(protocol, sendData);
+      };
+
+      // Invoke the handler with the remote callback.
+      // The handler is expected to call remoteCallback(...) whenever it wants to send data.
+      try {
+        handler(remoteCallback);
+      } catch (err) {
+        // If handler throws during initialization, send error response and clean up
+        protocol.activeEventMethods.delete(seqId);
+        protocol.requestEvents.delete(seqId);
+
+        const errorBody = createErrorResponseBody(err, jsonrpcRequest);
+        safeSendReply(
+          protocol,
+          protocol.writeBuffer.encode([
+            [ResponseType.ReturnFail, seqId],
+            [errorBody],
+          ])
+        );
+      }
+
       return message;
     }
 
@@ -226,6 +337,21 @@ export const handleRequest =
 
       try {
         const response = await Promise.resolve(result);
+
+        // Port return value: encode as PortSuccess and pass the port as a
+        // transferable. The receiving side's `handleResponse` resolves the
+        // deferred with `message.ports[0]`.
+        if (isPortLike(response)) {
+          const portHeader = [ResponseType.PortSuccess, seqId];
+          const sendData = protocol.writeBuffer.encode([portHeader, []]);
+          if (protocol.isConnected()) {
+            (protocol.sendReply as (d: any, t?: any[]) => void)(sendData, [
+              response,
+            ]);
+          }
+          return;
+        }
+
         const responseHeader = [ResponseType.ReturnSuccess, seqId];
         let sendData = null;
         try {

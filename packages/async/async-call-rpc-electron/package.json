@@ -1,0 +1,40 @@
+{
+  "name": "@x-oasis/async-call-rpc-electron",
+  "version": "0.1.0",
+  "description": "Electron transport adapters (ipcMain, ipcRenderer, MessagePortMain, UtilityProcess) for @x-oasis/async-call-rpc",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/async-call-rpc-electron.esm.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdx build --tsconfig tsconfig.build.json",
+    "clean": "rimraf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tsdx": "^0.14.1",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "@x-oasis/async-call-rpc": "workspace:*"
+  },
+  "peerDependencies": {
+    "electron": ">=20.0.0"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    }
+  }
+}

@@ -1,23 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WebSocketChannel, clientHost } from '@x-oasis/async-call-rpc';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
+import { clientHost, ProxyRPCClient } from '@x-oasis/async-call-rpc';
 import { createRPCReact } from '@x-oasis/async-call-rpc-react';
 
-// Service interface
+// Service interface — must match the server handlers.
+// NOTE: The RPC framework passes only the first wire argument to each
+// handler, so multi-arg methods use a single object parameter.
 type FileService = {
   readFile(path: string): Promise<string>;
-  writeFile(path: string, content: string): Promise<void>;
+  writeFile(params: { path: string; content: string }): Promise<void>;
   listFiles(dir: string): Promise<string[]>;
   getFileSize(path: string): Promise<number>;
 };
 
+const WS_URL = 'ws://localhost:3456';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5000,
+      retry: 1,
+    },
+  },
+});
+
 // Component that uses the RPC with React Query
 function FileExplorer({
   fileRPC,
-  queryClient,
 }: {
   fileRPC: ReturnType<typeof createRPCReact<FileService>>;
-  queryClient: QueryClient;
 }) {
   const {
     data: files,
@@ -30,16 +42,12 @@ function FileExplorer({
 
   return (
     <div className="file-explorer">
-      <h2>📁 Files in /src</h2>
+      <h2>Files in /src</h2>
       {files && files.length > 0 ? (
         <ul>
-          {files.map((file) => (
+          {files.map((file: string) => (
             <li key={file}>
-              <FileItem
-                path={`/src/${file}`}
-                fileRPC={fileRPC}
-                queryClient={queryClient}
-              />
+              <FileItem path={`/src/${file}`} fileRPC={fileRPC} />
             </li>
           ))}
         </ul>
@@ -53,18 +61,14 @@ function FileExplorer({
 function FileItem({
   path,
   fileRPC,
-  queryClient,
 }: {
   path: string;
   fileRPC: ReturnType<typeof createRPCReact<FileService>>;
-  queryClient: QueryClient;
 }) {
   const { data: size, isLoading: sizeLoading } = fileRPC.useQuery(
     'getFileSize',
     [path],
-    {
-      enabled: !!path,
-    }
+    { enabled: !!path }
   );
 
   const writeMutation = fileRPC.useMutation('writeFile', {
@@ -74,6 +78,9 @@ function FileItem({
       });
       queryClient.invalidateQueries({
         queryKey: fileRPC.getQueryKey('readFile', path),
+      });
+      queryClient.invalidateQueries({
+        queryKey: fileRPC.getQueryKey('getFileSize', path),
       });
     },
     onError: (err) => {
@@ -90,13 +97,12 @@ function FileItem({
         className="update-btn"
         onClick={() =>
           writeMutation.mutate([
-            path,
-            `// Updated at ${new Date().toISOString()}\n`,
+            { path, content: `// Updated at ${new Date().toISOString()}\n` },
           ])
         }
         disabled={writeMutation.isPending}
       >
-        {writeMutation.isPending ? '✓ Updating...' : 'Update'}
+        {writeMutation.isPending ? 'Updating...' : 'Update'}
       </button>
       {writeMutation.isError && (
         <span className="error-text">
@@ -120,86 +126,18 @@ function FileViewer({
 
   return (
     <div className="file-viewer">
-      <h3>📄 Content: {path}</h3>
+      <h3>Content: {path}</h3>
       <pre className="code-block">{content || '(empty)'}</pre>
     </div>
   );
 }
 
-function AppContent() {
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [clientInstance, setClientInstance] = useState<any>(null);
-
-  // Initialize RPC client
-  useEffect(() => {
-    let ws: WebSocket | null = null;
-    let retries = 0;
-    const maxRetries = 5;
-
-    const connect = () => {
-      try {
-        ws = new WebSocket('ws://localhost:3456');
-
-        ws.onopen = () => {
-          console.log('[Client] Connected to server');
-          const channel = new WebSocketChannel(ws as any, {
-            name: 'file-client',
-          });
-          const client = clientHost.registerClient('file-service', { channel });
-          setClientInstance(client);
-          setConnected(true);
-          retries = 0; // Reset retries on successful connection
-        };
-
-        ws.onerror = () => {
-          console.error('[Client] WebSocket error');
-        };
-
-        ws.onclose = () => {
-          console.log('[Client] Disconnected from server');
-          setConnected(false);
-          // Attempt to reconnect
-          if (retries < maxRetries) {
-            retries++;
-            setTimeout(connect, 2000 * retries); // Exponential backoff
-          }
-        };
-      } catch (err) {
-        console.error('[Client] Failed to create WebSocket:', err);
-      }
-    };
-
-    connect();
-
-    return () => {
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, []);
-
-  if (!connected || !clientInstance) {
-    return (
-      <div className="connection-status">
-        <div className="status-indicator disconnected"></div>
-        <p>Connecting to server...</p>
-        <p className="hint">
-          Make sure the server is running on ws://localhost:3456
-        </p>
-      </div>
-    );
-  }
-
-  const fileRPC = createRPCReact<FileService>(clientInstance);
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 5000,
-        retry: 1,
-      },
-    },
-  });
+function AppContent({
+  fileRPC,
+}: {
+  fileRPC: ReturnType<typeof createRPCReact<FileService>>;
+}) {
+  const [selectedFile] = useState<string | null>(null);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -211,7 +149,7 @@ function AppContent() {
 
         <div className="main-content">
           <div className="sidebar">
-            <FileExplorer fileRPC={fileRPC} queryClient={queryClient} />
+            <FileExplorer fileRPC={fileRPC} />
           </div>
 
           <div className="editor">
@@ -231,13 +169,86 @@ function AppContent() {
 }
 
 export function App() {
+  const [connected, setConnected] = useState(false);
+  const [fileRPC, setFileRPC] = useState<ReturnType<
+    typeof createRPCReact<FileService>
+  > | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    let retries = 0;
+    const maxRetries = 5;
+
+    const connect = () => {
+      try {
+        const ws = new WebSocket(WS_URL);
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+          console.log('[Client] Connected to server');
+          retries = 0;
+
+          const channel = new WebSocketChannel(ws as any, {
+            name: 'file-client',
+            connected: true,
+          });
+
+          // Use the real clientHost API
+          const client = clientHost.registerClient('file-service', { channel });
+          const hooks = createRPCReact<FileService>(
+            client as unknown as ProxyRPCClient
+          );
+          setFileRPC(hooks);
+          setConnected(true);
+        };
+
+        ws.onerror = () => {
+          console.error('[Client] WebSocket error');
+        };
+
+        ws.onclose = () => {
+          console.log('[Client] Disconnected');
+          setConnected(false);
+          if (retries < maxRetries) {
+            retries++;
+            setTimeout(connect, 2000 * retries);
+          }
+        };
+      } catch (err) {
+        console.error('[Client] Failed to create WebSocket:', err);
+      }
+    };
+
+    connect();
+
+    return () => {
+      wsRef.current?.close();
+    };
+  }, []);
+
+  if (!connected || !fileRPC) {
+    return (
+      <div className="app-root">
+        <header className="app-header">
+          <h1>React Query + async-call-rpc Demo</h1>
+          <p>Type-safe RPC hooks with React Query integration</p>
+        </header>
+        <div className="connection-status">
+          <div className="status-indicator disconnected"></div>
+          <p>Connecting to server...</p>
+          <p className="hint">Make sure the server is running on {WS_URL}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-root">
       <header className="app-header">
-        <h1>📦 React Query + async-call-rpc Demo</h1>
+        <h1>React Query + async-call-rpc Demo</h1>
         <p>Type-safe RPC hooks with React Query integration</p>
       </header>
-      <AppContent />
+      <AppContent fileRPC={fileRPC} />
     </div>
   );
 }
