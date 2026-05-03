@@ -1,0 +1,33 @@
+{
+  "name": "@x-oasis/node-fetch-json",
+  "version": "0.1.0",
+  "description": "tiny get/post wrapper around node-fetch that auto-decodes JSON and exposes the raw response",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/node-fetch-json.esm.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdx build --tsconfig tsconfig.build.json",
+    "clean": "rimraf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.13",
+    "tsdx": "^0.14.1",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
