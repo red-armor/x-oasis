@@ -352,9 +352,11 @@ export const handleRequest =
           const portHeader = [ResponseType.PortSuccess, seqId];
           const sendData = protocol.writeBuffer.encode([portHeader, []]);
           if (protocol.isConnected()) {
-            (protocol.sendReply as (d: any, t?: any[]) => void)(sendData, [
-              response,
-            ]);
+            console.log('response ', response);
+            (protocol.sendReply as (d: any, t?: any[]) => void)(
+              sendData,
+              [].concat(response)
+            );
           }
           return;
         }

@@ -3,6 +3,7 @@ import { NormalizedRawMessageOutput } from '../types';
 export const normalizeMessageChannelRawMessage =
   () =>
   (event: MessageEvent): NormalizedRawMessageOutput => {
+    console.log('port ', event.ports, event);
     return {
       event,
       data: event.data,

@@ -65,6 +65,7 @@ export const handleResponse =
         protocol.ongoingRequests.delete(`${seqId}`);
         // 说明函数调用返回的是一个 MessagePort, 它一般是用来 client.acquirePort()
         if (type === ResponseType.PortSuccess) {
+          console.log('testing-------', message, message.ports[0]);
           findDefer.resolve(message.ports[0]);
         } else if (type === ResponseType.ReturnFail) {
           const rawError = body[0];
