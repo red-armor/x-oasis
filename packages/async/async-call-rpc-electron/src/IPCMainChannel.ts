@@ -97,9 +97,6 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
       return;
     }
     if (target.isDestroyed && target.isDestroyed()) {
-      console.warn(
-        `[IPCMainChannel] Cannot send on "${this._channelName}": WebContents is destroyed.`
-      );
       return;
     }
     if (transfer && transfer.length) {

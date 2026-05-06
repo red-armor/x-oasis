@@ -67,7 +67,7 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
     this._pendingListener = null;
 
     if (port) {
-      this._attachPort(port);
+      this._attachPort(port as unknown as MessagePortMain);
     }
   }
 

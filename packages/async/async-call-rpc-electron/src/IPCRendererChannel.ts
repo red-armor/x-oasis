@@ -60,9 +60,13 @@ export default class IPCRendererChannel extends AbstractChannelProtocol {
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
+    // 参考 https://www.electronjs.org/docs/latest/api/ipc-renderer#ipcrendereronchannel-listener
+    // 其中ports是event来的，data是跟在后面的，他其实跟
+    // https://www.electronjs.org/docs/latest/api/utility-process#childpostmessagemessage-transfer
+    // 不一样的，你可以去看下 MessageEvent, 它里面是包含 data，ports的；
     const handler = (_event: IpcRendererEvent, ...args: unknown[]): void => {
       const data = args.length === 1 ? args[0] : args;
-      listener({ data } as any);
+      listener({ data, ports: _event.ports } as any);
     };
 
     this._ipcRenderer.on(this._channelName, handler);
