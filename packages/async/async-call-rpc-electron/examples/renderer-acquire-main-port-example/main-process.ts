@@ -12,19 +12,10 @@
  * 3. 注册服务并提供可远程调用的方法
  */
 
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow, MessageChannelMain } from 'electron';
 import { IPCMainChannel } from '../../src/index.ts';
 import { serviceHost } from '@x-oasis/async-call-rpc';
 import path from 'path';
-
-// ─── 模拟的应用配置 ─────────────────────────────────────────────────────────
-
-const appConfig: Record<string, unknown> = {
-  theme: 'dark',
-  language: 'zh-CN',
-  fontSize: 14,
-  autoSave: true,
-};
 
 // ─── 创建窗口并建立 RPC 通道 ─────────────────────────────────────────────────
 
@@ -58,63 +49,9 @@ function createWindow() {
     channel,
     serviceHost,
     handlers: {
-      /**
-       * 获取应用版本号
-       */
-      getAppVersion: () => {
-        return app.getVersion();
-      },
-
-      /**
-       * 读取配置项
-       * @param key - 配置键名
-       * @returns 配置值，不存在时返回 undefined
-       */
-      readConfig: (key: string) => {
-        return appConfig[key];
-      },
-
-      /**
-       * 批量读取配置
-       * @param keys - 配置键名数组
-       * @returns 键值对对象
-       */
-      readConfigBatch: (keys: string[]) => {
-        const result: Record<string, unknown> = {};
-        for (const key of keys) {
-          result[key] = appConfig[key];
-        }
-        return result;
-      },
-
-      /**
-       * 打开文件选择对话框
-       * @param options - 对话框选项
-       * @returns 用户选择的文件路径数组
-       */
-      openDialog: async (options?: {
-        title?: string;
-        filters?: Array<{ name: string; extensions: string[] }>;
-      }) => {
-        const result = await dialog.showOpenDialog(win, {
-          title: options?.title ?? '选择文件',
-          filters: options?.filters ?? [
-            { name: '所有文件', extensions: ['*'] },
-          ],
-          properties: ['openFile', 'multiSelections'],
-        });
-        return result.filePaths;
-      },
-
-      /**
-       * 更新配置项
-       * 注意：RPC 框架只传递第一个参数给 handler，
-       * 所以多参数需要用对象包装。
-       * @param params - { key: 配置键名, value: 配置值 }
-       */
-      updateConfig: (params: { key: string; value: unknown }) => {
-        appConfig[params.key] = params.value;
-        return true;
+      acquirePort(): Electron.MessagePortMain {
+        const { port1, port2 } = new MessageChannelMain();
+        return port1;
       },
     },
   });

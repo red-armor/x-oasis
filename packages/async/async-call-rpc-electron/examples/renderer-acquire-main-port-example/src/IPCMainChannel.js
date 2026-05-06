@@ -1,7 +1,7 @@
-import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
-import { ipcMain } from 'electron';
-import { IPCMainChannelProps, IpcMainEvent, WebContents } from './types';
-
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+const async_call_rpc_1 = require('@x-oasis/async-call-rpc');
+const electron_1 = require('electron');
 /**
  * RPC channel protocol for Electron's `ipcMain` side.
  *
@@ -40,13 +40,12 @@ import { IPCMainChannelProps, IpcMainEvent, WebContents } from './types';
  *
  * @see {@link IPCRendererChannel} for the renderer-side counterpart
  */
-export default class IPCMainChannel extends AbstractChannelProtocol {
-  private _channelName: string;
-  private _webContents?: WebContents;
-  private _acceptAllSenders: boolean;
-  private _lastSender?: WebContents;
-
-  constructor(props: IPCMainChannelProps) {
+class IPCMainChannel extends async_call_rpc_1.AbstractChannelProtocol {
+  _channelName;
+  _webContents;
+  _acceptAllSenders;
+  _lastSender;
+  constructor(props) {
     const {
       channelName,
       webContents,
@@ -57,7 +56,6 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
     this._channelName = channelName;
     this._webContents = webContents;
     this._acceptAllSenders = acceptAllSenders;
-
     // Auto-disconnect when the bound WebContents is destroyed.
     // Skipped in broadcast mode — no single sender to track.
     if (!acceptAllSenders && this._webContents) {
@@ -66,9 +64,8 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
       });
     }
   }
-
-  on(listener: (data: unknown) => void): void | (() => void) {
-    const handler = (_event: IpcMainEvent, ...args: unknown[]): void => {
+  on(listener) {
+    const handler = (_event, ...args) => {
       if (this._acceptAllSenders) {
         // Broadcast mode: remember sender so replies route back to it.
         this._lastSender = _event.sender;
@@ -77,16 +74,14 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
         return;
       }
       const data = args.length === 1 ? args[0] : args;
-      listener({ data, sender: _event.sender } as any);
+      listener({ data, sender: _event.sender });
     };
-
-    ipcMain.on(this._channelName, handler);
+    electron_1.ipcMain.on(this._channelName, handler);
     return () => {
-      ipcMain.off(this._channelName, handler);
+      electron_1.ipcMain.off(this._channelName, handler);
     };
   }
-
-  send(data: unknown, transfer?: any[]): void {
+  send(data, transfer) {
     const target = this._acceptAllSenders
       ? this._lastSender
       : this._webContents;
@@ -103,17 +98,16 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
       return;
     }
     if (transfer && transfer.length) {
-      (target as any).postMessage(this._channelName, data, transfer);
+      target.postMessage(this._channelName, data, transfer);
     } else {
       target.send(this._channelName, data);
     }
   }
-
-  disconnect(): void {
+  disconnect() {
     super.disconnect();
   }
-
-  get channelName(): string {
+  get channelName() {
     return this._channelName;
   }
 }
+exports.default = IPCMainChannel;

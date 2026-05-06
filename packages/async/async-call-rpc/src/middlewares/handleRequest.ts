@@ -52,8 +52,15 @@ const safeSendReply = (protocol: AbstractChannelProtocol, data: any): void => {
  * `MessagePortMain`, or any duck-typed equivalent). Such values must be
  * transferred via the channel's transfer list rather than serialized.
  */
-const isPortLike = (v: any): boolean =>
-  !!v && typeof v === 'object' && typeof (v as any).postMessage === 'function';
+const isPortLike = (_v: any): boolean => {
+  let v = _v;
+  if (Array.isArray(_v)) {
+    v = _v[0];
+  }
+  return (
+    !!v && typeof v === 'object' && typeof (v as any).postMessage === 'function'
+  );
+};
 
 export const handleRequest =
   (protocol: AbstractChannelProtocol) =>

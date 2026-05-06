@@ -63,6 +63,7 @@ export const handleResponse =
       } else {
         // Normal one-shot request
         protocol.ongoingRequests.delete(`${seqId}`);
+        // 说明函数调用返回的是一个 MessagePort, 它一般是用来 client.acquirePort()
         if (type === ResponseType.PortSuccess) {
           findDefer.resolve(message.ports[0]);
         } else if (type === ResponseType.ReturnFail) {

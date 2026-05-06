@@ -1,3 +1,4 @@
+'use strict';
 /**
  * @x-oasis/async-call-rpc-electron — ipcMain + ipcRenderer 示例（渲染进程侧）
  *
@@ -8,50 +9,36 @@
  * 2. 通过 clientHost 注册客户端
  * 3. 使用类型安全的代理调用主进程方法
  */
-
-import { ipcRenderer } from 'electron';
-import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron';
-import { clientHost } from '@x-oasis/async-call-rpc';
-
-// ─── 定义远程服务接口（与主进程注册的 handlers 对应） ──────────────────────────
-
-interface AppAPI {
-  acquirePort: () => Electron.MessagePortMain;
-}
-
+Object.defineProperty(exports, '__esModule', { value: true });
+const electron_1 = require('electron');
+const index_1 = require('../../src/index');
+const async_call_rpc_1 = require('@x-oasis/async-call-rpc');
 // ─── 创建 RPC 通道 ───────────────────────────────────────────────────────────
-
 // channelName 必须与主进程的 IPCMainChannel 一致
-const channel = new IPCRendererChannel({
+const channel = new index_1.IPCRendererChannel({
   channelName: 'app-rpc',
-  ipcRenderer,
+  ipcRenderer: electron_1.ipcRenderer,
   projectName: 'my-electron-app',
   description: 'renderer→main RPC channel',
 });
-
 // ─── 注册 RPC 客户端 ─────────────────────────────────────────────────────────
-
 // servicePath 必须与主进程 registerService 的第一个参数一致
-const api = clientHost.registerClient('api', { channel }).createProxy<AppAPI>();
-
+const api = async_call_rpc_1.clientHost
+  .registerClient('api', { channel })
+  .createProxy();
 // ─── 使用示例 ────────────────────────────────────────────────────────────────
-
-function log(msg: string) {
+function log(msg) {
   console.log(msg);
   const el = document.getElementById('output');
   if (el) el.textContent += `${msg}\n`;
 }
-
 async function main() {
   const el = document.getElementById('output');
   if (el) el.textContent = '';
-
   const port = await api.acquirePort();
   console.log('port ', port);
 }
-
 main().catch(console.error);
-
 // ─── 断开连接 ────────────────────────────────────────────────────────────────
 //
 // 页面卸载时可以主动断开：
