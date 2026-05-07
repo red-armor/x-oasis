@@ -1,6 +1,6 @@
 import { app, BrowserWindow, MessageChannelMain } from 'electron';
 import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;
@@ -22,12 +22,17 @@ function createWindow(): void {
     description: 'main→renderer RPC channel',
   });
 
+  const client = clientHost.registerClient('api', { channel }).createProxy();
+
+  const count = 0;
+
   serviceHost.registerService('api', {
     channel,
     serviceHost,
     handlers: {
       acquirePort(): [Electron.MessagePortMain] {
         const { port1, port2 } = new MessageChannelMain();
+        client.assignPort(port2);
         return [port1];
       },
     },

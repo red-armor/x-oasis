@@ -1,18 +1,12 @@
 import { resolve } from 'path';
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
+import { defineConfig } from 'electron-vite';
 import react from '@vitejs/plugin-react';
+import { resolveXOasisAliases } from './resolve-aliases';
+
+const xOasisAliases = resolveXOasisAliases();
 
 export default defineConfig({
   main: {
-    plugins: [
-      externalizeDepsPlugin({
-        exclude: [
-          '@x-oasis/async-call-rpc-electron',
-          '@x-oasis/async-call-rpc',
-        ],
-        include: ['electron'],
-      }),
-    ],
     build: {
       outDir: 'out/main',
       rollupOptions: {
@@ -21,50 +15,41 @@ export default defineConfig({
         },
         output: {
           entryFileNames: 'main-process.js',
+          format: 'cjs',
         },
+        external: ['electron'],
       },
     },
     resolve: {
-      alias: {
-        '@x-oasis/async-call-rpc-electron': resolve(
-          __dirname,
-          '../../src/index.ts'
-        ),
-        '@x-oasis/async-call-rpc': resolve(
-          __dirname,
-          '../../../async-call-rpc/src/index.ts'
-        ),
+      alias: xOasisAliases,
+    },
+    server: {
+      middlewareMode: false,
+      watch: {
+        // 监听 @x-oasis 包的文件变更
+        ignored: ['!**/node_modules/@x-oasis/**'],
       },
     },
   },
   preload: {
-    plugins: [
-      externalizeDepsPlugin({
-        exclude: [
-          '@x-oasis/async-call-rpc-electron',
-          '@x-oasis/async-call-rpc',
-        ],
-        include: ['electron'],
-      }),
-    ],
     build: {
       outDir: 'out/preload',
       rollupOptions: {
         input: {
           preload: resolve(__dirname, 'preload.ts'),
         },
+        output: {
+          format: 'cjs',
+        },
+        external: ['electron'],
       },
     },
     resolve: {
-      alias: {
-        '@x-oasis/async-call-rpc-electron': resolve(
-          __dirname,
-          '../../src/index.ts'
-        ),
-        '@x-oasis/async-call-rpc': resolve(
-          __dirname,
-          '../../../async-call-rpc/src/index.ts'
-        ),
+      alias: xOasisAliases,
+    },
+    server: {
+      watch: {
+        ignored: ['!**/node_modules/@x-oasis/**'],
       },
     },
   },
@@ -79,15 +64,11 @@ export default defineConfig({
     },
     plugins: [react()],
     resolve: {
-      alias: {
-        '@x-oasis/async-call-rpc-electron': resolve(
-          __dirname,
-          '../../src/index.ts'
-        ),
-        '@x-oasis/async-call-rpc': resolve(
-          __dirname,
-          '../../../async-call-rpc/src/index.ts'
-        ),
+      alias: xOasisAliases,
+    },
+    server: {
+      watch: {
+        ignored: ['!**/node_modules/@x-oasis/**'],
       },
     },
   },
