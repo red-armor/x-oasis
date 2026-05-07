@@ -175,6 +175,13 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     channel: AbstractChannelProtocol,
     type: ParticipantType = 'process'
   ): void {
+    // Ensure the channel's message listener is attached so that responses
+    // to orchestrator RPC calls (e.g. activateConnection) are processed.
+    // Without this, makeRequest() creates a Deferred but the channel never
+    // routes the incoming response to handleResponse, causing connect() to
+    // hang in the CONNECTING state indefinitely.
+    channel.ensureListenerAttached();
+
     this.participants.set(id, {
       id,
       channel,

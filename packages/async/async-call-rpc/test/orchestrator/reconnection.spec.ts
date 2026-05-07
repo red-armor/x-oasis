@@ -56,6 +56,7 @@ function makeStubChannel() {
     disconnect: vi.fn(),
     onDidConnected: vi.fn(),
     onDidDisconnected: vi.fn(),
+    ensureListenerAttached: vi.fn(),
   } as any;
 }
 

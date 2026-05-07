@@ -1,14 +1,4 @@
-/**
- * renderer-acquire-utility-port-orchestrator-example — Preload Script
- *
- * Runs in the renderer's sandboxed preload context.
- *
- * The orchestrator delivers a MessagePort by calling the participant's
- * `activateConnection` handler.  `registerOrchestratorHandler` wires this up
- * without any magic strings on the user side.
- */
-
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, contextBridge } from 'electron';
 import {
   IPCRendererChannel,
   registerOrchestratorHandler,
@@ -16,7 +6,6 @@ import {
 import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
 import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
-// --- IPC channel to main process (control plane) ---
 const ipcChannel = new IPCRendererChannel({
   channelName: 'app-rpc',
   ipcRenderer,
@@ -24,48 +13,79 @@ const ipcChannel = new IPCRendererChannel({
   description: 'renderer→main IPC channel',
 });
 
-// --- Direct MessagePort channel to utility (data plane, late-bound) ---
 const directChannel = new RPCMessageChannel({
   description: 'renderer↔utility direct port',
 });
 
-// Register a service that utility can call over the direct port
 serviceHost.registerService('renderer-direct', {
   channel: directChannel,
   serviceHost,
   handlers: {
     greet(msg: string): string {
-      console.log('[renderer] direct RPC from utility:', msg);
       return `greeting from renderer: ${msg}`;
     },
   },
 });
 
-// Client to call utility services over the direct port
 const utilityDirectClient = clientHost
   .registerClient('utility-direct', { channel: directChannel })
   .createProxy();
 
-// --- Orchestrator activation ---
-//
-// When the orchestrator calls connect(), it delivers a MessagePort here.
-// No magic strings — the protocol detail is fully encapsulated in the helper.
 registerOrchestratorHandler(ipcChannel, (port: MessagePort) => {
-  console.log('[renderer] activateConnection — binding direct port');
   directChannel.bindPort(port);
-
-  setTimeout(async () => {
-    try {
-      const result = await (utilityDirectClient as any).ping(
-        'hello from renderer via direct port'
-      );
-      console.log('[renderer] ✅ direct RPC to utility:', result);
-    } catch (err) {
-      console.error('[renderer] ❌ direct RPC to utility failed:', err);
-    }
-  }, 500);
 });
 
-console.log(
-  '[preload] renderer-acquire-utility-port-orchestrator-example initialized'
-);
+contextBridge.exposeInMainWorld('orchestratorAPI', {
+  connect: () => ipcRenderer.invoke('orchestrator:connect'),
+  disconnect: () => ipcRenderer.invoke('orchestrator:disconnect'),
+  simulateLost: () => ipcRenderer.invoke('orchestrator:simulateLost'),
+  getStatus: () => ipcRenderer.invoke('orchestrator:getStatus'),
+  sendRpc: (message: string) => {
+    return (utilityDirectClient as any).ping(message).then(
+      (r: any) => r,
+      (e: any) => {
+        throw e;
+      }
+    );
+  },
+  onStateChange: (callback: (event: any) => void) => {
+    const listener = (_ev: any, data: any) => callback(data);
+    ipcRenderer.on('orchestrator:stateChange', listener);
+    return () =>
+      ipcRenderer.removeListener('orchestrator:stateChange', listener);
+  },
+  onReady: (callback: (event: any) => void) => {
+    const listener = (_ev: any, data: any) => callback(data);
+    ipcRenderer.on('orchestrator:ready', listener);
+    return () => ipcRenderer.removeListener('orchestrator:ready', listener);
+  },
+  onDisconnected: (callback: (event: any) => void) => {
+    const listener = (_ev: any, data: any) => callback(data);
+    ipcRenderer.on('orchestrator:disconnected', listener);
+    return () =>
+      ipcRenderer.removeListener('orchestrator:disconnected', listener);
+  },
+  onReconnecting: (callback: (event: any) => void) => {
+    const listener = (_ev: any, data: any) => callback(data);
+    ipcRenderer.on('orchestrator:reconnecting', listener);
+    return () =>
+      ipcRenderer.removeListener('orchestrator:reconnecting', listener);
+  },
+  onReconnected: (callback: (event: any) => void) => {
+    const listener = (_ev: any, data: any) => callback(data);
+    ipcRenderer.on('orchestrator:reconnected', listener);
+    return () =>
+      ipcRenderer.removeListener('orchestrator:reconnected', listener);
+  },
+  onReconnectFailed: (callback: (event: any) => void) => {
+    const listener = (_ev: any, data: any) => callback(data);
+    ipcRenderer.on('orchestrator:reconnectFailed', listener);
+    return () =>
+      ipcRenderer.removeListener('orchestrator:reconnectFailed', listener);
+  },
+  onClosed: (callback: (event: any) => void) => {
+    const listener = (_ev: any, data: any) => callback(data);
+    ipcRenderer.on('orchestrator:closed', listener);
+    return () => ipcRenderer.removeListener('orchestrator:closed', listener);
+  },
+});

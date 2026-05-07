@@ -25,6 +25,34 @@ class StubChannel extends AbstractChannelProtocol {
   on() {}
 }
 
+// ── Mock channel that tracks ensureListenerAttached calls ─────────────────────
+
+class MockChannel extends AbstractChannelProtocol {
+  ensureListenerAttachedCalled = false;
+  onHandler?: (data: unknown) => void;
+
+  send() {}
+
+  on(listener: (data: unknown) => void): () => void {
+    this.onHandler = listener;
+    return () => {
+      this.onHandler = undefined;
+    };
+  }
+
+  ensureListenerAttached(): void {
+    this.ensureListenerAttachedCalled = true;
+    super.ensureListenerAttached();
+  }
+
+  // Simulate receiving a response message (for testing response handling)
+  simulateResponse(data: unknown) {
+    if (this.onHandler) {
+      this.onHandler(data);
+    }
+  }
+}
+
 // ── TestOrchestrator ──────────────────────────────────────────────────────────
 
 class TestOrchestrator extends BaseConnectionOrchestrator {
@@ -101,6 +129,39 @@ describe('BaseConnectionOrchestrator', () => {
     it('removes participant on unregister', () => {
       orch.unregisterParticipant('a');
       expect((orch as any).participants.has('a')).toBe(false);
+    });
+
+    it('calls ensureListenerAttached on the channel to receive responses', () => {
+      const mockChannel = new MockChannel();
+      expect(mockChannel.ensureListenerAttachedCalled).toBe(false);
+
+      const testOrch = new TestOrchestrator();
+      testOrch.registerParticipant('test', mockChannel, 'process');
+
+      // This is the fix for the bug where connect() would hang in CONNECTING
+      // state because responses to activateParticipant RPC calls were never
+      // processed - the channel's onMessage listener was never registered.
+      expect(mockChannel.ensureListenerAttachedCalled).toBe(true);
+    });
+
+    it('ensures channel can receive responses after registerParticipant (regression test)', () => {
+      // Regression test for: connection stuck in CONNECTING state because
+      // activateParticipant RPC responses were never processed.
+      //
+      // Root cause: registerParticipant did not call channel.ensureListenerAttached(),
+      // so the channel's onMessage listener was never registered. When orchestrator
+      // sent activateConnection RPC via makeRequest(), the response came back but
+      // was dropped because no listener was attached to process it.
+      const mockChannel = new MockChannel();
+      expect(mockChannel.ensureListenerAttachedCalled).toBe(false);
+
+      const testOrch = new TestOrchestrator();
+      testOrch.registerParticipant('test', mockChannel, 'process');
+
+      // After registerParticipant, ensureListenerAttached should be called
+      expect(mockChannel.ensureListenerAttachedCalled).toBe(true);
+
+      testOrch.dispose();
     });
   });
 

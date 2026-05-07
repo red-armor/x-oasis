@@ -1,23 +1,4 @@
-/**
- * renderer-acquire-main-port-orchestrator-example — Main Process
- *
- * Demonstrates using ElectronConnectionOrchestrator to wire a direct
- * MessagePort connection between the renderer and the main process.
- *
- * Old approach (5 manual steps):
- *   1. new MessageChannelMain()
- *   2. bind port1 locally (mainInitiatedChannel.bindPort)
- *   3. call client.assignPort(port2) over IPC to deliver port2 to renderer
- *   4. renderer calls acquirePort() and binds the returned port
- *   5. main calls client.triggerAssign() to push port2 to renderer
- *
- * New approach (Orchestrator, 3 lines in app.whenReady):
- *   orchestrator.registerParticipant('main-direct', ...)
- *   orchestrator.registerParticipant('renderer', ...)
- *   await orchestrator.connect('main-direct', 'renderer')
- */
-
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import {
   IPCMainChannel,
   ElectronConnectionOrchestrator,
@@ -26,10 +7,12 @@ import {
 import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
-function createWindow(): { window: BrowserWindow; ipcChannel: IPCMainChannel } {
-  const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+let mainWindow: BrowserWindow | null = null;
+
+function createWindow(): IPCMainChannel {
+  mainWindow = new BrowserWindow({
+    width: 1100,
+    height: 850,
     webPreferences: {
       preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
@@ -50,50 +33,54 @@ function createWindow(): { window: BrowserWindow; ipcChannel: IPCMainChannel } {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
-  return { window: mainWindow, ipcChannel };
+  return ipcChannel;
+}
+
+function sendToRenderer(channel: string, ...args: any[]) {
+  mainWindow?.webContents.send(channel, ...args);
 }
 
 app.whenReady().then(async () => {
-  const { ipcChannel } = createWindow();
+  const ipcChannel = createWindow();
 
-  // --- Direct port channel: main side (late-bound by orchestrator) ---
   const mainDirectChannel = new ElectronMessagePortMainChannel({
     description: 'main↔renderer direct port',
   });
 
-  // Register a service that renderer can call over the direct port
+  let callCount = 0;
+
   serviceHost.registerService('main-direct', {
     channel: mainDirectChannel,
     serviceHost,
     handlers: {
       greet(msg: string): string {
-        console.log('[main] direct RPC from renderer:', msg);
-        return `hello from main: ${msg}`;
+        callCount++;
+        return `hello from main (#${callCount}): ${msg}`;
+      },
+      trace(): { pid: number; uptime: number; callCount: number } {
+        return {
+          pid: process.pid,
+          uptime: Math.floor(process.uptime() * 1000),
+          callCount,
+        };
       },
     },
   });
 
-  // Client to call renderer services over the direct port
   const rendererDirectClient = clientHost
     .registerClient('renderer-direct', { channel: mainDirectChannel })
     .createProxy();
 
-  // --- Orchestrator wires the connection automatically ---
   const orchestrator = new ElectronConnectionOrchestrator({
     logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
+    enableStats: true,
   });
 
-  // The orchestrator needs a "virtual" participant for the main-side port.
-  // We use a thin wrapper channel that receives the RPC call from activateParticipant
-  // and binds the received port locally.
   const mainParticipantChannel = {
     makeRequest(requestPath: string, methodName: string, port: any) {
-      // Orchestrator calls makeRequest(ORCHESTRATOR_SERVICE_PATH, 'activateConnection', port)
       if (methodName === 'activateConnection' && port) {
-        console.log('[main] activateConnection received — binding direct port');
         mainDirectChannel.bindPort(port);
       }
-      // Return a mock Deferred that resolves immediately for local participants
       return { promise: Promise.resolve(), seqId: 0 };
     },
     send: () => {},
@@ -107,24 +94,81 @@ app.whenReady().then(async () => {
   orchestrator.registerParticipant('main', mainParticipantChannel, 'process');
   orchestrator.registerParticipant('renderer', ipcChannel, 'renderer');
 
-  orchestrator.onReady(async ({ connectionId }) => {
-    console.log(`[main] orchestrator READY: ${connectionId}`);
+  orchestrator.onStateChange((event) => {
+    sendToRenderer('orchestrator:stateChange', event);
+  });
+  orchestrator.onReady((event) => {
+    sendToRenderer('orchestrator:ready', event);
+  });
+  orchestrator.onDisconnected((event) => {
+    sendToRenderer('orchestrator:disconnected', event);
+  });
+  orchestrator.onReconnecting((event) => {
+    sendToRenderer('orchestrator:reconnecting', event);
+  });
+  orchestrator.onReconnected((event) => {
+    sendToRenderer('orchestrator:reconnected', event);
+  });
+  orchestrator.onReconnectFailed((event) => {
+    sendToRenderer('orchestrator:reconnectFailed', event);
+  });
+  orchestrator.onClosed((event) => {
+    sendToRenderer('orchestrator:closed', event);
+  });
 
-    // Verify: call renderer's service over the direct port
-    setTimeout(async () => {
-      try {
-        const result = await (rendererDirectClient as any).ping(
-          'hello from main via direct port'
-        );
-        console.log('[main] ✅ direct RPC to renderer:', result);
-      } catch (err) {
-        console.error('[main] ❌ direct RPC to renderer failed:', err);
-      }
-    }, 1000);
+  ipcMain.handle('orchestrator:connect', async () => {
+    try {
+      const info = await orchestrator.connect('main', 'renderer');
+      return {
+        connectionId: info.connectionId,
+        fromId: info.fromId,
+        toId: info.toId,
+        state: info.state,
+        lastStateChangedAt: info.lastStateChangedAt,
+        error: info.error?.message,
+      };
+    } catch (err: any) {
+      return { error: err.message };
+    }
+  });
+
+  ipcMain.handle('orchestrator:disconnect', async () => {
+    const info = orchestrator.getConnectionInfo('main', 'renderer');
+    if (info) {
+      await orchestrator.disconnect(info.connectionId);
+    }
+  });
+
+  ipcMain.handle('orchestrator:simulateLost', async () => {
+    orchestrator.handleParticipantLost('renderer', 'simulated connection lost');
+  });
+
+  ipcMain.handle('orchestrator:getStatus', async () => {
+    const info = orchestrator.getConnectionInfo('main', 'renderer');
+    if (!info) return null;
+    const stats = orchestrator.getConnectionStats(info.connectionId);
+    return {
+      connectionId: info.connectionId,
+      fromId: info.fromId,
+      toId: info.toId,
+      state: info.state,
+      lastStateChangedAt: info.lastStateChangedAt,
+      error: info.error?.message,
+      isReady: info.isReady,
+      stats: stats
+        ? {
+            totalRpcCalls: stats.totalRpcCalls,
+            successfulCalls: stats.successfulCalls,
+            failedCalls: stats.failedCalls,
+            avgLatencyMs: stats.avgLatencyMs,
+            totalReconnects: stats.totalReconnects,
+          }
+        : null,
+    };
   });
 
   const info = await orchestrator.connect('main', 'renderer');
-  console.log(`[main] connection state: ${info.state}`);
+  console.log(`[main] initial connection state: ${info.state}`);
 });
 
 app.on('window-all-closed', () => {

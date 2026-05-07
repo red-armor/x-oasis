@@ -1,22 +1,4 @@
-/**
- * renderer-acquire-utility-port-orchestrator-example — Main Process
- *
- * Demonstrates using ElectronConnectionOrchestrator to wire a direct
- * MessagePort connection between the renderer and a utility process.
- *
- * Old approach (5 manual steps per direction × 2 directions = 10 steps):
- *   - renderer calls acquireUtilityPort() → main creates channel, sends port2
- *     to utility via assignRendererPort(), returns port1 to renderer
- *   - utility calls acquireRendererPort() → main creates channel, sends port2
- *     to renderer via assignUtilityPort(), returns port1 to utility
- *
- * New approach (Orchestrator, 3 lines):
- *   orchestrator.registerParticipant('renderer', ipcChannel)
- *   orchestrator.registerParticipant('utility', utilityChannel)
- *   await orchestrator.connect('renderer', 'utility')
- */
-
-import { app, BrowserWindow, utilityProcess } from 'electron';
+import { app, BrowserWindow, utilityProcess, ipcMain } from 'electron';
 import {
   IPCMainChannel,
   ElectronUtilityProcessChannel,
@@ -24,10 +6,12 @@ import {
 } from '@x-oasis/async-call-rpc-electron';
 import { join } from 'path';
 
+let mainWindow: BrowserWindow | null = null;
+
 function createWindow(): IPCMainChannel {
-  const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+  mainWindow = new BrowserWindow({
+    width: 1100,
+    height: 850,
     webPreferences: {
       preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
@@ -51,8 +35,11 @@ function createWindow(): IPCMainChannel {
   return ipcChannel;
 }
 
+function sendToRenderer(channel: string, ...args: any[]) {
+  mainWindow?.webContents.send(channel, ...args);
+}
+
 app.whenReady().then(async () => {
-  // --- Control-plane channels ---
   const ipcChannel = createWindow();
 
   const utilityProc = utilityProcess.fork(
@@ -63,23 +50,106 @@ app.whenReady().then(async () => {
     description: 'main→utility IPC channel',
   });
 
-  // --- Orchestrator: connect renderer ↔ utility directly ---
   const orchestrator = new ElectronConnectionOrchestrator({
     logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
+    enableStats: true,
+    heartbeat: {
+      enabled: true,
+      intervalMs: 10_000,
+      timeoutMs: 5_000,
+    },
   });
 
   orchestrator.registerParticipant('renderer', ipcChannel, 'renderer');
   orchestrator.registerParticipant('utility', utilityChannel, 'utility');
 
-  orchestrator.onReady(({ connectionId }) => {
-    console.log(`[main] orchestrator READY: ${connectionId}`);
-    console.log(
-      '[main] renderer and utility are now connected directly via MessagePort'
-    );
+  orchestrator.onStateChange((event) => {
+    sendToRenderer('orchestrator:stateChange', event);
+  });
+
+  orchestrator.onReady((event) => {
+    sendToRenderer('orchestrator:ready', event);
+  });
+
+  orchestrator.onDisconnected((event) => {
+    sendToRenderer('orchestrator:disconnected', event);
+  });
+
+  orchestrator.onReconnecting((event) => {
+    sendToRenderer('orchestrator:reconnecting', event);
+  });
+
+  orchestrator.onReconnected((event) => {
+    sendToRenderer('orchestrator:reconnected', event);
+  });
+
+  orchestrator.onReconnectFailed((event) => {
+    sendToRenderer('orchestrator:reconnectFailed', event);
+  });
+
+  orchestrator.onClosed((event) => {
+    sendToRenderer('orchestrator:closed', event);
+  });
+
+  ipcMain.handle('orchestrator:connect', async () => {
+    try {
+      const info = await orchestrator.connect('renderer', 'utility');
+      return {
+        connectionId: info.connectionId,
+        fromId: info.fromId,
+        toId: info.toId,
+        state: info.state,
+        lastStateChangedAt: info.lastStateChangedAt,
+        error: info.error?.message,
+      };
+    } catch (err: any) {
+      return { error: err.message };
+    }
+  });
+
+  ipcMain.handle('orchestrator:disconnect', async () => {
+    const info = orchestrator.getConnectionInfo('renderer', 'utility');
+    if (info) {
+      await orchestrator.disconnect(info.connectionId);
+    }
+  });
+
+  ipcMain.handle('orchestrator:simulateLost', async () => {
+    orchestrator.handleParticipantLost('utility', 'simulated process exit');
+  });
+
+  ipcMain.handle('orchestrator:getStatus', async () => {
+    const info = orchestrator.getConnectionInfo('renderer', 'utility');
+    if (!info) {
+      return null;
+    }
+    const stats = orchestrator.getConnectionStats(info.connectionId);
+    return {
+      connectionId: info.connectionId,
+      fromId: info.fromId,
+      toId: info.toId,
+      state: info.state,
+      lastStateChangedAt: info.lastStateChangedAt,
+      error: info.error?.message,
+      isReady: info.isReady,
+      stats: stats
+        ? {
+            totalRpcCalls: stats.totalRpcCalls,
+            successfulCalls: stats.successfulCalls,
+            failedCalls: stats.failedCalls,
+            avgLatencyMs: stats.avgLatencyMs,
+            totalReconnects: stats.totalReconnects,
+          }
+        : null,
+    };
+  });
+
+  ipcMain.handle('orchestrator:killUtility', async () => {
+    utilityProc.kill();
   });
 
   const info = await orchestrator.connect('renderer', 'utility');
-  console.log(`[main] connection state: ${info.state}`);
+  console.log(`[main] initial connection state: ${info.state}`);
 });
 
 app.on('window-all-closed', () => {

@@ -1,43 +1,29 @@
-/**
- * utility-acquire-utility-port-orchestrator-example — Main Process
- *
- * Demonstrates using ElectronConnectionOrchestrator to wire a direct
- * MessagePort connection between two utility processes (A ↔ B).
- *
- * Old approach (10 manual steps across 2 directions):
- *   - utility A calls acquireUtilityBPort() → main creates MessageChannelMain,
- *     sends port2 to utility B via assignUtilityAPort(), returns port1 to A
- *   - utility B calls acquireUtilityAPort() → main creates MessageChannelMain,
- *     sends port2 to utility A via assignUtilityBPort(), returns port1 to B
- *
- * New approach (Orchestrator, 3 lines):
- *   orchestrator.registerParticipant('utility-a', utilityAChannel)
- *   orchestrator.registerParticipant('utility-b', utilityBChannel)
- *   await orchestrator.connect('utility-a', 'utility-b')
- *
- * The orchestrator handles:
- *   1. Creating MessageChannelMain()
- *   2. Sending port1 to utility-a with { __orchestrator: 'activateConnection' }
- *   3. Sending port2 to utility-b with { __orchestrator: 'activateConnection' }
- *   4. Transitioning to READY state
- */
-
 import { app, BrowserWindow, utilityProcess } from 'electron';
 import {
+  IPCMainChannel,
   ElectronUtilityProcessChannel,
   ElectronConnectionOrchestrator,
 } from '@x-oasis/async-call-rpc-electron';
+import { serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
-function createWindow(): void {
-  const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+let mainWindow: BrowserWindow | null = null;
+
+function createWindow(): IPCMainChannel {
+  mainWindow = new BrowserWindow({
+    width: 1100,
+    height: 850,
     webPreferences: {
       preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
+  });
+
+  const ipcChannel = new IPCMainChannel({
+    channelName: 'app-rpc',
+    webContents: mainWindow.webContents,
+    description: 'main→renderer IPC channel',
   });
 
   if (process.env.NODE_ENV === 'development') {
@@ -46,12 +32,17 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+
+  return ipcChannel;
+}
+
+function sendToRenderer(channel: string, ...args: any[]) {
+  mainWindow?.webContents.send(channel, ...args);
 }
 
 app.whenReady().then(async () => {
-  createWindow();
+  const ipcChannel = createWindow();
 
-  // --- Control-plane channels to both utility processes ---
   const utilityA = utilityProcess.fork(
     join(__dirname, '../preload/utility-worker-a.js')
   );
@@ -68,27 +59,99 @@ app.whenReady().then(async () => {
     description: 'main→utility-b IPC channel',
   });
 
-  // --- Orchestrator: connect utility-a ↔ utility-b directly ---
   const orchestrator = new ElectronConnectionOrchestrator({
     logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
+    enableStats: true,
   });
 
   orchestrator.registerParticipant('utility-a', utilityAChannel, 'utility');
   orchestrator.registerParticipant('utility-b', utilityBChannel, 'utility');
 
-  orchestrator.onReady(({ connectionId }) => {
-    console.log(`[main] orchestrator READY: ${connectionId}`);
-    console.log(
-      '[main] utility-a and utility-b are now connected directly via MessagePort'
-    );
+  // Register orchestrator service for RPC calls
+  serviceHost.registerService('orchestrator', {
+    channel: ipcChannel,
+    serviceHost,
+    handlers: {
+      async connect(): Promise<any> {
+        try {
+          const info = await orchestrator.connect('utility-a', 'utility-b');
+          return {
+            connectionId: info.connectionId,
+            fromId: info.fromId,
+            toId: info.toId,
+            state: info.state,
+            lastStateChangedAt: info.lastStateChangedAt,
+            error: info.error?.message,
+          };
+        } catch (err: any) {
+          return { error: err.message };
+        }
+      },
+      async disconnect(): Promise<void> {
+        const info = orchestrator.getConnectionInfo('utility-a', 'utility-b');
+        if (info) {
+          await orchestrator.disconnect(info.connectionId);
+        }
+      },
+      simulateLost(): void {
+        orchestrator.handleParticipantLost(
+          'utility-b',
+          'simulated process exit'
+        );
+      },
+      async getStatus(): Promise<any> {
+        const info = orchestrator.getConnectionInfo('utility-a', 'utility-b');
+        if (!info) return null;
+        const stats = orchestrator.getConnectionStats(info.connectionId);
+        return {
+          connectionId: info.connectionId,
+          fromId: info.fromId,
+          toId: info.toId,
+          state: info.state,
+          lastStateChangedAt: info.lastStateChangedAt,
+          error: info.error?.message,
+          isReady: info.isReady,
+          stats: stats
+            ? {
+                totalRpcCalls: stats.totalRpcCalls,
+                successfulCalls: stats.successfulCalls,
+                failedCalls: stats.failedCalls,
+                avgLatencyMs: stats.avgLatencyMs,
+                totalReconnects: stats.totalReconnects,
+              }
+            : null,
+        };
+      },
+    },
+  });
+
+  // Forward orchestrator events to renderer via sendToRenderer
+  orchestrator.onStateChange((event) => {
+    sendToRenderer('orchestrator:stateChange', event);
+  });
+  orchestrator.onReady((event) => {
+    sendToRenderer('orchestrator:ready', event);
+  });
+  orchestrator.onDisconnected((event) => {
+    sendToRenderer('orchestrator:disconnected', event);
+  });
+  orchestrator.onReconnecting((event) => {
+    sendToRenderer('orchestrator:reconnecting', event);
+  });
+  orchestrator.onReconnected((event) => {
+    sendToRenderer('orchestrator:reconnected', event);
+  });
+  orchestrator.onReconnectFailed((event) => {
+    sendToRenderer('orchestrator:reconnectFailed', event);
+  });
+  orchestrator.onClosed((event) => {
+    sendToRenderer('orchestrator:closed', event);
   });
 
   const info = await orchestrator.connect('utility-a', 'utility-b');
-  console.log(`[main] connection state: ${info.state}`);
+  console.log(`[main] initial connection state: ${info.state}`);
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit();
 });
