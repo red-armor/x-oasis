@@ -34,3 +34,6 @@ export { JSONRPCErrorCode, RPCError } from './error';
 const serviceHost = new RPCServiceHost();
 
 export { ProxyRPCClient, RPCService, RPCServiceHost, clientHost, serviceHost };
+
+// Connection Orchestrator (Layer 2)
+export * from './orchestrator';

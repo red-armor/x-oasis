@@ -1,0 +1,307 @@
+import { ConnectionState } from './ConnectionState';
+import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
+
+// ─── Internal constants ───────────────────────────────────────────────────────
+
+/**
+ * The RPC service path used internally by all Connection Orchestrators to
+ * deliver ports to participants.
+ *
+ * This constant is an implementation detail of the orchestrator protocol and
+ * should never appear in user code.  Participants receive ports via the
+ * platform-specific `registerOrchestratorHandler` helper (e.g.
+ * `registerOrchestratorHandler` from `@x-oasis/async-call-rpc-electron`),
+ * which encapsulates this path internally.
+ *
+ * @internal
+ */
+export const ORCHESTRATOR_SERVICE_PATH = '__x_oasis_orchestrator__' as const;
+
+// ─── Participant ──────────────────────────────────────────────────────────────
+
+/** The role a participant plays in the application topology. */
+export type ParticipantType =
+  | 'renderer'
+  | 'utility'
+  | 'worker'
+  | 'process'
+  | 'node';
+
+/** Metadata about a registered participant. */
+export interface ParticipantInfo {
+  readonly id: string;
+  readonly channel: AbstractChannelProtocol;
+  readonly type: ParticipantType;
+  readonly registeredAt: number;
+}
+
+// ─── Connection config passed to connect() ────────────────────────────────────
+
+/**
+ * Optional service handlers that can be registered as part of the connection.
+ *
+ * `fromServices` — methods the **from** participant exposes to the **to** side.
+ * `toServices`   — methods the **to** participant exposes to the **from** side.
+ */
+export interface ConnectionConfig {
+  fromServices?: Record<string, (...args: any[]) => any>;
+  toServices?: Record<string, (...args: any[]) => any>;
+  /** Per-connection heartbeat settings (overrides orchestrator-level config). */
+  heartbeat?: HeartbeatConfig;
+  /** Per-connection reconnect policy (overrides orchestrator-level config). */
+  reconnectPolicy?: ReconnectPolicy;
+}
+
+// ─── ConnectionInfo — returned by connect() / getConnectionInfo() ─────────────
+
+/**
+ * Live view of a connection.  All properties are readonly snapshots;
+ * call `waitForStateChange` to be notified when the state changes.
+ */
+export interface ConnectionInfo {
+  readonly connectionId: string;
+  readonly fromId: string;
+  readonly toId: string;
+  readonly state: ConnectionState;
+  readonly lastStateChangedAt: number;
+  readonly error?: Error;
+
+  // convenience booleans
+  readonly isReady: boolean;
+  readonly isConnecting: boolean;
+  readonly isFailed: boolean;
+  readonly isClosed: boolean;
+
+  /**
+   * Resolves when the connection leaves `currentState`.
+   * Rejects with `TimeoutError` if `deadlineMs` is exceeded.
+   *
+   * Modelled after `grpc.Channel.watchConnectivityState`.
+   */
+  waitForStateChange(
+    currentState: ConnectionState,
+    deadlineMs?: number
+  ): Promise<ConnectionState>;
+}
+
+// ─── Events ──────────────────────────────────────────────────────────────────
+
+export interface StateChangeEvent {
+  connectionId: string;
+  previousState: ConnectionState;
+  currentState: ConnectionState;
+  timestamp: number;
+  reason?: string;
+}
+
+export interface ReadyEvent {
+  connectionId: string;
+}
+
+export interface DisconnectedEvent {
+  connectionId: string;
+  error?: Error;
+}
+
+export interface ReconnectingEvent {
+  connectionId: string;
+  attempt: number;
+  delay: number;
+  elapsedMs: number;
+}
+
+export interface ReconnectedEvent {
+  connectionId: string;
+  attempt: number;
+}
+
+export interface ReconnectFailedEvent {
+  connectionId: string;
+  totalAttempts: number;
+  elapsedMs: number;
+  lastError?: Error;
+}
+
+export interface ClosedEvent {
+  connectionId: string;
+  reason: string;
+}
+
+export interface ConnectionEvents {
+  stateChange: StateChangeEvent;
+  ready: ReadyEvent;
+  disconnected: DisconnectedEvent;
+  reconnecting: ReconnectingEvent;
+  reconnected: ReconnectedEvent;
+  reconnectFailed: ReconnectFailedEvent;
+  closed: ClosedEvent;
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
+export interface ConnectionStats {
+  readonly connectionId: string;
+  readonly state: ConnectionState;
+
+  // counters
+  readonly totalRpcCalls: number;
+  readonly successfulCalls: number;
+  readonly failedCalls: number;
+  readonly timeouts: number;
+
+  // latency
+  readonly avgLatencyMs: number;
+  readonly p99LatencyMs: number;
+
+  // connection history
+  readonly totalReconnects: number;
+  readonly lastConnectedAt: number;
+  readonly lastDisconnectedAt: number | undefined;
+  readonly uptime: number;
+
+  // windowed (recent N seconds)
+  readonly recentFailureRate: number;
+  readonly recentAvgLatencyMs: number;
+}
+
+// ─── Heartbeat ────────────────────────────────────────────────────────────────
+
+export interface HeartbeatConfig {
+  /** Whether heartbeating is active. Default: false. */
+  enabled: boolean;
+  /** Milliseconds between pings. Default: 30_000. */
+  intervalMs: number;
+  /** Milliseconds before a missing pong is considered a timeout. Default: 5_000. */
+  timeoutMs: number;
+}
+
+// ─── Request timeout ─────────────────────────────────────────────────────────
+
+export interface RequestTimeoutConfig {
+  /** Default per-request timeout in ms. Default: 30_000. */
+  defaultTimeoutMs: number;
+  /** How many consecutive timeouts trigger a TRANSIENT_FAILURE transition. */
+  consecutiveTimeoutThreshold: number;
+}
+
+// ─── Reconnect policy ────────────────────────────────────────────────────────
+
+export interface RetryContext {
+  /** Number of retries that have already been attempted. */
+  previousRetryCount: number;
+  /** Milliseconds since the first failure. */
+  elapsedMs: number;
+  /** The error or description that caused the disconnect. */
+  retryReason: Error | string;
+  connectionId: string;
+  fromId: string;
+  toId: string;
+}
+
+/**
+ * Decides how long to wait before the next reconnect attempt.
+ * Return `null` to give up and move to CLOSED.
+ *
+ * Modelled after SignalR's `IRetryPolicy`.
+ */
+export interface ReconnectPolicy {
+  nextRetryDelayMs(context: RetryContext): number | null;
+}
+
+// ─── Pending request behaviour during reconnect ───────────────────────────────
+
+export interface PendingRequestBehavior {
+  /** What to do with in-flight requests when the connection drops. */
+  onDisconnect: 'reject' | 'queue' | 'timeout';
+  /** What to do with new requests while reconnecting. */
+  duringReconnect: 'reject' | 'queue';
+  maxQueueSize: number;
+  queueTimeoutMs: number;
+}
+
+// ─── Degradation (relay fallback) ─────────────────────────────────────────────
+
+export interface DegradationConfig {
+  /** Whether relay fallback is enabled. Default: true. */
+  enableFallback: boolean;
+  /**
+   * When to switch to relay mode.
+   * `'on_failure'`          — immediately when the direct port drops.
+   * `'on_reconnect_failed'` — only after the reconnect policy gives up.
+   */
+  fallbackTrigger: 'on_failure' | 'on_reconnect_failed';
+  /** Automatically switch back to direct port once reconnected. */
+  autoRecover: boolean;
+}
+
+// ─── Circuit breaker ─────────────────────────────────────────────────────────
+
+export interface CircuitBreakerConfig {
+  /** Default: false. */
+  enabled: boolean;
+  /** Failure-rate threshold to open the breaker (0–1). Default: 0.5. */
+  failureRateThreshold: number;
+  /** Minimum sample count before the threshold is evaluated. Default: 5. */
+  volumeThreshold: number;
+  /** Sliding-window duration in ms. Default: 10_000. */
+  rollingWindowMs: number;
+  /** How long the breaker stays OPEN before moving to HALF_OPEN. Default: 30_000. */
+  openDurationMs: number;
+  /** Number of probe requests allowed in HALF_OPEN state. Default: 3. */
+  halfOpenRequests: number;
+  /** Optional synchronous fallback when the breaker is open. */
+  fallback?: (...args: any[]) => any;
+}
+
+// ─── Top-level Orchestrator config ───────────────────────────────────────────
+
+export interface ConnectionOrchestratorConfig {
+  /** Heartbeat / keepalive settings. Disabled by default. */
+  heartbeat?: HeartbeatConfig;
+  /** Per-request timeout defaults. */
+  requestTimeout?: RequestTimeoutConfig;
+  /** Strategy for scheduling reconnect attempts. */
+  reconnectPolicy?: ReconnectPolicy;
+  /** How to handle pending requests while reconnecting. */
+  pendingRequests?: PendingRequestBehavior;
+  /** Relay (degradation) fallback. */
+  degradation?: DegradationConfig;
+  /** Circuit breaker wrapping RPC calls. */
+  circuitBreaker?: CircuitBreakerConfig;
+  /** Logger. Defaults to console. */
+  logger?: (
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    data?: any
+  ) => void;
+  /** Whether to track per-connection statistics. Default: false. */
+  enableStats?: boolean;
+}
+
+// ─── Port pair ───────────────────────────────────────────────────────────────
+
+/**
+ * A pair of entangled ports created by the platform-specific `createPortPair()`.
+ * In Electron this is `MessageChannelMain`; in Node/Web it is `MessageChannel`.
+ */
+export interface PortPair {
+  port1: any;
+  port2: any;
+}
+
+// ─── Activation config sent to each participant ───────────────────────────────
+
+/**
+ * Payload delivered to a participant's `activateConnection` RPC handler.
+ */
+export interface ActivationConfig {
+  connectionId: string;
+  /** The MessagePort this participant should bind to. */
+  port: any;
+  /** `'initiator'` = the from-side; `'receiver'` = the to-side. */
+  role: 'initiator' | 'receiver';
+  /** Service handlers the *peer* wants to expose to this participant. */
+  peerServices?: Record<string, (...args: any[]) => any>;
+  /** Service handlers this participant should expose to its peer. */
+  myServices?: Record<string, (...args: any[]) => any>;
+}

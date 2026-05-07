@@ -239,6 +239,43 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.10.9)
 
+  packages/async/async-call-rpc-electron/examples/renderer-acquire-main-port-orchestrator-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
   packages/async/async-call-rpc-electron/examples/renderer-acquire-utility-port-example:
     dependencies:
       '@x-oasis/async-call-rpc':
@@ -247,6 +284,43 @@ importers:
       '@x-oasis/async-call-rpc-electron':
         specifier: workspace:*
         version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/renderer-acquire-utility-port-orchestrator-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^4.3.0
@@ -307,7 +381,75 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.10.9)
 
+  packages/async/async-call-rpc-electron/examples/utility-acquire-main-port-orchestrator-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
   packages/async/async-call-rpc-electron/examples/utility-acquire-utility-port-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/utility-acquire-utility-port-orchestrator-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
@@ -1108,7 +1250,7 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
 
-  packages/proto/can-I-use-proxy:
+  packages/proto/can-i-use-proxy:
     devDependencies:
       tsdx:
         specifier: ^0.14.1
@@ -2142,7 +2284,7 @@ packages:
     os: [aix]
 
   '@esbuild/android-arm64@0.16.17':
-    resolution: {integrity: sha1-z5HobfEnqj0UF0Ttr8ugq9xXfSM=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/android-arm64/download/@esbuild/android-arm64-0.16.17.tgz}
+    resolution: {integrity: sha512-MIGl6p5sc3RDTLLkYL1MyL8BMRN4tLMRCn+yRJJmEDvYZ2M7tmAf80hx1kbNEUX2KJ50RRtxZ4JHLvCfuB6kBg==}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [android]
@@ -2160,7 +2302,7 @@ packages:
     os: [android]
 
   '@esbuild/android-arm@0.16.17':
-    resolution: {integrity: sha1-AltiRtP2i3u6qXBpFE+1+3Dy//I=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/android-arm/download/@esbuild/android-arm-0.16.17.tgz}
+    resolution: {integrity: sha512-N9x1CMXVhtWEAMS7pNNONyA14f71VPQN9Cnavj1XQh6T7bskqiLLrSca4O0Vr8Wdcga943eThxnVp3JLnBMYtw==}
     engines: {node: '>=12'}
     cpu: [arm]
     os: [android]
@@ -2178,7 +2320,7 @@ packages:
     os: [android]
 
   '@esbuild/android-x64@0.16.17':
-    resolution: {integrity: sha1-yCDg/vmC+ZqFxLi/3VgoNfBM2W4=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/android-x64/download/@esbuild/android-x64-0.16.17.tgz}
+    resolution: {integrity: sha512-a3kTv3m0Ghh4z1DaFEuEDfz3OLONKuFvI4Xqczqx4BqLyuFaFkuaG4j2MtA6fuWEFeC5x9IvqnX7drmRq/fyAQ==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [android]
@@ -2196,7 +2338,7 @@ packages:
     os: [android]
 
   '@esbuild/darwin-arm64@0.16.17':
-    resolution: {integrity: sha1-7e9Eh69rIa+runvlEywm0iN5siA=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/darwin-arm64/download/@esbuild/darwin-arm64-0.16.17.tgz}
+    resolution: {integrity: sha512-/2agbUEfmxWHi9ARTX6OQ/KgXnOWfsNlTeLcoV7HSuSTv63E4DqtAc+2XqGw1KHxKMHGZgbVCZge7HXWX9Vn+w==}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [darwin]
@@ -2214,7 +2356,7 @@ packages:
     os: [darwin]
 
   '@esbuild/darwin-x64@0.16.17':
-    resolution: {integrity: sha1-QoKRaHMAccQe8NAo2DGe6g4pBLQ=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/darwin-x64/download/@esbuild/darwin-x64-0.16.17.tgz}
+    resolution: {integrity: sha512-2By45OBHulkd9Svy5IOCZt376Aa2oOkiE9QWUK9fe6Tb+WDr8hXL3dpqi+DeLiMed8tVXspzsTAvd0jUl96wmg==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [darwin]
@@ -2232,7 +2374,7 @@ packages:
     os: [darwin]
 
   '@esbuild/freebsd-arm64@0.16.17':
-    resolution: {integrity: sha1-H0r0iL/H6c7QQgcDTTmOeTtXCic=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/freebsd-arm64/download/@esbuild/freebsd-arm64-0.16.17.tgz}
+    resolution: {integrity: sha512-mt+cxZe1tVx489VTb4mBAOo2aKSnJ33L9fr25JXpqQqzbUIw/yzIzi+NHwAXK2qYV1lEFp4OoVeThGjUbmWmdw==}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [freebsd]
@@ -2250,7 +2392,7 @@ packages:
     os: [freebsd]
 
   '@esbuild/freebsd-x64@0.16.17':
-    resolution: {integrity: sha1-Y2MG8Z6byYHgaqHXdzAtrY/dr3I=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/freebsd-x64/download/@esbuild/freebsd-x64-0.16.17.tgz}
+    resolution: {integrity: sha512-8ScTdNJl5idAKjH8zGAsN7RuWcyHG3BAvMNpKOBaqqR7EbUhhVHOqXRdL7oZvz8WNHL2pr5+eIT5c65kA6NHug==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [freebsd]
@@ -2268,7 +2410,7 @@ packages:
     os: [freebsd]
 
   '@esbuild/linux-arm64@0.16.17':
-    resolution: {integrity: sha1-oAP3/yN8UB4JXU86CeWPx7JaSso=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-arm64/download/@esbuild/linux-arm64-0.16.17.tgz}
+    resolution: {integrity: sha512-7S8gJnSlqKGVJunnMCrXHU9Q8Q/tQIxk/xL8BqAP64wchPCTzuM6W3Ra8cIa1HIflAvDnNOt2jaL17vaW+1V0g==}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [linux]
@@ -2286,7 +2428,7 @@ packages:
     os: [linux]
 
   '@esbuild/linux-arm@0.16.17':
-    resolution: {integrity: sha1-tZHmpZ2cT+DurdSHSxV6t4z18ZY=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-arm/download/@esbuild/linux-arm-0.16.17.tgz}
+    resolution: {integrity: sha512-iihzrWbD4gIT7j3caMzKb/RsFFHCwqqbrbH9SqUSRrdXkXaygSZCZg1FybsZz57Ju7N/SHEgPyaR0LZ8Zbe9gQ==}
     engines: {node: '>=12'}
     cpu: [arm]
     os: [linux]
@@ -2304,7 +2446,7 @@ packages:
     os: [linux]
 
   '@esbuild/linux-ia32@0.16.17':
-    resolution: {integrity: sha1-JDM6EQJ+9GoY9XAZRQpRiJGOKlQ=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-ia32/download/@esbuild/linux-ia32-0.16.17.tgz}
+    resolution: {integrity: sha512-kiX69+wcPAdgl3Lonh1VI7MBr16nktEvOfViszBSxygRQqSpzv7BffMKRPMFwzeJGPxcio0pdD3kYQGpqQ2SSg==}
     engines: {node: '>=12'}
     cpu: [ia32]
     os: [linux]
@@ -2322,7 +2464,7 @@ packages:
     os: [linux]
 
   '@esbuild/linux-loong64@0.16.17':
-    resolution: {integrity: sha1-1a1FnUHtQrvU0AUlazGILsUiJ9g=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-loong64/download/@esbuild/linux-loong64-0.16.17.tgz}
+    resolution: {integrity: sha512-dTzNnQwembNDhd654cA4QhbS9uDdXC3TKqMJjgOWsC0yNCbpzfWoXdZvp0mY7HU6nzk5E0zpRGGx3qoQg8T2DQ==}
     engines: {node: '>=12'}
     cpu: [loong64]
     os: [linux]
@@ -2340,7 +2482,7 @@ packages:
     os: [linux]
 
   '@esbuild/linux-mips64el@0.16.17':
-    resolution: {integrity: sha1-TllnpmXDg2CwqCBVlDd9Tc+cNyY=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-mips64el/download/@esbuild/linux-mips64el-0.16.17.tgz}
+    resolution: {integrity: sha512-ezbDkp2nDl0PfIUn0CsQ30kxfcLTlcx4Foz2kYv8qdC6ia2oX5Q3E/8m6lq84Dj/6b0FrkgD582fJMIfHhJfSw==}
     engines: {node: '>=12'}
     cpu: [mips64el]
     os: [linux]
@@ -2358,7 +2500,7 @@ packages:
     os: [linux]
 
   '@esbuild/linux-ppc64@0.16.17':
-    resolution: {integrity: sha1-IGRDoC61aPn98LQ4+9R9Juc1r8g=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-ppc64/download/@esbuild/linux-ppc64-0.16.17.tgz}
+    resolution: {integrity: sha512-dzS678gYD1lJsW73zrFhDApLVdM3cUF2MvAa1D8K8KtcSKdLBPP4zZSLy6LFZ0jYqQdQ29bjAHJDgz0rVbLB3g==}
     engines: {node: '>=12'}
     cpu: [ppc64]
     os: [linux]
@@ -2376,7 +2518,7 @@ packages:
     os: [linux]
 
   '@esbuild/linux-riscv64@0.16.17':
-    resolution: {integrity: sha1-w1HkM9AJvyVueYrQSBUsjXbaL8k=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-riscv64/download/@esbuild/linux-riscv64-0.16.17.tgz}
+    resolution: {integrity: sha512-ylNlVsxuFjZK8DQtNUwiMskh6nT0vI7kYl/4fZgV1llP5d6+HIeL/vmmm3jpuoo8+NuXjQVZxmKuhDApK0/cKw==}
     engines: {node: '>=12'}
     cpu: [riscv64]
     os: [linux]
@@ -2394,7 +2536,7 @@ packages:
     os: [linux]
 
   '@esbuild/linux-s390x@0.16.17':
-    resolution: {integrity: sha1-Zh8nHl1ZYVuEtoAdHCEjrRPZvYc=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-s390x/download/@esbuild/linux-s390x-0.16.17.tgz}
+    resolution: {integrity: sha512-gzy7nUTO4UA4oZ2wAMXPNBGTzZFP7mss3aKR2hH+/4UUkCOyqmjXiKpzGrY2TlEUhbbejzXVKKGazYcQTZWA/w==}
     engines: {node: '>=12'}
     cpu: [s390x]
     os: [linux]
@@ -2412,7 +2554,7 @@ packages:
     os: [linux]
 
   '@esbuild/linux-x64@0.16.17':
-    resolution: {integrity: sha1-5LoY6LFJqJyYI1FEOjd8cjdiuF8=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/linux-x64/download/@esbuild/linux-x64-0.16.17.tgz}
+    resolution: {integrity: sha512-mdPjPxfnmoqhgpiEArqi4egmBAMYvaObgn4poorpUaqmvzzbvqbowRllQ+ZgzGVMGKaPkqUmPDOOFQRUFDmeUw==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [linux]
@@ -2436,7 +2578,7 @@ packages:
     os: [netbsd]
 
   '@esbuild/netbsd-x64@0.16.17':
-    resolution: {integrity: sha1-fU9AQeMMXAfdJP+ilcc/BgOOx3U=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/netbsd-x64/download/@esbuild/netbsd-x64-0.16.17.tgz}
+    resolution: {integrity: sha512-/PzmzD/zyAeTUsduZa32bn0ORug+Jd1EGGAUJvqfeixoEISYpGnAezN6lnJoskauoai0Jrs+XSyvDhppCPoKOA==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [netbsd]
@@ -2460,7 +2602,7 @@ packages:
     os: [openbsd]
 
   '@esbuild/openbsd-x64@0.16.17':
-    resolution: {integrity: sha1-lw+n+EcGgfPmsdsMxCGkr4Bg7DU=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/openbsd-x64/download/@esbuild/openbsd-x64-0.16.17.tgz}
+    resolution: {integrity: sha512-2yaWJhvxGEz2RiftSk0UObqJa/b+rIAjnODJgv2GbGGpRwAfpgzyrg1WLK8rqA24mfZa9GvpjLcBBg8JHkoodg==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [openbsd]
@@ -2484,7 +2626,7 @@ packages:
     os: [openharmony]
 
   '@esbuild/sunos-x64@0.16.17':
-    resolution: {integrity: sha1-q8YOfEq/i4n7ek/mmhSEEyI4Aiw=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/sunos-x64/download/@esbuild/sunos-x64-0.16.17.tgz}
+    resolution: {integrity: sha512-xtVUiev38tN0R3g8VhRfN7Zl42YCJvyBhRKw1RJjwE1d2emWTVToPLNEQj/5Qxc6lVFATDiy6LjVHYhIPrLxzw==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [sunos]
@@ -2502,7 +2644,7 @@ packages:
     os: [sunos]
 
   '@esbuild/win32-arm64@0.16.17':
-    resolution: {integrity: sha1-ew/56MMmVTenp7H9miTnvTn82Ho=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/win32-arm64/download/@esbuild/win32-arm64-0.16.17.tgz}
+    resolution: {integrity: sha512-ga8+JqBDHY4b6fQAmOgtJJue36scANy4l/rL97W+0wYmijhxKetzZdKOJI7olaBaMhWt8Pac2McJdZLxXWUEQw==}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [win32]
@@ -2520,7 +2662,7 @@ packages:
     os: [win32]
 
   '@esbuild/win32-ia32@0.16.17':
-    resolution: {integrity: sha1-6Q/lJn1xp7dWev3EA9/RmMKS6wk=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/win32-ia32/download/@esbuild/win32-ia32-0.16.17.tgz}
+    resolution: {integrity: sha512-WnsKaf46uSSF/sZhwnqE4L/F89AYNMiD4YtEcYekBt9Q7nj0DiId2XH2Ng2PHM54qi5oPrQ8luuzGszqi/veig==}
     engines: {node: '>=12'}
     cpu: [ia32]
     os: [win32]
@@ -2538,7 +2680,7 @@ packages:
     os: [win32]
 
   '@esbuild/win32-x64@0.16.17':
-    resolution: {integrity: sha1-xaGkv+G1fww+YbKYg1JcbaPlwJE=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@esbuild/win32-x64/download/@esbuild/win32-x64-0.16.17.tgz}
+    resolution: {integrity: sha512-y+EHuSchhL7FjHgvQL/0fnnFmO4T1bhvWANX6gcnqTjtnKWbTvUMCpGnv2+t+31d7RzyEAYAd4u2fnIhHL6N/Q==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
@@ -2745,7 +2887,7 @@ packages:
     engines: {node: '>= 8'}
 
   '@pkgjs/parseargs@0.11.0':
-    resolution: {integrity: sha1-p36nQvqyV3UUVDTrHSMoz1ATrDM=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/@pkgjs/parseargs/download/@pkgjs/parseargs-0.11.0.tgz}
+    resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
   '@rolldown/pluginutils@1.0.0-beta.27':
@@ -2824,66 +2966,79 @@ packages:
     resolution: {integrity: sha512-2QxQrM+KQ7DAW4o22j+XZ6RKdxjLD7BOWTP0Bv0tmjdyhXSsr2Ul1oJDQqh9Zf5qOwTuTc7Ek83mOFaKnodPjg==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.60.2':
     resolution: {integrity: sha512-TbziEu2DVsTEOPif2mKWkMeDMLoYjx95oESa9fkQQK7r/Orta0gnkcDpzwufEcAO2BLBsD7mZkXGFqEdMRRwfw==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.60.2':
     resolution: {integrity: sha512-bO/rVDiDUuM2YfuCUwZ1t1cP+/yqjqz+Xf2VtkdppefuOFS2OSeAfgafaHNkFn0t02hEyXngZkxtGqXcXwO8Rg==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.60.2':
     resolution: {integrity: sha512-hr26p7e93Rl0Za+JwW7EAnwAvKkehh12BU1Llm9Ykiibg4uIr2rbpxG9WCf56GuvidlTG9KiiQT/TXT1yAWxTA==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-loong64-gnu@4.60.2':
     resolution: {integrity: sha512-pOjB/uSIyDt+ow3k/RcLvUAOGpysT2phDn7TTUB3n75SlIgZzM6NKAqlErPhoFU+npgY3/n+2HYIQVbF70P9/A==}
     cpu: [loong64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-loong64-musl@4.60.2':
     resolution: {integrity: sha512-2/w+q8jszv9Ww1c+6uJT3OwqhdmGP2/4T17cu8WuwyUuuaCDDJ2ojdyYwZzCxx0GcsZBhzi3HmH+J5pZNXnd+Q==}
     cpu: [loong64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-ppc64-gnu@4.60.2':
     resolution: {integrity: sha512-11+aL5vKheYgczxtPVVRhdptAM2H7fcDR5Gw4/bTcteuZBlH4oP9f5s9zYO9aGZvoGeBpqXI/9TZZihZ609wKw==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-musl@4.60.2':
     resolution: {integrity: sha512-i16fokAGK46IVZuV8LIIwMdtqhin9hfYkCh8pf8iC3QU3LpwL+1FSFGej+O7l3E/AoknL6Dclh2oTdnRMpTzFQ==}
     cpu: [ppc64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-riscv64-gnu@4.60.2':
     resolution: {integrity: sha512-49FkKS6RGQoriDSK/6E2GkAsAuU5kETFCh7pG4yD/ylj9rKhTmO3elsnmBvRD4PgJPds5W2PkhC82aVwmUcJ7A==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.60.2':
     resolution: {integrity: sha512-mjYNkHPfGpUR00DuM1ZZIgs64Hpf4bWcz9Z41+4Q+pgDx73UwWdAYyf6EG/lRFldmdHHzgrYyge5akFUW0D3mQ==}
     cpu: [riscv64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.60.2':
     resolution: {integrity: sha512-ALyvJz965BQk8E9Al/JDKKDLH2kfKFLTGMlgkAbbYtZuJt9LU8DW3ZoDMCtQpXAltZxwBHevXz5u+gf0yA0YoA==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.60.2':
     resolution: {integrity: sha512-UQjrkIdWrKI626Du8lCQ6MJp/6V1LAo2bOK9OTu4mSn8GGXIkPXk/Vsp4bLHCd9Z9Iz2OTEaokUE90VweJgIYQ==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.60.2':
     resolution: {integrity: sha512-bTsRGj6VlSdn/XD4CGyzMnzaBs9bsRxy79eTqTCBsA8TMIEky7qg48aPkvJvFe1HyzQ5oMZdg7AnVlWQSKLTnw==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-openbsd-x64@4.60.2':
     resolution: {integrity: sha512-6d4Z3534xitaA1FcMWP7mQPq5zGwBmGbhphh2DwaA1aNIXUu3KTOfwrWpbwI4/Gr0uANo7NTtaykFyO2hPuFLg==}
@@ -4274,7 +4429,7 @@ packages:
     resolution: {integrity: sha512-CwBLREIQ7LvYFB0WyRvwhq5N5qPhc6PMjD6bYggFlI5YyDgl+0vxq5VHbMOFqLg7hfWzmu8T5Z1QofhmTIhItA==}
 
   emoji-regex@8.0.0:
-    resolution: {integrity: sha1-6Bj9ac5cz8tARZT4QpY79TFkzDc=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/emoji-regex/download/emoji-regex-8.0.0.tgz}
+    resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
 
   emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
@@ -4775,7 +4930,7 @@ packages:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
   fsevents@2.3.2:
-    resolution: {integrity: sha1-ilJveLj99GI7cJ4Ll1xSwkwC/Ro=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/fsevents/download/fsevents-2.3.2.tgz}
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
@@ -4903,7 +5058,7 @@ packages:
     deprecated: Glob versions prior to v9 are no longer supported
 
   global-agent@3.0.0:
-    resolution: {integrity: sha1-rnzTG9NYO5PFoWQ3oa/ifMM6GrY=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/global-agent/download/global-agent-3.0.0.tgz}
+    resolution: {integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q==}
     engines: {node: '>=10.0'}
 
   globals@11.12.0:
@@ -5235,11 +5390,11 @@ packages:
     engines: {node: '>=0.10.0'}
 
   is-fullwidth-code-point@2.0.0:
-    resolution: {integrity: sha1-o7MKXE8ZkYMWeqq5O+764937ZU8=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/is-fullwidth-code-point/download/is-fullwidth-code-point-2.0.0.tgz}
+    resolution: {integrity: sha512-VHskAKYM8RfSFXwee5t5cbN5PZeq1Wrh6qd5bkyiXIf6UQcN6w/A0eXM9r6t8d+GYOh+o6ZhiEnb88LN/Y8m2w==}
     engines: {node: '>=4'}
 
   is-fullwidth-code-point@3.0.0:
-    resolution: {integrity: sha1-8Rb4Bk/pCz94RKOJl8C3UFEmnx0=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/is-fullwidth-code-point/download/is-fullwidth-code-point-3.0.0.tgz}
+    resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==}
     engines: {node: '>=8'}
 
   is-fullwidth-code-point@4.0.0:
@@ -6025,7 +6180,7 @@ packages:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
   node-notifier@6.0.0:
-    resolution: {integrity: sha1-zqMZ4GuqFt7sjOXNfxM8Ska2jhI=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/node-notifier/download/node-notifier-6.0.0.tgz}
+    resolution: {integrity: sha512-SVfQ/wMw+DesunOm5cKqr6yDcvUTDl/yc97ybGHMrteNEY6oekXpNpS3lZwgLlwz0FLgHoiW28ZpmBHUDg37cw==}
 
   node-releases@2.0.10:
     resolution: {integrity: sha512-5GFldHPXVG/YZmFzJvKK2zDSzPKhEp0+ZR5SVaoSag9fsL5YgHbUHDfnG5494ISANDcK4KwPXAx2xqVEydmd7w==}
@@ -7038,7 +7193,7 @@ packages:
     engines: {node: '>=6'}
 
   string-width@4.2.3:
-    resolution: {integrity: sha1-JpxxF9J7Ba0uU2gwqOyJXvnG0BA=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/string-width/download/string-width-4.2.3.tgz}
+    resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
 
   string-width@5.1.2:
@@ -7412,7 +7567,7 @@ packages:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
   uglify-js@3.17.4:
-    resolution: {integrity: sha1-YWeM9fo/W363ibs0XfKa+4JXwiw=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/uglify-js/download/uglify-js-3.17.4.tgz}
+    resolution: {integrity: sha512-T9q82TJI9e/C1TAxYvfb16xO120tMVFZrGA3f9/P4424DNu6ypK103y0GPFVa17yotwSyZW5iYXgjYHkGrJW/g==}
     engines: {node: '>=0.8.0'}
     hasBin: true
 
@@ -7739,7 +7894,7 @@ packages:
     engines: {node: '>=8'}
 
   wrap-ansi@7.0.0:
-    resolution: {integrity: sha1-Z+FFz/UQpqaYS98RUpEdadLrnkM=, tarball: https://artifactory.devops.xiaohongshu.com/artifactory/api/npm/npm-public/wrap-ansi/download/wrap-ansi-7.0.0.tgz}
+    resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}
     engines: {node: '>=10'}
 
   wrap-ansi@8.1.0:
@@ -12962,10 +13117,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:

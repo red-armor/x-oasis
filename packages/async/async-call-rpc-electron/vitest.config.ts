@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
   test: {
@@ -13,7 +14,14 @@ export default defineConfig({
   },
 
   resolve: {
-    alias: {},
+    alias: {
+      '@x-oasis/async-call-rpc': path.resolve(
+        __dirname,
+        '../async-call-rpc/src/index.ts'
+      ),
+      // Mock electron module so tests run outside Electron
+      electron: path.resolve(__dirname, 'test/__mocks__/electron.ts'),
+    },
   },
   define: {
     __DEV__: false,
