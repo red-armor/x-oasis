@@ -2,6 +2,7 @@ import { resolve } from 'path';
 import { defineConfig } from 'electron-vite';
 import react from '@vitejs/plugin-react';
 import { resolveXOasisAliases } from './resolve-aliases';
+import { build } from 'vite';
 
 const xOasisAliases = resolveXOasisAliases();
 
@@ -26,7 +27,6 @@ export default defineConfig({
     server: {
       middlewareMode: false,
       watch: {
-        // 监听 @x-oasis 包的文件变更
         ignored: ['!**/node_modules/@x-oasis/**'],
       },
     },
@@ -47,6 +47,30 @@ export default defineConfig({
     resolve: {
       alias: xOasisAliases,
     },
+    plugins: [
+      {
+        name: 'build-utility-worker',
+        async closeBundle() {
+          await build({
+            build: {
+              outDir: resolve(__dirname, 'out/preload'),
+              emptyOutDir: false,
+              lib: {
+                entry: resolve(__dirname, 'utility-worker.ts'),
+                formats: ['cjs'],
+                fileName: () => 'utility-worker.js',
+              },
+              rollupOptions: {
+                external: ['electron'],
+              },
+            },
+            resolve: {
+              alias: xOasisAliases,
+            },
+          });
+        },
+      },
+    ],
     server: {
       watch: {
         ignored: ['!**/node_modules/@x-oasis/**'],

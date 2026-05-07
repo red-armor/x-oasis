@@ -1,35 +1,27 @@
-import { useState } from 'react';
+import React from 'react';
 
-interface AppAPI {
-  acquirePort: () => Promise<MessagePort>;
-}
-
-declare global {
-  interface Window {
-    api: AppAPI;
-  }
-}
-
-function App() {
-  const [port, setPort] = useState<MessagePort | null>(null);
-
-  // useEffect(() => {
-  //   window.api
-  //     .acquirePort()
-  //     .then((port) => {
-  //       console.log('port ---', port);
-  //       port.postMessage({ some: 'message' });
-  //       setPort(port);
-  //     })
-  //     .catch(console.error);
-  // }, []);
-
+const App: React.FC = () => {
   return (
     <div style={{ padding: '20px', fontFamily: 'system-ui' }}>
-      <h1>@x-oasis/async-call-rpc-electron — acquirePort Example</h1>
-      <pre>{port ? `Port acquired: ${port}` : 'Loading...'}</pre>
+      <h1>@x-oasis/async-call-rpc-electron — Utility↔Utility Port Example</h1>
+      <p>
+        Check the console (DevTools) for communication logs between utility
+        processes A and B.
+      </p>
+      <p>
+        This example demonstrates bidirectional MessagePort exchange between two
+        utility processes via main process as a port broker.
+      </p>
+      <ul>
+        <li>
+          Utility A initiates a direct port to Utility B (acquireUtilityBPort)
+        </li>
+        <li>
+          Utility B initiates a direct port to Utility A (acquireUtilityAPort)
+        </li>
+      </ul>
     </div>
   );
-}
+};
 
 export default App;
