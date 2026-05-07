@@ -47,6 +47,19 @@ export enum RequestType {
    *   // This will raise an error during validation in prepareNormalData middleware
    */
   TransferableArgsRequest = 'tar',
+
+  /**
+   * Promise request with a single Transferable arg wrapped in an array.
+   *
+   * Same as TransferableArgsRequest but signals that the original call had
+   * multiple Transferable args (e.g. `service.process(port1, port2)`).
+   * The receiver passes the full `message.ports` array to the handler.
+   *
+   * Distinction:
+   *   - TransferableArgsRequest  → single arg:   handler(ports[0])
+   *   - TransferableArrayArgsRequest → array args: handler(ports)
+   */
+  TransferableArrayArgsRequest = 'taar',
 }
 
 export type RequestRawSequenceId = number;
@@ -68,8 +81,18 @@ export enum ResponseType {
   ReturnSuccess = 'rs',
   ReturnFail = 'rf',
 
+  /**
+   * Handler returned a single Transferable (e.g. `return port`).
+   * Receiver resolves with `message.ports[0]`.
+   */
   PortSuccess = 'ps',
   PortFail = 'pf',
+
+  /**
+   * Handler returned an array of Transferables (e.g. `return [port1, port2]`).
+   * Receiver resolves with the full `message.ports` array.
+   */
+  PortArraySuccess = 'pas',
 
   /**
    * Indicates the subscription has been stopped by the server.

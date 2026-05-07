@@ -83,23 +83,15 @@ export const handleRequest =
     const methodName = header[3];
     let args = body[0];
 
-    // ✨ SPECIAL HANDLING: TransferableArgsRequest
-    // When all args are Transferable objects (MessagePort, ArrayBuffer, etc.),
-    // they are passed via the transfer list (message.ports) instead of data.
-    // Here we reconstruct args from message.ports.
-    //
-    // Example: client sends { requestPath: 'Service', methodName: 'method', args: [port1, port2] }
-    // - Message.ports will contain [port1, port2]
-    // - body[0] (args) will be empty or minimal
-    // - We need to convert message.ports into args for the handler
+    // ✨ SPECIAL HANDLING: Transferable args
+    // Transferable objects travel via message.ports, not in the serialized body.
+    // The RequestType tells us the original argument shape:
+    //   - TransferableArgsRequest       → single arg:  handler(ports[0])
+    //   - TransferableArrayArgsRequest  → array args:  handler(ports)
     if (type === RequestType.TransferableArgsRequest) {
-      // Reconstruct args from message.ports
-      // Each port in message.ports becomes an element in args
+      args = (ports || [])[0];
+    } else if (type === RequestType.TransferableArrayArgsRequest) {
       args = ports || [];
-
-      console.debug(
-        `[handleRequest] TransferableArgsRequest: reconstructed ${args.length} args from message.ports`
-      );
     }
 
     const jsonrpcRequest = makeRequest(seqId, methodName, args);
@@ -364,11 +356,20 @@ export const handleRequest =
       try {
         const response = await Promise.resolve(result);
 
-        // Port return value: encode as PortSuccess and pass the port as a
-        // transferable. The receiving side's `handleResponse` resolves the
-        // deferred with `message.ports[0]`.
+        // Port return value: encode as PortSuccess and pass the port(s) as
+        // transferable(s). We record whether the original return value was an
+        // array so the receiving side's `handleResponse` can faithfully restore
+        // the same shape:
+        //   - handler returns `port`      → client resolves with `port`
+        //   - handler returns `[p1, p2]`  → client resolves with `[p1, p2]`
         if (isPortLike(response)) {
-          const portHeader = [ResponseType.PortSuccess, seqId];
+          // Distinguish single port vs array of ports via ResponseType:
+          //   - PortSuccess      → client resolves with ports[0]
+          //   - PortArraySuccess → client resolves with ports
+          const responseType = Array.isArray(response)
+            ? ResponseType.PortArraySuccess
+            : ResponseType.PortSuccess;
+          const portHeader = [responseType, seqId];
           const sendData = protocol.writeBuffer.encode([portHeader, []]);
           if (protocol.isConnected()) {
             (protocol.sendReply as (d: any, t?: any[]) => void)(

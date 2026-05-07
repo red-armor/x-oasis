@@ -51,9 +51,12 @@ import { RPCError, JSONRPCErrorCode } from '../error';
  * ## Response Type Categories:
  *
  * 1. **PortSuccess** ("ps")
- *    - Return value is a Transferable object
+ *    - Return value is a single Transferable object
  *    - Resolve with: message.ports[0]
- *    - Body is typically null (actual data is in ports)
+ *
+ * 1b. **PortArraySuccess** ("pas")
+ *    - Return value is an array of Transferable objects
+ *    - Resolve with: message.ports (full array)
  *
  * 2. **ReturnSuccess** ("rs")
  *    - Normal return value (not Transferable)
@@ -80,7 +83,11 @@ import { RPCError, JSONRPCErrorCode } from '../error';
  * ```
  * ResponseType.PortSuccess:
  *   ✓ Resolve with message.ports[0]
- *   ✓ This is the Transferable object (MessagePort)
+ *   ✓ This is a single Transferable object (MessagePort)
+ *
+ * ResponseType.PortArraySuccess:
+ *   ✓ Resolve with message.ports
+ *   ✓ This is an array of Transferable objects
  *
  * ResponseType.ReturnSuccess:
  *   ✓ Resolve with body[0]
@@ -104,8 +111,9 @@ import { RPCError, JSONRPCErrorCode } from '../error';
  *    - DO NOT assume it exists if something goes wrong upstream
  *    - Check if message && message.ports before accessing
  *
- * 2. **PortSuccess must use message.ports[0]**
- *    - NOT body[0] (body is usually null for PortSuccess)
+ * 2. **PortSuccess / PortArraySuccess use message.ports**
+ *    - PortSuccess → ports[0] (single Transferable)
+ *    - PortArraySuccess → ports (array of Transferables)
  *    - This is the key difference from ReturnSuccess
  *
  * 3. **Preserve error handling chain**
@@ -189,18 +197,14 @@ export const handleResponse =
         // For normal requests, delete the deferred when response arrives
         protocol.ongoingRequests.delete(`${seqId}`);
 
-        // CRITICAL: Handle PortSuccess (Transferable object response)
-        // When return value is a MessagePort, it comes in message.ports[0]
-        // NOT in body (body is typically null for PortSuccess)
-        //
-        // This is the key difference:
-        // - PortSuccess: resolve with message.ports[0]
-        // - ReturnSuccess: resolve with body[0]
+        // CRITICAL: Handle Transferable return values.
+        // The ResponseType distinguishes the original return shape:
+        //   - PortSuccess      → single Transferable:  resolve(ports[0])
+        //   - PortArraySuccess → array of Transferables: resolve(ports)
         if (type === ResponseType.PortSuccess) {
-          // ✓ IMPORTANT: Use message.ports[0], not body[0]
-          // The actual MessagePort was transferred via Transferable mechanism
-          // and is available in the ports array from the normalize middleware
           findDefer.resolve(ports && ports[0]);
+        } else if (type === ResponseType.PortArraySuccess) {
+          findDefer.resolve(ports || []);
         } else if (type === ResponseType.ReturnFail) {
           // Handle error response
           const rawError = body[0];

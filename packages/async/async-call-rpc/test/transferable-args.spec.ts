@@ -7,7 +7,10 @@ import RPCServiceHost from '../src/endpoint/RPCServiceHost';
 /**
  * When all args are Transferable objects (MessagePort, ArrayBuffer, etc.),
  * they are passed via message.ports instead of serialized data.
- * The handleRequest middleware must reconstruct args from message.ports.
+ *
+ * Two RequestTypes distinguish single vs multiple Transferable args:
+ *   - TransferableArgsRequest      → single arg:  handler(ports[0])
+ *   - TransferableArrayArgsRequest → array args:  handler(ports)
  */
 describe('handleRequest TransferableArgsRequest', () => {
   let mockProtocol: Partial<AbstractChannelProtocol>;
@@ -32,65 +35,7 @@ describe('handleRequest TransferableArgsRequest', () => {
     };
   });
 
-  test('TransferableArgsRequest reconstructs args from message.ports', async () => {
-    // Create fake MessagePorts
-    const fakePort1 = {
-      postMessage: vi.fn(),
-      start: vi.fn(),
-      on: vi.fn(),
-    };
-    const fakePort2 = {
-      postMessage: vi.fn(),
-      start: vi.fn(),
-      on: vi.fn(),
-    };
-
-    // Register a handler that expects MessagePorts as arguments
-    const handler = vi.fn((port1, port2) => {
-      expect(port1).toBe(fakePort1);
-      expect(port2).toBe(fakePort2);
-      return 'ports-received';
-    });
-
-    serviceHost.registerServiceHandler('/service', {
-      processPort: handler,
-    });
-
-    const run = handleRequest(mockProtocol as AbstractChannelProtocol);
-
-    // Simulate a TransferableArgsRequest with ports in message.ports
-    run({
-      event: null,
-      data: [
-        [
-          RequestType.TransferableArgsRequest,
-          'seq-port',
-          '/service',
-          'processPort',
-        ],
-        [[]], // Empty body for TransferableArgsRequest
-      ],
-      ports: [fakePort1, fakePort2], // ← The actual ports come from transfer list
-    } as any);
-
-    // Wait for async handler execution
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-
-    // Handler should have been called with the ports
-    expect(handler).toHaveBeenCalledWith(fakePort1, fakePort2);
-    expect(handler).toHaveBeenCalledTimes(1);
-
-    // Response should be ReturnSuccess with the result
-    expect(sendReply).toHaveBeenCalledTimes(1);
-    const [data] = sendReply.mock.calls[0];
-    expect(data[0][0]).toBe(ResponseType.ReturnSuccess);
-    expect(data[0][1]).toBe('seq-port');
-    expect(data[1]).toEqual(['ports-received']);
-  });
-
-  test('TransferableArgsRequest with single port', async () => {
+  test('TransferableArgsRequest: single port is unwrapped from ports array', async () => {
     const fakePort = {
       postMessage: vi.fn(),
       start: vi.fn(),
@@ -117,7 +62,7 @@ describe('handleRequest TransferableArgsRequest', () => {
           '/service',
           'assignPort',
         ],
-        [[]],
+        [], // body is empty for Transferable requests
       ],
       ports: [fakePort],
     } as any);
@@ -131,6 +76,57 @@ describe('handleRequest TransferableArgsRequest', () => {
     const [data] = sendReply.mock.calls[0];
     expect(data[0][0]).toBe(ResponseType.ReturnSuccess);
     expect(data[1]).toEqual(['got-port']);
+  });
+
+  test('TransferableArrayArgsRequest: multiple ports passed as array', async () => {
+    const fakePort1 = {
+      postMessage: vi.fn(),
+      start: vi.fn(),
+      on: vi.fn(),
+    };
+    const fakePort2 = {
+      postMessage: vi.fn(),
+      start: vi.fn(),
+      on: vi.fn(),
+    };
+
+    const handler = vi.fn((ports) => {
+      expect(ports).toEqual([fakePort1, fakePort2]);
+      return 'ports-received';
+    });
+
+    serviceHost.registerServiceHandler('/service', {
+      processPort: handler,
+    });
+
+    const run = handleRequest(mockProtocol as AbstractChannelProtocol);
+
+    run({
+      event: null,
+      data: [
+        [
+          RequestType.TransferableArrayArgsRequest,
+          'seq-multi',
+          '/service',
+          'processPort',
+        ],
+        [], // body is empty for Transferable requests
+      ],
+      ports: [fakePort1, fakePort2],
+    } as any);
+
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(handler).toHaveBeenCalledWith([fakePort1, fakePort2]);
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    expect(sendReply).toHaveBeenCalledTimes(1);
+    const [data] = sendReply.mock.calls[0];
+    expect(data[0][0]).toBe(ResponseType.ReturnSuccess);
+    expect(data[0][1]).toBe('seq-multi');
+    expect(data[1]).toEqual(['ports-received']);
   });
 
   test('TransferableArgsRequest handles handler errors', async () => {
@@ -159,7 +155,7 @@ describe('handleRequest TransferableArgsRequest', () => {
           '/service',
           'processPort',
         ],
-        [[]],
+        [],
       ],
       ports: [fakePort],
     } as any);
@@ -176,7 +172,7 @@ describe('handleRequest TransferableArgsRequest', () => {
     expect(data[1][0].message).toContain('Port processing failed');
   });
 
-  test('TransferableArgsRequest with no ports uses empty args', async () => {
+  test('TransferableArgsRequest with no ports passes undefined', async () => {
     const handler = vi.fn(() => 'no-args');
 
     serviceHost.registerServiceHandler('/service', {
@@ -194,16 +190,17 @@ describe('handleRequest TransferableArgsRequest', () => {
           '/service',
           'process',
         ],
-        [[]],
+        [],
       ],
-      ports: [], // No ports transferred
+      ports: [],
     } as any);
 
     await Promise.resolve();
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(handler).toHaveBeenCalledWith();
+    // TransferableArgsRequest with empty ports → ports[0] = undefined
+    expect(handler).toHaveBeenCalledWith(undefined);
     expect(sendReply).toHaveBeenCalledTimes(1);
     const [data] = sendReply.mock.calls[0];
     expect(data[0][0]).toBe(ResponseType.ReturnSuccess);

@@ -93,23 +93,37 @@ export const prepareNormalData = (channel: AbstractChannelProtocol) => {
         validateAndDetectArgType(params);
 
       if (hasTransferable) {
-        requestType = RequestType.TransferableArgsRequest;
+        // Distinguish single vs multiple Transferable args via RequestType:
+        //   - TransferableArgsRequest      → single arg:  handler(ports[0])
+        //   - TransferableArrayArgsRequest  → array args:  handler(ports)
+        requestType =
+          params.length === 1
+            ? RequestType.TransferableArgsRequest
+            : RequestType.TransferableArrayArgsRequest;
         transfer = transferables;
       }
     }
 
     const header: RequestEntryHeader = [
-      requestType, // Can be PromiseRequest, TransferableArgsRequest, SubscriptionRequest, etc.
+      requestType,
       seqId,
       requestPath,
       methodName,
     ];
 
+    // For Transferable requests the actual objects travel via the `transfer`
+    // list (message.ports on the receiver), so the body is empty.
+    const body =
+      requestType === RequestType.TransferableArgsRequest ||
+      requestType === RequestType.TransferableArrayArgsRequest
+        ? []
+        : params;
+
     return {
       seqId,
       isOptionsRequest,
-      data: [header, params],
-      transfer, // Transfer list for Transferable objects (if any)
+      data: [header, body],
+      transfer,
     };
   };
 
