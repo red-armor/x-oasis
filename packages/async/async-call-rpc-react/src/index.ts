@@ -32,6 +32,34 @@
  * }
  * ```
  *
+ * **Connection Orchestrator Integration**:
+ * This package also provides React hooks for the Connection Orchestrator:
+ * - `OrchestratorProvider` — Context provider for the orchestrator
+ * - `useOrchestrator()` — Access the orchestrator instance
+ * - `useConnectionState()` — Track connection state
+ * - `useConnectionStats()` — Track connection statistics
+ *
+ * @example
+ * ```tsx
+ * import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron';
+ * import { OrchestratorProvider, useConnectionState } from '@x-oasis/async-call-rpc-react';
+ *
+ * const orchestrator = new ElectronConnectionOrchestrator();
+ *
+ * function App() {
+ *   return (
+ *     <OrchestratorProvider orchestrator={orchestrator}>
+ *       <MainApp />
+ *     </OrchestratorProvider>
+ *   );
+ * }
+ *
+ * function ConnectionStatus() {
+ *   const { state, isReady } = useConnectionState('main--worker');
+ *   return <div>{isReady ? '✅ Connected' : `⏳ ${state}`}</div>;
+ * }
+ * ```
+ *
  * **Requirements**:
  * - `@x-oasis/async-call-rpc` — the core RPC framework
  * - `@tanstack/react-query` >= 5.0.0
@@ -225,3 +253,26 @@ export function createRPCReact<
     proxy,
   };
 }
+
+// =============================================================================
+// Connection Orchestrator React Integration
+// =============================================================================
+
+export {
+  OrchestratorProvider,
+  useOrchestrator,
+  useOrchestratorReady,
+  useConnectionMethods,
+} from './OrchestratorProvider';
+
+export {
+  useConnectionState,
+  useIsConnectionReady,
+  useConnectionStats,
+  useAllConnections,
+} from './useConnectionState';
+
+export type {
+  OrchestratorProviderProps,
+  OrchestratorContextValue,
+} from './OrchestratorProvider';

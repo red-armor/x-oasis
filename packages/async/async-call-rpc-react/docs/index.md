@@ -1,6 +1,6 @@
 # @x-oasis/async-call-rpc-react
 
-React integration for async-call-rpc
+React integration for @x-oasis/async-call-rpc with Connection Orchestrator support.
 
 ## Installation
 
@@ -8,26 +8,72 @@ React integration for async-call-rpc
 npm install @x-oasis/async-call-rpc-react
 ```
 
+## Features
+
+- **React Query Integration**: Type-safe hooks (`useQuery`, `useMutation`, `useSubscription`) for RPC
+- **Connection Orchestrator React Hooks**: Track connection state and manage connections in React
+- **Context Provider**: `OrchestratorProvider` for sharing orchestrator instance across components
+- **Full TypeScript Support**: Complete type definitions
+
+## Quick Links
+
+- [React Query Integration](#quick-start) - Type-safe RPC hooks
+- [Connection Orchestrator React](/packages/async/async-call-rpc-react/orchestrator) - Connection state management
+- [Examples](./EXAMPLES.md) - Complete working examples
+
 ## Quick Start
 
-```typescript
-import { /* exports */ } from '@x-oasis/async-call-rpc-react';
+### React Query Hooks
 
-// Your code here
+```tsx
+import { createRPCReact } from '@x-oasis/async-call-rpc-react';
+
+const fileRPC = createRPCReact<FileService>(client);
+
+function FileViewer({ path }: { path: string }) {
+  const { data, isLoading } = fileRPC.useQuery('readFile', [path]);
+  const writeMutation = fileRPC.useMutation('writeFile');
+
+  return <pre>{data}</pre>;
+}
 ```
 
-## Key Features
+### Connection Orchestrator Hooks
 
-- High performance
-- TypeScript support
-- No external dependencies
-- Well-tested and stable
+```tsx
+import {
+  OrchestratorProvider,
+  useConnectionState,
+} from '@x-oasis/async-call-rpc-react';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron';
 
-## API Reference
+const orchestrator = new ElectronConnectionOrchestrator();
 
-### Main Exports
+function App() {
+  return (
+    <OrchestratorProvider orchestrator={orchestrator}>
+      <ConnectionStatus connectionId="main--worker" />
+    </OrchestratorProvider>
+  );
+}
 
-See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-react)
+function ConnectionStatus({ connectionId }: { connectionId: string }) {
+  const { orchestrator } = useOrchestrator();
+  const connection = useConnectionState(orchestrator, connectionId);
+
+  return (
+    <div>
+      {connection?.isReady ? '✅ Connected' : `⏳ ${connection?.state}`}
+    </div>
+  );
+}
+```
+
+## Documentation
+
+- [Connection Orchestrator React Integration](/packages/async/async-call-rpc-react/orchestrator)
+- [Examples and Usage](./EXAMPLES.md)
+- [API Reference](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-react/src)
 
 ## Usage Examples
 
@@ -48,12 +94,13 @@ See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/p
 Full TypeScript definitions are included:
 
 ```typescript
-import { /* types */ } from '@x-oasis/async-call-rpc-react';
+import {} from /* types */ '@x-oasis/async-call-rpc-react';
 ```
 
 ## Performance
 
 This package is optimized for:
+
 - Small bundle size
 - Fast execution
 - Memory efficiency
@@ -66,11 +113,13 @@ This package is optimized for:
 ## Best Practices
 
 ✅ **Do:**
+
 - Use according to documentation
 - Check types before use
 - Handle edge cases
 
 ❌ **Don't:**
+
 - Misuse the API
 - Ignore error handling
 - Forget null checks
