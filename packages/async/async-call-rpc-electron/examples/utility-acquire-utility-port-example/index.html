@@ -6,16 +6,7 @@
   </head>
   <body>
     <h1>@x-oasis/async-call-rpc-electron — IPC Example</h1>
-    <pre id="output">Loading...</pre>
-    <script>
-      // nodeIntegration: true + contextIsolation: false
-      // 所以可以直接 require。注意使用 .js 文件（渲染进程不支持 tsx）
-      try {
-        require('./renderer-process.js');
-      } catch (e) {
-        document.getElementById('output').textContent =
-          'Error: ' + e.message + '\n' + e.stack;
-      }
-    </script>
+    <div id="app"></div>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>
