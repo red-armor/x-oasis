@@ -31,15 +31,20 @@ const utilityDirectClient = clientHost
   .registerClient('utility-direct', { channel: directChannel })
   .createProxy();
 
+const orchestratorClient = clientHost
+  .registerClient('orchestrator', { channel: ipcChannel })
+  .createProxy();
+
 registerOrchestratorHandler(ipcChannel, (port: MessagePort) => {
   directChannel.bindPort(port);
 });
 
 contextBridge.exposeInMainWorld('orchestratorAPI', {
-  connect: () => ipcRenderer.invoke('orchestrator:connect'),
-  disconnect: () => ipcRenderer.invoke('orchestrator:disconnect'),
-  simulateLost: () => ipcRenderer.invoke('orchestrator:simulateLost'),
-  getStatus: () => ipcRenderer.invoke('orchestrator:getStatus'),
+  connect: () => (orchestratorClient as any).connect(),
+  disconnect: () => (orchestratorClient as any).disconnect(),
+  simulateLost: () => (orchestratorClient as any).simulateLost(),
+  getStatus: () => (orchestratorClient as any).getStatus(),
+  killUtility: () => (orchestratorClient as any).killUtility(),
   sendRpc: (message: string) => {
     return (utilityDirectClient as any).ping(message).then(
       (r: any) => r,
@@ -49,43 +54,37 @@ contextBridge.exposeInMainWorld('orchestratorAPI', {
     );
   },
   onStateChange: (callback: (event: any) => void) => {
-    const listener = (_ev: any, data: any) => callback(data);
-    ipcRenderer.on('orchestrator:stateChange', listener);
-    return () =>
-      ipcRenderer.removeListener('orchestrator:stateChange', listener);
+    const { unsubscribe } = (orchestratorClient as any).onStateChange(callback);
+    return unsubscribe;
   },
   onReady: (callback: (event: any) => void) => {
-    const listener = (_ev: any, data: any) => callback(data);
-    ipcRenderer.on('orchestrator:ready', listener);
-    return () => ipcRenderer.removeListener('orchestrator:ready', listener);
+    const { unsubscribe } = (orchestratorClient as any).onReady(callback);
+    return unsubscribe;
   },
   onDisconnected: (callback: (event: any) => void) => {
-    const listener = (_ev: any, data: any) => callback(data);
-    ipcRenderer.on('orchestrator:disconnected', listener);
-    return () =>
-      ipcRenderer.removeListener('orchestrator:disconnected', listener);
+    const { unsubscribe } = (orchestratorClient as any).onDisconnected(
+      callback
+    );
+    return unsubscribe;
   },
   onReconnecting: (callback: (event: any) => void) => {
-    const listener = (_ev: any, data: any) => callback(data);
-    ipcRenderer.on('orchestrator:reconnecting', listener);
-    return () =>
-      ipcRenderer.removeListener('orchestrator:reconnecting', listener);
+    const { unsubscribe } = (orchestratorClient as any).onReconnecting(
+      callback
+    );
+    return unsubscribe;
   },
   onReconnected: (callback: (event: any) => void) => {
-    const listener = (_ev: any, data: any) => callback(data);
-    ipcRenderer.on('orchestrator:reconnected', listener);
-    return () =>
-      ipcRenderer.removeListener('orchestrator:reconnected', listener);
+    const { unsubscribe } = (orchestratorClient as any).onReconnected(callback);
+    return unsubscribe;
   },
   onReconnectFailed: (callback: (event: any) => void) => {
-    const listener = (_ev: any, data: any) => callback(data);
-    ipcRenderer.on('orchestrator:reconnectFailed', listener);
-    return () =>
-      ipcRenderer.removeListener('orchestrator:reconnectFailed', listener);
+    const { unsubscribe } = (orchestratorClient as any).onReconnectFailed(
+      callback
+    );
+    return unsubscribe;
   },
   onClosed: (callback: (event: any) => void) => {
-    const listener = (_ev: any, data: any) => callback(data);
-    ipcRenderer.on('orchestrator:closed', listener);
-    return () => ipcRenderer.removeListener('orchestrator:closed', listener);
+    const { unsubscribe } = (orchestratorClient as any).onClosed(callback);
+    return unsubscribe;
   },
 });

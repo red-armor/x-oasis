@@ -36,10 +36,6 @@ function createWindow(): IPCMainChannel {
   return ipcChannel;
 }
 
-function sendToRenderer(channel: string, ...args: any[]) {
-  mainWindow?.webContents.send(channel, ...args);
-}
-
 app.whenReady().then(async () => {
   const ipcChannel = createWindow();
 
@@ -122,30 +118,28 @@ app.whenReady().then(async () => {
             : null,
         };
       },
+      onStateChange(remoteCallback: (event: any) => void) {
+        orchestrator.onStateChange((event) => remoteCallback(event));
+      },
+      onReady(remoteCallback: (event: any) => void) {
+        orchestrator.onReady((event) => remoteCallback(event));
+      },
+      onDisconnected(remoteCallback: (event: any) => void) {
+        orchestrator.onDisconnected((event) => remoteCallback(event));
+      },
+      onReconnecting(remoteCallback: (event: any) => void) {
+        orchestrator.onReconnecting((event) => remoteCallback(event));
+      },
+      onReconnected(remoteCallback: (event: any) => void) {
+        orchestrator.onReconnected((event) => remoteCallback(event));
+      },
+      onReconnectFailed(remoteCallback: (event: any) => void) {
+        orchestrator.onReconnectFailed((event) => remoteCallback(event));
+      },
+      onClosed(remoteCallback: (event: any) => void) {
+        orchestrator.onClosed((event) => remoteCallback(event));
+      },
     },
-  });
-
-  // Forward orchestrator events to renderer via sendToRenderer
-  orchestrator.onStateChange((event) => {
-    sendToRenderer('orchestrator:stateChange', event);
-  });
-  orchestrator.onReady((event) => {
-    sendToRenderer('orchestrator:ready', event);
-  });
-  orchestrator.onDisconnected((event) => {
-    sendToRenderer('orchestrator:disconnected', event);
-  });
-  orchestrator.onReconnecting((event) => {
-    sendToRenderer('orchestrator:reconnecting', event);
-  });
-  orchestrator.onReconnected((event) => {
-    sendToRenderer('orchestrator:reconnected', event);
-  });
-  orchestrator.onReconnectFailed((event) => {
-    sendToRenderer('orchestrator:reconnectFailed', event);
-  });
-  orchestrator.onClosed((event) => {
-    sendToRenderer('orchestrator:closed', event);
   });
 
   const info = await orchestrator.connect('utility-a', 'utility-b');

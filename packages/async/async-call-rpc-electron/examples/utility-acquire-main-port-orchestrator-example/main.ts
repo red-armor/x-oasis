@@ -1,5 +1,6 @@
-import { app, BrowserWindow, utilityProcess, ipcMain } from 'electron';
+import { app, BrowserWindow, utilityProcess } from 'electron';
 import {
+  IPCMainChannel,
   ElectronUtilityProcessChannel,
   ElectronConnectionOrchestrator,
   ElectronMessagePortMainChannel,
@@ -9,7 +10,7 @@ import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;
 
-function createWindow(): void {
+function createWindow(): IPCMainChannel {
   mainWindow = new BrowserWindow({
     width: 1100,
     height: 850,
@@ -20,20 +21,24 @@ function createWindow(): void {
     },
   });
 
+  const ipcChannel = new IPCMainChannel({
+    channelName: 'app-rpc',
+    webContents: mainWindow.webContents,
+    description: 'main→renderer IPC channel',
+  });
+
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
-}
 
-function sendToRenderer(channel: string, ...args: any[]) {
-  mainWindow?.webContents.send(channel, ...args);
+  return ipcChannel;
 }
 
 app.whenReady().then(async () => {
-  createWindow();
+  const ipcChannel = createWindow();
 
   const workerPath = join(__dirname, '../preload/utility-worker.js');
   const utilityProc = utilityProcess.fork(workerPath);
@@ -89,87 +94,91 @@ app.whenReady().then(async () => {
     disconnect: () => {},
     onDidConnected: () => {},
     onDidDisconnected: () => {},
+    ensureListenerAttached: () => {},
   } as any;
 
   orchestrator.registerParticipant('main', mainParticipantChannel, 'process');
   orchestrator.registerParticipant('utility', utilityChannel, 'utility');
 
-  orchestrator.onStateChange((event) =>
-    sendToRenderer('orchestrator:stateChange', event)
-  );
-  orchestrator.onReady((event) => sendToRenderer('orchestrator:ready', event));
-  orchestrator.onDisconnected((event) =>
-    sendToRenderer('orchestrator:disconnected', event)
-  );
-  orchestrator.onReconnecting((event) =>
-    sendToRenderer('orchestrator:reconnecting', event)
-  );
-  orchestrator.onReconnected((event) =>
-    sendToRenderer('orchestrator:reconnected', event)
-  );
-  orchestrator.onReconnectFailed((event) =>
-    sendToRenderer('orchestrator:reconnectFailed', event)
-  );
-  orchestrator.onClosed((event) =>
-    sendToRenderer('orchestrator:closed', event)
-  );
-
-  ipcMain.handle('orchestrator:connect', async () => {
-    try {
-      const info = await orchestrator.connect('main', 'utility');
-      return {
-        connectionId: info.connectionId,
-        fromId: info.fromId,
-        toId: info.toId,
-        state: info.state,
-        lastStateChangedAt: info.lastStateChangedAt,
-        error: info.error?.message,
-      };
-    } catch (err: any) {
-      return { error: err.message };
-    }
-  });
-
-  ipcMain.handle('orchestrator:disconnect', async () => {
-    const info = orchestrator.getConnectionInfo('main', 'utility');
-    if (info) await orchestrator.disconnect(info.connectionId);
-  });
-
-  ipcMain.handle('orchestrator:simulateLost', async () => {
-    orchestrator.handleParticipantLost('utility', 'simulated process exit');
-  });
-
-  ipcMain.handle('orchestrator:getStatus', async () => {
-    const info = orchestrator.getConnectionInfo('main', 'utility');
-    if (!info) return null;
-    const stats = orchestrator.getConnectionStats(info.connectionId);
-    return {
-      connectionId: info.connectionId,
-      fromId: info.fromId,
-      toId: info.toId,
-      state: info.state,
-      lastStateChangedAt: info.lastStateChangedAt,
-      error: info.error?.message,
-      isReady: info.isReady,
-      stats: stats
-        ? {
-            totalRpcCalls: stats.totalRpcCalls,
-            successfulCalls: stats.successfulCalls,
-            failedCalls: stats.failedCalls,
-            avgLatencyMs: stats.avgLatencyMs,
-            totalReconnects: stats.totalReconnects,
-          }
-        : null,
-    };
-  });
-
-  ipcMain.handle('orchestrator:sendRpc', async (_e, message: string) => {
-    try {
-      const result = await (utilityDirectClient as any).ping(message);
-      return { success: true, result };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
+  serviceHost.registerService('orchestrator', {
+    channel: ipcChannel,
+    serviceHost,
+    handlers: {
+      async connect(): Promise<any> {
+        try {
+          const info = await orchestrator.connect('main', 'utility');
+          return {
+            connectionId: info.connectionId,
+            fromId: info.fromId,
+            toId: info.toId,
+            state: info.state,
+            lastStateChangedAt: info.lastStateChangedAt,
+            error: info.error?.message,
+          };
+        } catch (err: any) {
+          return { error: err.message };
+        }
+      },
+      async disconnect(): Promise<void> {
+        const info = orchestrator.getConnectionInfo('main', 'utility');
+        if (info) await orchestrator.disconnect(info.connectionId);
+      },
+      simulateLost(): void {
+        orchestrator.handleParticipantLost('utility', 'simulated process exit');
+      },
+      async getStatus(): Promise<any> {
+        const info = orchestrator.getConnectionInfo('main', 'utility');
+        if (!info) return null;
+        const stats = orchestrator.getConnectionStats(info.connectionId);
+        return {
+          connectionId: info.connectionId,
+          fromId: info.fromId,
+          toId: info.toId,
+          state: info.state,
+          lastStateChangedAt: info.lastStateChangedAt,
+          error: info.error?.message,
+          isReady: info.isReady,
+          stats: stats
+            ? {
+                totalRpcCalls: stats.totalRpcCalls,
+                successfulCalls: stats.successfulCalls,
+                failedCalls: stats.failedCalls,
+                avgLatencyMs: stats.avgLatencyMs,
+                totalReconnects: stats.totalReconnects,
+              }
+            : null,
+        };
+      },
+      async sendRpc(_args: any, message: string): Promise<any> {
+        try {
+          const result = await (utilityDirectClient as any).ping(message);
+          return { success: true, result };
+        } catch (err: any) {
+          return { success: false, error: err.message };
+        }
+      },
+      onStateChange(remoteCallback: (event: any) => void) {
+        orchestrator.onStateChange((event) => remoteCallback(event));
+      },
+      onReady(remoteCallback: (event: any) => void) {
+        orchestrator.onReady((event) => remoteCallback(event));
+      },
+      onDisconnected(remoteCallback: (event: any) => void) {
+        orchestrator.onDisconnected((event) => remoteCallback(event));
+      },
+      onReconnecting(remoteCallback: (event: any) => void) {
+        orchestrator.onReconnecting((event) => remoteCallback(event));
+      },
+      onReconnected(remoteCallback: (event: any) => void) {
+        orchestrator.onReconnected((event) => remoteCallback(event));
+      },
+      onReconnectFailed(remoteCallback: (event: any) => void) {
+        orchestrator.onReconnectFailed((event) => remoteCallback(event));
+      },
+      onClosed(remoteCallback: (event: any) => void) {
+        orchestrator.onClosed((event) => remoteCallback(event));
+      },
+    },
   });
 
   const info = await orchestrator.connect('main', 'utility');
