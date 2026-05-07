@@ -1,6 +1,6 @@
 # @x-oasis/async-call-rpc-electron
 
-RPC channel implementations for Electron
+RPC channel implementations and Connection Orchestrator for Electron.
 
 ## Installation
 
@@ -8,26 +8,58 @@ RPC channel implementations for Electron
 npm install @x-oasis/async-call-rpc-electron
 ```
 
+## Features
+
+- **IPC Channels**: Pre-built channels for `ipcMain`/`ipcRenderer`, `utilityProcess`, and `MessagePortMain`
+- **Connection Orchestrator**: Automated direct MessagePort connection management between Electron processes
+- **Full TypeScript Support**: Complete type definitions for all APIs
+- **Zero External Dependencies**: Self-contained package
+
+## Quick Links
+
+- [Connection Orchestrator](/packages/async/async-call-rpc-electron/orchestrator) - Automated port connection management
+- [API Reference](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-electron/src)
+- [Examples](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-electron/examples)
+
 ## Quick Start
 
-```typescript
-import { /* exports */ } from '@x-oasis/async-call-rpc-electron';
+### Basic IPC Channel
 
-// Your code here
+```typescript
+import {
+  IPCMainChannel,
+  IPCRendererChannel,
+} from '@x-oasis/async-call-rpc-electron';
+
+// Main process
+const channel = new IPCMainChannel({
+  channelName: 'app-rpc',
+  webContents: mainWindow.webContents,
+});
+
+// Renderer process
+const channel = new IPCRendererChannel({
+  channelName: 'app-rpc',
+  ipcRenderer,
+});
 ```
 
-## Key Features
+### Connection Orchestrator
 
-- High performance
-- TypeScript support
-- No external dependencies
-- Well-tested and stable
+```typescript
+import {
+  ElectronConnectionOrchestrator,
+  registerOrchestratorHandler,
+} from '@x-oasis/async-call-rpc-electron';
 
-## API Reference
+const orchestrator = new ElectronConnectionOrchestrator();
+orchestrator.registerParticipant('renderer', ipcChannel, 'renderer');
+orchestrator.registerParticipant('utility', utilityChannel, 'utility');
 
-### Main Exports
+await orchestrator.connect('renderer', 'utility');
+```
 
-See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-electron)
+See the [Orchestrator Documentation](/packages/async/async-call-rpc-electron/orchestrator) for complete details.
 
 ## Usage Examples
 
@@ -48,12 +80,13 @@ See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/p
 Full TypeScript definitions are included:
 
 ```typescript
-import { /* types */ } from '@x-oasis/async-call-rpc-electron';
+import {} from /* types */ '@x-oasis/async-call-rpc-electron';
 ```
 
 ## Performance
 
 This package is optimized for:
+
 - Small bundle size
 - Fast execution
 - Memory efficiency
@@ -66,11 +99,13 @@ This package is optimized for:
 ## Best Practices
 
 ✅ **Do:**
+
 - Use according to documentation
 - Check types before use
 - Handle edge cases
 
 ❌ **Don't:**
+
 - Misuse the API
 - Ignore error handling
 - Forget null checks
