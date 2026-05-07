@@ -62,10 +62,11 @@ export type CreateContextFn<TContext = Record<string, unknown>> = (opts: {
  *       ▼
  *  ┌─────────────────────────────────┐
  *  │  Sender Middleware Pipeline     │
- *  │  1. prepareNormalData           │  ← build request envelope
+ *  │  1. prepareNormalData           │  ← build envelope, auto-detect Transferables
  *  │  2. updateSeqInfo               │  ← assign seqId
- *  │  3. serialize                   │  ← encode via WriteBuffer
- *  │  4. sendRequest                 │  ← call this.send()
+ *  │  3. handleDisconnectedRequest   │  ← check connection
+ *  │  4. serialize                   │  ← encode via WriteBuffer
+ *  │  5. sendRequest                 │  ← call this.send()
  *  └─────────────────────────────────┘
  *       │                                    │
  *       │  ← transport (send/on) →           │
@@ -173,7 +174,7 @@ abstract class AbstractChannelProtocol
   ];
 
   private _senderMiddleware: SenderMiddleware[] = [
-    prepareNormalData,
+    prepareNormalData, // ✨ Structures RPC request message with auto-detect Transferables
     updateSeqInfo,
     handleDisconnectedRequest,
     serialize,

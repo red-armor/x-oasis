@@ -60,25 +60,83 @@ export default class IPCRendererChannel extends AbstractChannelProtocol {
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
-    // 参考 https://www.electronjs.org/docs/latest/api/ipc-renderer#ipcrendereronchannel-listener
-    // 其中ports是event来的，data是跟在后面的，他其实跟
-    // https://www.electronjs.org/docs/latest/api/utility-process#childpostmessagemessage-transfer
-    // 不一样的，你可以去看下 MessageEvent, 它里面是包含 data，ports的；
+    /**
+     * CRITICAL IMPLEMENTATION NOTE:
+     *
+     * Electron IPC message structure vs MessageEvent:
+     * - Electron's ipcRenderer.on(channel, handler) receives: (event, ...args)
+     * - MessageEvent has: {data, ports}
+     *
+     * The async-call-rpc framework expects MessageEvent-like structure with ports.
+     * This handler must reconstruct that from Electron's (event, ...args) format.
+     *
+     * Reference:
+     * - Electron IPC: https://www.electronjs.org/docs/latest/api/ipc-renderer#ipcrendereronchannel-listener
+     * - MessageEvent: https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent
+     *
+     * ## Port Transfer in Electron:
+     *
+     * When main process sends with transfer:
+     * ```typescript
+     * webContents.postMessage(channelName, data, [port])
+     * ```
+     *
+     * Renderer side receives in IPC listener:
+     * ```typescript
+     * ipcRenderer.on(channelName, (event) => {
+     *   event.ports  // ← Contains the transferred MessagePort(s)!
+     *   args[0]      // ← Contains the main data
+     * })
+     * ```
+     *
+     * This handler MUST extract event.ports and include it in normalized message.
+     * If ports is not passed to listener, downstream middleware won't have access
+     * to Transferable objects and PortSuccess responses will fail.
+     */
     const handler = (_event: IpcRendererEvent, ...args: unknown[]): void => {
+      // STEP 1: Extract the main data from arguments
+      // Electron sends data as separate arguments after event
       const data = args.length === 1 ? args[0] : args;
-      listener({ data, ports: _event.ports } as any);
+
+      // STEP 2: Extract ports from Electron IPC event
+      // _event.ports contains Transferable objects transferred via postMessage transfer list
+      // This is crucial for MessagePort transfer scenarios
+      // If no ports were transferred, _event.ports is undefined (will be handled by normalize middleware)
+      const ports = _event.ports || [];
+
+      // STEP 3: Call listener with MessageEvent-like structure
+      // The listener expects: {data, ports, event}
+      // This structure is then normalized by normalize middleware to NormalizedRawMessageOutput
+      // Normalize middleware relies on the ports being here!
+      listener({
+        data,
+        ports, // ← CRITICAL: Don't forget to include ports!
+        event: _event,
+      } as any);
     };
 
     this._ipcRenderer.on(this._channelName, handler);
+
+    // Return cleanup function
     return () => {
       this._ipcRenderer.removeListener(this._channelName, handler);
     };
   }
 
   send(data: unknown, transfer?: any[]): void {
+    /**
+     * STEP 1: Check if there are Transferable objects to send
+     * If transfer list is provided, use postMessage for Transferable support
+     * Otherwise, use send for simple messages
+     */
     if (transfer && transfer.length) {
+      // CASE 1: Sending with Transferable objects
+      // Use postMessage which supports transfer list
+      // This makes the Transferable objects appear in receiver's event.ports
       (this._ipcRenderer as any).postMessage(this._channelName, data, transfer);
     } else {
+      // CASE 2: Simple message without Transferables
+      // Use regular send, which is slightly more efficient
       this._ipcRenderer.send(this._channelName, data);
     }
   }

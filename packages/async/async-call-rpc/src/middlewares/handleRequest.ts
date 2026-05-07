@@ -68,7 +68,7 @@ export const handleRequest =
     const service = protocol.service;
     const serviceHost = protocol.serviceHost;
 
-    const { data } = message;
+    const { data, ports } = message;
     const header = data[0];
     const body = data[1];
     const type = header[0] as any;
@@ -81,7 +81,26 @@ export const handleRequest =
     const seqId = header[1];
     const requestPath = header[2];
     const methodName = header[3];
-    const args = body[0];
+    let args = body[0];
+
+    // ✨ SPECIAL HANDLING: TransferableArgsRequest
+    // When all args are Transferable objects (MessagePort, ArrayBuffer, etc.),
+    // they are passed via the transfer list (message.ports) instead of data.
+    // Here we reconstruct args from message.ports.
+    //
+    // Example: client sends { requestPath: 'Service', methodName: 'method', args: [port1, port2] }
+    // - Message.ports will contain [port1, port2]
+    // - body[0] (args) will be empty or minimal
+    // - We need to convert message.ports into args for the handler
+    if (type === RequestType.TransferableArgsRequest) {
+      // Reconstruct args from message.ports
+      // Each port in message.ports becomes an element in args
+      args = ports || [];
+
+      console.debug(
+        `[handleRequest] TransferableArgsRequest: reconstructed ${args.length} args from message.ports`
+      );
+    }
 
     const jsonrpcRequest = makeRequest(seqId, methodName, args);
 
@@ -352,7 +371,6 @@ export const handleRequest =
           const portHeader = [ResponseType.PortSuccess, seqId];
           const sendData = protocol.writeBuffer.encode([portHeader, []]);
           if (protocol.isConnected()) {
-            console.log('response ', response);
             (protocol.sendReply as (d: any, t?: any[]) => void)(
               sendData,
               [].concat(response)

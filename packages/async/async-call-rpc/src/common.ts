@@ -8,13 +8,13 @@ export const isEventMethod = (name: string) => {
 };
 
 export const isAssignPassingPortMethod = (name: string) => {
-  return /^assignPassingPort$/.test(name);
+  return name === 'assignPassingPort';
 };
 
 export const isAcquirePortMethod = (name: string) => {
-  return /^acquire.*Port$/.test(name);
+  return name.startsWith('acquire') && name.endsWith('Port');
 };
 
 export const isOptionsMethod = (name: string) => {
-  return /Options$/.test(name) || /OptionsRequest$/.test(name);
+  return name.endsWith('Options') || name.endsWith('OptionsRequest');
 };

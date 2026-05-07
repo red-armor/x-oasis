@@ -68,40 +68,113 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
+    /**
+     * CRITICAL IMPLEMENTATION NOTE:
+     *
+     * Electron IPC message structure vs MessageEvent:
+     * - Electron's ipcMain.on(channel, handler) receives: (event, ...args)
+     * - MessageEvent has: {data, ports}
+     *
+     * The async-call-rpc framework expects MessageEvent-like structure with ports.
+     * This handler must reconstruct that from Electron's (event, ...args) format.
+     *
+     * ## Port Transfer in Electron:
+     *
+     * When renderer process sends with transfer:
+     * ```typescript
+     * ipcRenderer.postMessage(channelName, data, [port])
+     * ```
+     *
+     * Main side receives in IPC listener:
+     * ```typescript
+     * ipcMain.on(channelName, (event) => {
+     *   event.ports  // ← Contains the transferred MessagePort(s)!
+     *   args[0]      // ← Contains the main data
+     * })
+     * ```
+     *
+     * This handler MUST extract event.ports and include it in normalized message.
+     * If ports is not passed to listener, downstream middleware won't have access
+     * to Transferable objects and PortSuccess responses will fail.
+     *
+     * ## Sender Routing:
+     *
+     * In bound mode: only process messages from the expected sender
+     * In broadcast mode: remember the sender for routing replies back
+     */
     const handler = (_event: IpcMainEvent, ...args: unknown[]): void => {
+      // STEP 1: Handle sender routing (bound vs broadcast mode)
       if (this._acceptAllSenders) {
-        // Broadcast mode: remember sender so replies route back to it.
+        // Broadcast mode: remember sender so replies route back to it
+        // This allows the same channel to serve multiple renderers
         this._lastSender = _event.sender;
       } else if (_event.sender !== this._webContents) {
-        // Bound mode: filter out other senders.
+        // Bound mode: filter out other senders
+        // Only process messages from the expected renderer
         return;
       }
+
+      // STEP 2: Extract the main data from arguments
+      // Electron sends data as separate arguments after event
       const data = args.length === 1 ? args[0] : args;
-      listener({ data, sender: _event.sender } as any);
+
+      // STEP 3: Extract ports from Electron IPC event
+      // _event.ports contains Transferable objects transferred via postMessage transfer list
+      // This is crucial for MessagePort transfer scenarios
+      // If no ports were transferred, _event.ports is undefined (will be handled by normalize middleware)
+      const ports = _event.ports || [];
+
+      // STEP 4: Call listener with MessageEvent-like structure
+      // The listener expects: {data, sender, ports}
+      // The sender field is used for reply routing
+      // The ports field is used by handleResponse middleware
+      listener({
+        data,
+        sender: _event.sender,
+        ports, // ← CRITICAL: Don't forget to include ports!
+      } as any);
     };
 
     ipcMain.on(this._channelName, handler);
+
+    // Return cleanup function
     return () => {
       ipcMain.off(this._channelName, handler);
     };
   }
 
   send(data: unknown, transfer?: any[]): void {
+    /**
+     * STEP 1: Determine the target WebContents
+     * In broadcast mode, use the last sender
+     * In bound mode, use the configured webContents
+     */
     const target = this._acceptAllSenders
       ? this._lastSender
       : this._webContents;
+
+    // STEP 2: Check if target exists
     if (!target) {
       console.warn(
         `[IPCMainChannel] Cannot send on "${this._channelName}": no target WebContents.`
       );
       return;
     }
+
+    // STEP 3: Check if target is destroyed
     if (target.isDestroyed && target.isDestroyed()) {
       return;
     }
+
+    // STEP 4: Send with appropriate method based on transfer list
     if (transfer && transfer.length) {
+      // CASE 1: Sending with Transferable objects
+      // Use postMessage which supports transfer list
+      // This makes the Transferable objects appear in receiver's event.ports
       (target as any).postMessage(this._channelName, data, transfer);
     } else {
+      // CASE 2: Simple message without Transferables
+      // Use regular send, which is slightly more efficient
       target.send(this._channelName, data);
     }
   }

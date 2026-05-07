@@ -4,11 +4,14 @@ import { SenderMiddlewareOutput, SendMiddlewareLifecycle } from '../types';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
 /**
+ * Update sequence information for request tracking and response handling.
  *
- * @param channelProtocol
- * @returns
+ * This middleware handles two scenarios:
+ * 1. Event methods (on*): Store the callback and reset body to prevent serialization
+ * 2. Regular methods: Create a deferred for response handling
  *
- * Add how to handle the request and response
+ * @param channelProtocol - The channel protocol instance
+ * @returns Middleware function that updates sequence tracking
  */
 export const updateSeqInfo = (channelProtocol: AbstractChannelProtocol) => {
   const fn = (value: SenderMiddlewareOutput) => {
@@ -17,11 +20,12 @@ export const updateSeqInfo = (channelProtocol: AbstractChannelProtocol) => {
     const body = data[1];
     const methodName = header[3];
 
-    // 如果说是event method的话，需要将body重制一下
     if (methodName && isEventMethod(methodName)) {
+      // Event method: Store callback and clear body (avoid serializing the function)
       channelProtocol.requestEvents.set(`${seqId}`, body[0]);
       data[1] = [];
     } else {
+      // Regular method: Create deferred for response handling
       const returnValue = createDeferred();
       channelProtocol.ongoingRequests.set(`${seqId}`, returnValue);
       value.returnValue = returnValue;

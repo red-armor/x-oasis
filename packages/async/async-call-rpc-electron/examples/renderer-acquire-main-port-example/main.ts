@@ -22,9 +22,11 @@ function createWindow(): void {
     description: 'main→renderer RPC channel',
   });
 
-  const client = clientHost.registerClient('api', { channel }).createProxy();
+  const client = clientHost
+    .registerClient('renderer-api', { channel })
+    .createProxy();
 
-  const count = 0;
+  let count = 0;
 
   serviceHost.registerService('api', {
     channel,
@@ -32,7 +34,11 @@ function createWindow(): void {
     handlers: {
       acquirePort(): [Electron.MessagePortMain] {
         const { port1, port2 } = new MessageChannelMain();
-        client.assignPort(port2);
+        if (!count) {
+          console.log('trigger assign');
+          client.assignPort(port2);
+          count = count + 1;
+        }
         return [port1];
       },
     },
