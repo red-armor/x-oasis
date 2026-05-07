@@ -84,17 +84,19 @@ app.whenReady().then(async () => {
   });
 
   // The orchestrator needs a "virtual" participant for the main-side port.
-  // We use a thin wrapper channel that captures the activateConnection message
+  // We use a thin wrapper channel that receives the RPC call from activateParticipant
   // and binds the received port locally.
   const mainParticipantChannel = {
-    send(data: any, transfer?: any[]) {
-      // Orchestrator sends { __orchestrator: 'activateConnection', payload } with a port.
-      if (data?.__orchestrator === 'activateConnection' && transfer?.length) {
-        const port = transfer[0];
+    makeRequest(requestPath: string, methodName: string, port: any) {
+      // Orchestrator calls makeRequest(ORCHESTRATOR_SERVICE_PATH, 'activateConnection', port)
+      if (methodName === 'activateConnection' && port) {
         console.log('[main] activateConnection received — binding direct port');
         mainDirectChannel.bindPort(port);
       }
+      // Return a mock Deferred that resolves immediately for local participants
+      return { promise: Promise.resolve(), seqId: 0 };
     },
+    send: () => {},
     on: () => () => {},
     activate: () => {},
     disconnect: () => {},

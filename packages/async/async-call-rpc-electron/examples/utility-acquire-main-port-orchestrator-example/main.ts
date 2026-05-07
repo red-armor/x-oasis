@@ -84,13 +84,16 @@ app.whenReady().then(async () => {
 
   // Thin wrapper so orchestrator can deliver the port to main's local channel.
   const mainParticipantChannel = {
-    send(data: any, transfer?: any[]) {
-      if (data?.__orchestrator === 'activateConnection' && transfer?.length) {
-        const port = transfer[0];
+    makeRequest(requestPath: string, methodName: string, port: any) {
+      // Orchestrator calls makeRequest(ORCHESTRATOR_SERVICE_PATH, 'activateConnection', port)
+      if (methodName === 'activateConnection' && port) {
         console.log('[main] activateConnection received — binding direct port');
         mainDirectChannel.bindPort(port);
       }
+      // Return a mock Deferred that resolves immediately for local participants
+      return { promise: Promise.resolve(), seqId: 0 };
     },
+    send: () => {},
     on: () => () => {},
     activate: () => {},
     disconnect: () => {},
