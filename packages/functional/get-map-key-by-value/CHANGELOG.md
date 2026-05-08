@@ -1,5 +1,11 @@
 # @x-oasis/get-map-key-by-value
 
+## 0.7.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
 ## 0.6.0
 
 ### Minor Changes

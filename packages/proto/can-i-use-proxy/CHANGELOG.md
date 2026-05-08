@@ -1,5 +1,11 @@
 # @x-oasis/can-i-use-proxy
 
+## 0.7.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
 ## 0.6.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.8.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
 ## 0.7.0
 
 ### Minor Changes

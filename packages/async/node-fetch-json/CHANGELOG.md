@@ -1,5 +1,11 @@
 # @x-oasis/node-fetch-json
 
+## 0.5.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
 ## 0.4.0
 
 ### Minor Changes

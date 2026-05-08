@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.4.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
 ## 0.3.0
 
 ### Minor Changes

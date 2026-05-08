@@ -1,5 +1,16 @@
 # @x-oasis/recycler
 
+## 0.7.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
+### Patch Changes
+
+- Updated dependencies [be6411b]
+  - @x-oasis/integer-buffer-set@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @x-oasis/async-call-rpc-react
 
+## 0.6.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
 ## 0.5.0
 
 ### Minor Changes
