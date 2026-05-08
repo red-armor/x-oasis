@@ -13,10 +13,8 @@
 export { default as IPCMainChannel } from './IPCMainChannel';
 export { default as ElectronMessagePortMainChannel } from './ElectronMessagePortMainChannel';
 export { default as ElectronUtilityProcessChannel } from './ElectronUtilityProcessChannel';
-export {
-  ElectronConnectionOrchestrator,
-  type MessageChannelMainFactory,
-} from './ElectronConnectionOrchestrator';
+export { ElectronConnectionOrchestrator } from './ElectronConnectionOrchestrator';
+export type { MessageChannelMainFactory } from './ElectronConnectionOrchestrator';
 
 // Utility processes (node runtime) participating in the orchestrator topology
 // also need `registerOrchestratorHandler` to receive `MessagePortMain`s on

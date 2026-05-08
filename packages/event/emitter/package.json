@@ -2,9 +2,9 @@
   "name": "@x-oasis/emitter",
   "version": "0.5.0",
   "description": "emitter function",
-  "main": "src/index.ts",
-  "typings": "src/index.ts",
-  "module": "src/index.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/emitter.esm.js",
   "files": [
     "dist",
     "index.ts",

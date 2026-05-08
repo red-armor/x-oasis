@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/async-call-rpc-web",
+  "name": "@x-oasis/async-call-rpc-node",
   "version": "0.3.0",
-  "description": "Web transport adapters (MessagePort, Worker, WebSocket) for @x-oasis/async-call-rpc",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "module": "dist/async-call-rpc-web.esm.js",
+  "description": "Node.js transport adapters (child_process.fork) for @x-oasis/async-call-rpc",
+  "main": "src/index.ts",
+  "typings": "src/index.ts",
+  "module": "src/index.ts",
   "files": [
     "dist",
     "src"

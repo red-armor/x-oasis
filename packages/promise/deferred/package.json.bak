@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/is-ascii",
+  "name": "@x-oasis/deferred",
   "version": "0.5.0",
-  "description": "is-ascii function",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "module": "dist/is-ascii.esm.js",
+  "description": "emitter function",
+  "main": "src/index.ts",
+  "typings": "src/index.ts",
+  "module": "src/index.ts",
   "files": [
     "dist",
     "index.ts",

@@ -2,9 +2,9 @@
   "name": "@x-oasis/is-function",
   "version": "0.5.0",
   "description": "is-function function",
-  "main": "src/index.ts",
-  "typings": "src/index.ts",
-  "module": "src/index.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/is-function.esm.js",
   "scripts": {
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "clean": "rimraf ./dist",
