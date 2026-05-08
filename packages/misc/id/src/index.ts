@@ -1,6 +1,4 @@
-const seenKeys: {
-  [key: string]: true;
-} = {};
+const seenKeys: Record<string, true> = {};
 const MULTIPLIER = Math.pow(2, 24); // eslint-disable-line
 export const generateRandomKey = () => {
   let key;

@@ -1,4 +1,6 @@
-export const flatten = (params: { [key: string]: string }) => {
+type StringRecord = Record<string, string>;
+
+export const flatten = (params: StringRecord) => {
   if (!params) return '';
   const keys = Object.keys(params);
   return (keys || []).reduce((acc, cur, index) => {
@@ -7,12 +9,7 @@ export const flatten = (params: { [key: string]: string }) => {
   }, '');
 };
 
-export const setSearchParams = (
-  url: string,
-  params: {
-    [key: string]: string;
-  }
-) => {
+export const setSearchParams = (url: string, params: StringRecord) => {
   if (/\?/.test(url)) {
     return `${url}&${flatten(params)}`;
   }

@@ -156,7 +156,7 @@ abstract class AbstractChannelProtocol
 
   private _key: string;
 
-  private _service: RPCService;
+  private _service!: RPCService;
 
   private _serviceHost: RPCServiceHost | null = null;
 
@@ -422,7 +422,7 @@ abstract class AbstractChannelProtocol
   }
 
   applyOnMessageMiddleware(fns: Function | Function[]) {
-    const copy = [].concat(fns);
+    const copy = Array.isArray(fns) ? fns : [fns];
     this._onMessageMiddleware = [];
     copy.forEach((fn) => {
       if (typeof fn === 'function') {
@@ -432,7 +432,7 @@ abstract class AbstractChannelProtocol
   }
 
   applySendMiddleware(fns: Function | Function[]) {
-    const copy = [].concat(fns);
+    const copy = Array.isArray(fns) ? fns : [fns];
     this._senderMiddleware = [];
 
     copy.forEach((fn) => {

@@ -4,7 +4,7 @@ import {
   UtilityProcessParentPortChannelProps,
   ParentPort,
   UtilityProcess,
-} from './types';
+} from '../types';
 
 /**
  * RPC channel protocol for Electron's `utilityProcess`.

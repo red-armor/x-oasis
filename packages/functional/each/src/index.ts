@@ -2,9 +2,9 @@ import isObject from '@x-oasis/is-object';
 
 type EachArray<T> = (index: number, entry: any, obj: T) => void;
 type EachObject<T> = <K extends keyof T>(key: K, entry: T[K], obj: T) => number;
-type Iter<T extends Array<any> | { [key: string]: any }> = T extends Array<any>
+type Iter<T extends Array<any> | Record<string, any>> = T extends Array<any>
   ? EachArray<T>
-  : T extends { [key: string]: any }
+  : T extends Record<string, any>
   ? EachObject<T>
   : never;
 

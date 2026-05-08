@@ -1,5 +1,5 @@
 import { expect, describe, test, vi } from 'vitest';
-import ElectronUtilityProcessChannel from '../src/ElectronUtilityProcessChannel';
+import ElectronUtilityProcessChannel from '../src/electron-main/ElectronUtilityProcessChannel';
 
 /**
  * Test suite for ElectronUtilityProcessChannel

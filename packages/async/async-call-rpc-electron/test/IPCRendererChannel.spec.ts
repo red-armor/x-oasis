@@ -1,5 +1,5 @@
 import { expect, describe, test, vi, beforeEach } from 'vitest';
-import IPCRendererChannel from '../src/IPCRendererChannel';
+import IPCRendererChannel from '../src/electron-browser/IPCRendererChannel';
 
 /**
  * Test suite for IPCRendererChannel

@@ -5,8 +5,6 @@ import {
   ActivationConfig,
   ParticipantInfo,
   ORCHESTRATOR_SERVICE_PATH,
-  RPCService,
-  AbstractChannelProtocol,
 } from '@x-oasis/async-call-rpc';
 
 /**
@@ -116,39 +114,4 @@ export class ElectronConnectionOrchestrator extends BaseConnectionOrchestrator {
       await (deferred as any).promise;
     }
   }
-}
-
-/**
- * Register a handler on `channel` that receives the direct `MessagePort`
- * delivered by the orchestrator when `connect()` is called.
- *
- * This is the **only** thing participants need to do to integrate with the
- * orchestrator — no magic strings, no raw IPC listeners.
- *
- * ```ts
- * // renderer preload.ts
- * registerOrchestratorHandler(ipcChannel, (port) => {
- *   directChannel.bindPort(port);
- * });
- *
- * // utility-worker.ts
- * registerOrchestratorHandler(mainChannel, (port) => {
- *   directChannel.bindPort(port);
- * });
- * ```
- *
- * @param channel  The control-plane channel already connected to main.
- * @param onPort   Called with the transferred `MessagePort` once the
- *                 orchestrator activates this participant.
- */
-export function registerOrchestratorHandler(
-  channel: AbstractChannelProtocol,
-  onPort: (port: any) => void
-): void {
-  const service = new RPCService(ORCHESTRATOR_SERVICE_PATH, {
-    handlers: {
-      activateConnection: onPort,
-    },
-  });
-  service.setChannel(channel);
 }

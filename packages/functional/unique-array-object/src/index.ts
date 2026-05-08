@@ -15,9 +15,7 @@ const shimFindLastIndex = (arr: Array<any>, filter: Function) => {
 };
 
 export default (
-  arr: Array<{
-    [key: string]: any;
-  }>,
+  arr: Array<Record<string, any>>,
   getter: string | { (item: any): any },
   keepFirst?: boolean
 ) => {

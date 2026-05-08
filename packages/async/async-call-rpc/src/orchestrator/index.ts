@@ -17,6 +17,7 @@ export type {
   ParticipantType,
   ParticipantInfo,
   ConnectionConfig,
+  ConnectOptions,
   ConnectionInfo,
   ConnectionEvents,
   StateChangeEvent,

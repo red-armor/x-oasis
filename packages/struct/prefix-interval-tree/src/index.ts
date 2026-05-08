@@ -55,13 +55,9 @@ class PrefixIntervalTree {
   private _onUpdateItemLayout: Function;
   private _onUpdateIntervalTree: Function;
 
-  private _affectedIndicesMap: {
-    [key: string]: Operation;
-  } = {};
+  private _affectedIndicesMap: Record<string, Operation> = {};
   private _affectedMinimalIndex: number = undefined;
-  private _cachedSumUntilValues: {
-    [key: string]: number;
-  } = {};
+  private _cachedSumUntilValues: Record<string, number> = {};
 
   constructor(
     xs: number[] | number = 10,

@@ -10,6 +10,7 @@ import {
   ParticipantInfo,
   ParticipantType,
   ConnectionConfig,
+  ConnectOptions,
   ConnectionInfo,
   ConnectionOrchestratorConfig,
   ConnectionStats,
@@ -76,6 +77,24 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
 
   protected readonly participants = new Map<string, ParticipantInfo>();
   protected readonly connections = new Map<string, ManagedConnection>();
+
+  /**
+   * Per-participant cleanup hooks for the auto-wired `onDidDisconnected`
+   * subscription installed by `registerParticipant()`. Calling the function
+   * removes the subscription so we don't leak event listeners or trigger
+   * `handleParticipantLost` on stale participant ids after re-registration.
+   */
+  private readonly _participantDisconnectCleanups = new Map<
+    string,
+    () => void
+  >();
+
+  /**
+   * Default first-attempt activation timeout (ms). Telegraph D-006 §2 Gap 2.
+   * 30s is generous enough for cold utility/process boot and tight enough that
+   * production failures fail fast rather than hang.
+   */
+  protected readonly DEFAULT_ACTIVATE_TIMEOUT_MS = 30_000;
 
   // ── Config ──────────────────────────────────────────────────────────────────
 
@@ -182,17 +201,55 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     // hang in the CONNECTING state indefinitely.
     channel.ensureListenerAttached();
 
+    // If a participant with the same id was previously registered, tear down
+    // its disconnect subscription so we don't leak listeners or fire
+    // handleParticipantLost on a stale id later.
+    const previousCleanup = this._participantDisconnectCleanups.get(id);
+    if (previousCleanup) {
+      previousCleanup();
+      this._participantDisconnectCleanups.delete(id);
+    }
+
     this.participants.set(id, {
       id,
       channel,
       type,
       registeredAt: Date.now(),
     });
+
+    // Telegraph D-006 §2 Gap 3 — auto-wire channel teardown to participant
+    // loss. Previously every caller had to subscribe to the underlying
+    // transport's close/error events and manually call handleParticipantLost,
+    // which is easy to forget; without it the orchestrator considers the
+    // participant alive forever and reconnect never fires.
+    //
+    // `AbstractChannelProtocol.disconnect()` is the single funnel that
+    // every transport (IPCMainChannel webContents 'destroyed',
+    // ElectronUtilityProcessChannel utility 'exit', explicit caller
+    // disconnect) goes through, so subscribing to `onDidDisconnected` here
+    // covers all of them.
+    const subscription = channel.onDidDisconnected(() => {
+      // Only fire if this participant is still the one registered under this
+      // id — guards against late-firing events after re-registration.
+      if (this.participants.get(id)?.channel === channel) {
+        this.handleParticipantLost(id, 'channel disconnected');
+      }
+    });
+    // x-oasis `Event.subscribe` returns an `IDisposable` (see
+    // packages/event/emitter Event.ts → toDisposable). Normalize to a plain
+    // cleanup callback so unregisterParticipant doesn't have to know.
+    this._participantDisconnectCleanups.set(id, () => subscription.dispose());
+
     this._log('debug', `registerParticipant: ${id} (${type})`);
   }
 
   /** Remove a participant.  Does not close existing connections. */
   unregisterParticipant(id: string): void {
+    const cleanup = this._participantDisconnectCleanups.get(id);
+    if (cleanup) {
+      cleanup();
+      this._participantDisconnectCleanups.delete(id);
+    }
     this.participants.delete(id);
     this._log('debug', `unregisterParticipant: ${id}`);
   }
@@ -206,12 +263,24 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
    * 3. `activateParticipant(from, port1)` and `activateParticipant(to, port2)` in parallel
    * 4. CONNECTING → READY (success) or IDLE (first-attempt failure)
    *
+   * The third argument is overloaded for backwards compatibility:
+   *   - `connect(a, b, config)` — long-lived `ConnectionConfig` (heartbeat,
+   *     services, reconnect policy)
+   *   - `connect(a, b, options)` — first-attempt `ConnectOptions`
+   *     (`activateTimeoutMs` etc.)
+   *   - `connect(a, b, config, options)` — both
+   *
+   * Telegraph D-006 §2 Gap 2: without an `activateTimeoutMs`, a slow
+   * participant that never acks `activateConnection` would leave `connect()`
+   * pending forever. Default 30s.
+   *
    * Returns a live `ConnectionInfo` handle.
    */
   async connect(
     fromId: string,
     toId: string,
-    config: ConnectionConfig = {}
+    configOrOptions: ConnectionConfig | ConnectOptions = {},
+    maybeOptions?: ConnectOptions
   ): Promise<ConnectionInfo> {
     if (!this.participants.has(fromId)) {
       throw new Error(
@@ -222,6 +291,30 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
       throw new Error(
         `[Orchestrator] Unknown participant: "${toId}". Did you forget to call registerParticipant()?`
       );
+    }
+
+    // Disambiguate the overload: `ConnectOptions` only has `activateTimeoutMs`
+    // today; `ConnectionConfig` carries `fromServices/toServices/heartbeat/
+    // reconnectPolicy`. If the caller passed `activateTimeoutMs` and none of
+    // the ConnectionConfig keys, treat the third arg as ConnectOptions.
+    let config: ConnectionConfig;
+    let options: ConnectOptions;
+    if (maybeOptions !== undefined) {
+      config = configOrOptions as ConnectionConfig;
+      options = maybeOptions;
+    } else if (
+      configOrOptions &&
+      'activateTimeoutMs' in configOrOptions &&
+      !('fromServices' in configOrOptions) &&
+      !('toServices' in configOrOptions) &&
+      !('heartbeat' in configOrOptions) &&
+      !('reconnectPolicy' in configOrOptions)
+    ) {
+      config = {};
+      options = configOrOptions as ConnectOptions;
+    } else {
+      config = (configOrOptions as ConnectionConfig) ?? {};
+      options = {};
     }
 
     const connectionId = `${fromId}--${toId}`;
@@ -254,7 +347,7 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     this.connections.set(connectionId, mc);
 
     // Execute the first-attempt connect flow (not auto-retried on failure).
-    await this._doConnect(mc, config);
+    await this._doConnect(mc, config, options);
 
     return this._buildConnectionInfo(mc);
   }
@@ -347,7 +440,8 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
 
   private async _doConnect(
     mc: ManagedConnection,
-    config: ConnectionConfig
+    config: ConnectionConfig,
+    options: ConnectOptions = {}
   ): Promise<void> {
     const { connectionId, fromId, toId } = mc;
 
@@ -382,11 +476,21 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
       peerServices: config.fromServices,
     };
 
+    // Telegraph D-006 §2 Gap 2 — bound the activation handshake. Without
+    // this, a participant that never acks `activateConnection` (e.g. a
+    // utility process stuck in cold start) leaves connect() pending forever.
+    const activateTimeoutMs =
+      options.activateTimeoutMs ?? this.DEFAULT_ACTIVATE_TIMEOUT_MS;
+
     try {
-      await Promise.all([
-        this.activateParticipant(fromInfo, fromActivation),
-        this.activateParticipant(toInfo, toActivation),
-      ]);
+      await this._withActivationTimeout(
+        Promise.all([
+          this.activateParticipant(fromInfo, fromActivation),
+          this.activateParticipant(toInfo, toActivation),
+        ]),
+        activateTimeoutMs,
+        connectionId
+      );
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       this._log(
@@ -410,6 +514,41 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
 
     this._onReadyEvent.fire({ connectionId });
     this._log('info', `connect: ${connectionId} → READY`);
+  }
+
+  /**
+   * Race a promise against a timeout. The timeout reject path produces a
+   * `TimeoutError` so callers can catch with `instanceof TimeoutError` and
+   * distinguish from real activation failures.
+   *
+   * The timer is unref'd via clearTimeout on settle to avoid keeping the
+   * Node event loop alive past test/process shutdown.
+   */
+  private _withActivationTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    connectionId: string
+  ): Promise<T> {
+    if (timeoutMs <= 0) return promise;
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(
+          new TimeoutError(
+            `connect(${connectionId}) timed out: activateParticipant did not resolve within ${timeoutMs}ms`
+          )
+        );
+      }, timeoutMs);
+      promise.then(
+        (value) => {
+          clearTimeout(timer);
+          resolve(value);
+        },
+        (err) => {
+          clearTimeout(timer);
+          reject(err);
+        }
+      );
+    });
   }
 
   // ── Internal: reconnection ────────────────────────────────────────────────

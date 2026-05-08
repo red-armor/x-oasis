@@ -46,10 +46,33 @@ export interface ParticipantInfo {
 export interface ConnectionConfig {
   fromServices?: Record<string, (...args: any[]) => any>;
   toServices?: Record<string, (...args: any[]) => any>;
-  /** Per-connection heartbeat settings (overrides orchestrator-level config). */
   heartbeat?: HeartbeatConfig;
-  /** Per-connection reconnect policy (overrides orchestrator-level config). */
   reconnectPolicy?: ReconnectPolicy;
+}
+
+/**
+ * Per-call options for `BaseConnectionOrchestrator.connect()`.
+ *
+ * Distinct from `ConnectionConfig` (which configures the long-lived
+ * connection's heartbeat / reconnect / services) — `ConnectOptions` only
+ * shapes the **first-attempt** activation handshake.
+ *
+ * Added in v0.5.x to fix the "cold-start cannot time out" gap (telegraph
+ * D-006 §2 Gap 2): without `activateTimeoutMs`, a slow utility process that
+ * never acks `activateConnection` would hang `connect()` forever instead of
+ * surfacing a clear error.
+ */
+export interface ConnectOptions {
+  /**
+   * First-attempt activation timeout in ms. If both `activateParticipant`
+   * promises haven't resolved by then, `connect()` rejects with a
+   * `TimeoutError` and the connection is left in IDLE so the caller can
+   * decide whether to retry.
+   *
+   * Default: 30_000 (30s) — generous enough for cold utility/process boot
+   * but tight enough that production failures fail fast rather than hang.
+   */
+  activateTimeoutMs?: number;
 }
 
 // ─── ConnectionInfo — returned by connect() / getConnectionInfo() ─────────────

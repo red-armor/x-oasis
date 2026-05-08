@@ -45,7 +45,11 @@ function parseRequestArgs(
   return {
     requestPath: props.requestPath,
     methodName: props.methodName,
-    params: [].concat(props.args),
+    params: Array.isArray(props.args)
+      ? props.args
+      : props.args == null
+      ? []
+      : [props.args],
     // IMPORTANT: If transfer was specified in SendingProps, use it
     // Otherwise use args[0] if provided (legacy support)
     // Otherwise empty array

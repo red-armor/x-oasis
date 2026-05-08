@@ -1,5 +1,5 @@
 import { expect, describe, test, vi, beforeEach } from 'vitest';
-import ElectronMessagePortMainChannel from '../src/ElectronMessagePortMainChannel';
+import ElectronMessagePortMainChannel from '../src/electron-main/ElectronMessagePortMainChannel';
 
 /**
  * Test suite for ElectronMessagePortMainChannel

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ElectronConnectionOrchestrator } from '../src/ElectronConnectionOrchestrator';
+import { ElectronConnectionOrchestrator } from '../src/electron-main/ElectronConnectionOrchestrator';
 import { ConnectionState } from '../../async-call-rpc/src/orchestrator/ConnectionState';
 
 // ─── Mock port factory ────────────────────────────────────────────────────────
