@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/disposable",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "disposable function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

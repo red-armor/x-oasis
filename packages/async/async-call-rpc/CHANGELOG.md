@@ -1,5 +1,25 @@
 # @x-oasis/async-call-rpc
 
+## 0.6.0
+
+### Minor Changes
+
+- 2f8a0f2: feat: revert package.json
+- 103b0fe: feat: update resume
+
+### Patch Changes
+
+- Updated dependencies [2f8a0f2]
+- Updated dependencies [103b0fe]
+  - @x-oasis/is-ascii@0.6.0
+  - @x-oasis/is-function@0.6.0
+  - @x-oasis/is-object@0.6.0
+  - @x-oasis/is-promise@0.6.0
+  - @x-oasis/disposable@0.6.0
+  - @x-oasis/emitter@0.6.0
+  - @x-oasis/id@0.6.0
+  - @x-oasis/deferred@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes

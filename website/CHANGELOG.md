@@ -1,5 +1,12 @@
 # @x-oasis/website
 
+## 0.3.0
+
+### Minor Changes
+
+- 2f8a0f2: feat: revert package.json
+- 103b0fe: feat: update resume
+
 ## 0.2.0
 
 ### Minor Changes
