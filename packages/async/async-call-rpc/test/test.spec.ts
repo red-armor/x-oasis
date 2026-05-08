@@ -411,11 +411,17 @@ describe('handleRequest middleware', () => {
       const handler = vi.fn().mockResolvedValue('result');
       (mockProtocol.service!.getHandler as any).mockReturnValue(handler);
 
+      // Wire format from prepareRequestData (sender):
+      //   data = [header, body]   where  body = params  (the positional arg list itself)
+      // So a 2-arg call serialises as body === ['arg1', 'arg2'].
+      // The previous fixture wrapped one level too many ([['arg1','arg2']]);
+      // that masked the receive-side bug where `args = body[0]` silently
+      // dropped every positional past the first.
       const message = {
         event: null,
         data: [
           [RequestType.PromiseRequest, 'seq-1', '/service', 'regularMethod'],
-          [['arg1', 'arg2']],
+          ['arg1', 'arg2'],
         ],
       };
 

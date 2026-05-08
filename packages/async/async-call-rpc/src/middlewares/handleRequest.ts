@@ -81,7 +81,15 @@ export const handleRequest =
     const seqId = header[1];
     const requestPath = header[2];
     const methodName = header[3];
-    let args = body[0];
+    // Sender writes the full positional arg list as `body = params` (an array)
+    // — see `prepareRequestData.ts`. Receive the whole array; the
+    // Promise/Subscription dispatch path below spreads it back into the
+    // handler's positional params. The previous `body[0]` only kept the
+    // first arg, which silently broke any multi-arg handler (concrete repro:
+    // OrchestratorInspectorService.requestConnect(fromId, toId) saw
+    // toId === undefined, then BaseConnectionOrchestrator.connect threw
+    // 'Unknown participant: "undefined"').
+    let args: any = body;
 
     // ✨ SPECIAL HANDLING: Transferable args
     // Transferable objects travel via message.ports, not in the serialized body.
