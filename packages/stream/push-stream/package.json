@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/push-stream",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Single-consumer push-pull async stream with enqueue/done/error semantics (inspired by claude-code Stream<T>)",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

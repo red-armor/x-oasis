@@ -1,5 +1,23 @@
 # @x-oasis/async-call-rpc
 
+## 0.7.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
+### Patch Changes
+
+- Updated dependencies [be6411b]
+  - @x-oasis/is-ascii@0.7.0
+  - @x-oasis/is-function@0.7.0
+  - @x-oasis/is-object@0.7.0
+  - @x-oasis/is-promise@0.7.0
+  - @x-oasis/disposable@0.7.0
+  - @x-oasis/emitter@0.7.0
+  - @x-oasis/id@0.7.0
+  - @x-oasis/deferred@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

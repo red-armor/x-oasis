@@ -1,5 +1,16 @@
 # @x-oasis/async-call-rpc-node
 
+## 0.5.0
+
+### Minor Changes
+
+- be6411b: fix: build issue
+
+### Patch Changes
+
+- Updated dependencies [be6411b]
+  - @x-oasis/async-call-rpc@0.7.0
+
 ## 0.4.0
 
 ### Minor Changes
