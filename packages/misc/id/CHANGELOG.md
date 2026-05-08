@@ -1,5 +1,12 @@
 # @x-oasis/id
 
+## 0.6.0
+
+### Minor Changes
+
+- 2f8a0f2: feat: revert package.json
+- 103b0fe: feat: update resume
+
 ## 0.5.0
 
 ### Minor Changes
