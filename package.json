@@ -81,10 +81,6 @@
   "author": "youchao liu",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.21.0",
-    "@babel/plugin-transform-typescript": "^7.28.6",
-    "@babel/preset-env": "^7.20.2",
-    "@babel/preset-typescript": "7.28.5",
     "@changesets/cli": "^2.27.7",
     "@innei/bump-version": "1.5.10",
     "@innei/eslint-config-ts": "^0.9.8",
