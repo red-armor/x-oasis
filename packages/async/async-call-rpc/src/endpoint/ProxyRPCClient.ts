@@ -15,7 +15,7 @@ export interface SubscriptionObserver<T = any> {
 class ProxyRPCClient {
   readonly requestPath: string;
 
-  private channel: AbstractChannelProtocol;
+  private channel!: AbstractChannelProtocol;
 
   constructor(
     requestPath: string,

@@ -406,7 +406,7 @@ export const handleRequest =
           if (protocol.isConnected()) {
             (protocol.sendReply as (d: any, t?: any[]) => void)(
               sendData,
-              [].concat(response)
+              Array.isArray(response) ? response : [response]
             );
           }
           return;

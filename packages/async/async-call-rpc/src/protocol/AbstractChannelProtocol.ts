@@ -156,7 +156,7 @@ abstract class AbstractChannelProtocol
 
   private _key: string;
 
-  private _service: RPCService;
+  private _service!: RPCService;
 
   private _serviceHost: RPCServiceHost | null = null;
 
