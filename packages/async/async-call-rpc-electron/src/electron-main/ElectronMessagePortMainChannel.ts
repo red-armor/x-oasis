@@ -1,5 +1,5 @@
 import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
-import { MessagePortMainChannelProps } from './types';
+import { MessagePortMainChannelProps } from '../types';
 import { MessagePortMain } from 'electron';
 
 /**

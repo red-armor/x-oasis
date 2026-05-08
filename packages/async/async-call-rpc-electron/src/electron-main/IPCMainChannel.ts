@@ -1,6 +1,6 @@
 import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
 import { ipcMain } from 'electron';
-import { IPCMainChannelProps, IpcMainEvent, WebContents } from './types';
+import { IPCMainChannelProps, IpcMainEvent, WebContents } from '../types';
 
 /**
  * RPC channel protocol for Electron's `ipcMain` side.

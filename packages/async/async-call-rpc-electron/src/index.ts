@@ -1,22 +1,13 @@
-// Channels
-export { default as IPCMainChannel } from './IPCMainChannel';
-export { default as IPCRendererChannel } from './IPCRendererChannel';
-export { default as ElectronMessagePortMainChannel } from './ElectronMessagePortMainChannel';
-export { default as ElectronUtilityProcessChannel } from './ElectronUtilityProcessChannel';
-
-// Orchestrator
-export {
-  ElectronConnectionOrchestrator,
-  registerOrchestratorHandler,
-} from './ElectronConnectionOrchestrator';
-
-// Types
-export type {
-  MainPort,
-  ParentPort,
-  IPCMainChannelProps,
-  IPCRendererChannelProps,
-  MessagePortMainChannelProps,
-  UtilityProcessChannelProps,
-  UtilityProcessParentPortChannelProps,
-} from './types';
+// Root barrel — re-exports everything from both sub-paths for back-compat.
+//
+// PREFER the sub-path entries when bundle size matters:
+// - `@x-oasis/async-call-rpc-electron/electron-browser` for renderer code
+// - `@x-oasis/async-call-rpc-electron/electron-main`    for main + utility code
+//
+// Importing this root barrel from a renderer bundle will pull in the entire
+// dependency graph including `ipcMain`, `MessageChannelMain`, `utilityProcess`,
+// etc. — bundlers may then try to resolve `electron` (a CommonJS Node module)
+// in a browser/ESM environment and fail at runtime. Use the sub-paths to
+// guarantee tree-shake-friendly boundaries.
+export * from './electron-browser';
+export * from './electron-main';

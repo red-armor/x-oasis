@@ -262,7 +262,15 @@ export const handleRequest =
         }
 
         try {
-          const result = ctx !== undefined ? handler(args, ctx) : handler(args);
+          // Spread positional args (matches client-side ProxyRPCClient which
+          // sends args as an array of positional values). Context is appended
+          // as a trailing argument when present, mirroring the convention used
+          // by tRPC and other RPC frameworks. Single-arg unwrap for special
+          // request types (Transferable*) was already done above by reassigning
+          // `args`; for Promise/Subscription requests, `args` is always an array.
+          const argList = Array.isArray(args) ? args : [args];
+          const result =
+            ctx !== undefined ? handler(...argList, ctx) : handler(...argList);
           const observable = await Promise.resolve(result);
 
           // The handler should return an observable-like object with `subscribe()`
@@ -351,7 +359,23 @@ export const handleRequest =
         return;
       }
 
-      const result = ctx !== undefined ? handler(args, ctx) : handler(args);
+      // Promise/regular request → spread positional args (matches client-side
+      // ProxyRPCClient which sends args as an array of positional values).
+      // Transferable* requests reassigned `args` above to the raw port(s); the
+      // historical behavior is single-arg invocation (handler(port) or
+      // handler([port1, port2])) — preserve that by only spreading when the
+      // wire format is the array body of a Promise request.
+      const isTransferable =
+        type === RequestType.TransferableArgsRequest ||
+        type === RequestType.TransferableArrayArgsRequest;
+      let result: unknown;
+      if (isTransferable) {
+        result = ctx !== undefined ? handler(args, ctx) : handler(args);
+      } else {
+        const argList = Array.isArray(args) ? args : [args];
+        result =
+          ctx !== undefined ? handler(...argList, ctx) : handler(...argList);
+      }
 
       try {
         const response = await Promise.resolve(result);

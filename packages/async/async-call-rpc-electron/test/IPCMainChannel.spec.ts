@@ -1,6 +1,6 @@
 import { expect, describe, test, vi, beforeEach } from 'vitest';
 
-import IPCMainChannel from '../src/IPCMainChannel';
+import IPCMainChannel from '../src/electron-main/IPCMainChannel';
 
 /**
  * IPCMainChannel.on() uses `require('electron').ipcMain` at runtime (CJS).

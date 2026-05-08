@@ -2,9 +2,26 @@
   "name": "@x-oasis/async-call-rpc-electron",
   "version": "0.3.0",
   "description": "Electron transport adapters (ipcMain, ipcRenderer, MessagePortMain, UtilityProcess) for @x-oasis/async-call-rpc",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "module": "dist/async-call-rpc-electron.esm.js",
+  "main": "src/index.ts",
+  "typings": "src/index.ts",
+  "module": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./src/index.ts",
+      "require": "./src/index.ts"
+    },
+    "./electron-browser": {
+      "types": "./dist/src/electron-browser/index.d.ts",
+      "import": "./src/electron-browser/index.ts",
+      "require": "./src/electron-browser/index.ts"
+    },
+    "./electron-main": {
+      "types": "./dist/src/electron-main/index.d.ts",
+      "import": "./src/electron-main/index.ts",
+      "require": "./src/electron-main/index.ts"
+    }
+  },
   "files": [
     "dist",
     "src"
