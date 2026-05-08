@@ -2,9 +2,9 @@
   "name": "@x-oasis/async-call-rpc-node",
   "version": "0.3.0",
   "description": "Node.js transport adapters (child_process.fork) for @x-oasis/async-call-rpc",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "module": "dist/async-call-rpc-node.esm.js",
+  "main": "src/index.ts",
+  "typings": "src/index.ts",
+  "module": "src/index.ts",
   "files": [
     "dist",
     "src"
