@@ -42,9 +42,14 @@ class RPCServiceHost {
    * `AbstractChannelProtocol`). One channel can serve multiple service paths.
    */
   registerServiceHandler(servicePath: ServicePath, instanceOrHandlers: object) {
-    const isHandlerMap = Object.values(instanceOrHandlers).every(
-      (v) => typeof v === 'function'
-    );
+    // Treat as a plain handler-map only when the object has at least one
+    // own enumerable property AND every such property is a function.
+    // An empty `Object.values()` (e.g. a class instance whose methods live
+    // on the prototype) must NOT match — it would produce an empty handler
+    // map and silently drop all prototype methods.
+    const ownValues = Object.values(instanceOrHandlers);
+    const isHandlerMap =
+      ownValues.length > 0 && ownValues.every((v) => typeof v === 'function');
     const service = new RPCService(servicePath, {
       serviceHost: this,
       ...(isHandlerMap
