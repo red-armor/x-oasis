@@ -1,5 +1,16 @@
 # @x-oasis/is-ref
 
+## 0.5.0
+
+### Minor Changes
+
+- 4c3dccd: feat: manage async call rpc port
+
+### Patch Changes
+
+- Updated dependencies [4c3dccd]
+  - @x-oasis/is-object@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @x-oasis/async-call-rpc-electron
 
+## 0.3.0
+
+### Minor Changes
+
+- 4c3dccd: feat: manage async call rpc port
+
+### Patch Changes
+
+- Updated dependencies [4c3dccd]
+  - @x-oasis/async-call-rpc@0.5.0
+
 ## 0.2.0
 
 ### Minor Changes

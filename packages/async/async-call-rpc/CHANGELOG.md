@@ -1,5 +1,23 @@
 # @x-oasis/async-call-rpc
 
+## 0.5.0
+
+### Minor Changes
+
+- 4c3dccd: feat: manage async call rpc port
+
+### Patch Changes
+
+- Updated dependencies [4c3dccd]
+  - @x-oasis/is-ascii@0.5.0
+  - @x-oasis/is-function@0.5.0
+  - @x-oasis/is-object@0.5.0
+  - @x-oasis/is-promise@0.5.0
+  - @x-oasis/disposable@0.5.0
+  - @x-oasis/emitter@0.5.0
+  - @x-oasis/id@0.5.0
+  - @x-oasis/deferred@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes
