@@ -1,0 +1,34 @@
+import typescript from '@rollup/plugin-typescript';
+
+export default [
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/index.js',
+      format: 'cjs',
+      sourcemap: true,
+    },
+    external: ['electron', '@x-oasis/async-call-rpc'],
+    plugins: [typescript({ tsconfig: './tsconfig.build.json' })],
+  },
+  {
+    input: 'src/electron-browser/index.ts',
+    output: {
+      file: 'dist/electron-browser/index.js',
+      format: 'cjs',
+      sourcemap: true,
+    },
+    external: ['electron', '@x-oasis/async-call-rpc'],
+    plugins: [typescript({ tsconfig: './tsconfig.build.json' })],
+  },
+  {
+    input: 'src/electron-main/index.ts',
+    output: {
+      file: 'dist/electron-main/index.js',
+      format: 'cjs',
+      sourcemap: true,
+    },
+    external: ['electron', '@x-oasis/async-call-rpc'],
+    plugins: [typescript({ tsconfig: './tsconfig.build.json' })],
+  },
+];
