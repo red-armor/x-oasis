@@ -52,8 +52,15 @@ const safeSendReply = (protocol: AbstractChannelProtocol, data: any): void => {
  * `MessagePortMain`, or any duck-typed equivalent). Such values must be
  * transferred via the channel's transfer list rather than serialized.
  */
-const isPortLike = (v: any): boolean =>
-  !!v && typeof v === 'object' && typeof (v as any).postMessage === 'function';
+const isPortLike = (_v: any): boolean => {
+  let v = _v;
+  if (Array.isArray(_v)) {
+    v = _v[0];
+  }
+  return (
+    !!v && typeof v === 'object' && typeof (v as any).postMessage === 'function'
+  );
+};
 
 export const handleRequest =
   (protocol: AbstractChannelProtocol) =>
@@ -61,7 +68,7 @@ export const handleRequest =
     const service = protocol.service;
     const serviceHost = protocol.serviceHost;
 
-    const { data } = message;
+    const { data, ports } = message;
     const header = data[0];
     const body = data[1];
     const type = header[0] as any;
@@ -74,7 +81,18 @@ export const handleRequest =
     const seqId = header[1];
     const requestPath = header[2];
     const methodName = header[3];
-    const args = body[0];
+    let args = body[0];
+
+    // ✨ SPECIAL HANDLING: Transferable args
+    // Transferable objects travel via message.ports, not in the serialized body.
+    // The RequestType tells us the original argument shape:
+    //   - TransferableArgsRequest       → single arg:  handler(ports[0])
+    //   - TransferableArrayArgsRequest  → array args:  handler(ports)
+    if (type === RequestType.TransferableArgsRequest) {
+      args = (ports || [])[0];
+    } else if (type === RequestType.TransferableArrayArgsRequest) {
+      args = ports || [];
+    }
 
     const jsonrpcRequest = makeRequest(seqId, methodName, args);
 
@@ -338,16 +356,26 @@ export const handleRequest =
       try {
         const response = await Promise.resolve(result);
 
-        // Port return value: encode as PortSuccess and pass the port as a
-        // transferable. The receiving side's `handleResponse` resolves the
-        // deferred with `message.ports[0]`.
+        // Port return value: encode as PortSuccess and pass the port(s) as
+        // transferable(s). We record whether the original return value was an
+        // array so the receiving side's `handleResponse` can faithfully restore
+        // the same shape:
+        //   - handler returns `port`      → client resolves with `port`
+        //   - handler returns `[p1, p2]`  → client resolves with `[p1, p2]`
         if (isPortLike(response)) {
-          const portHeader = [ResponseType.PortSuccess, seqId];
+          // Distinguish single port vs array of ports via ResponseType:
+          //   - PortSuccess      → client resolves with ports[0]
+          //   - PortArraySuccess → client resolves with ports
+          const responseType = Array.isArray(response)
+            ? ResponseType.PortArraySuccess
+            : ResponseType.PortSuccess;
+          const portHeader = [responseType, seqId];
           const sendData = protocol.writeBuffer.encode([portHeader, []]);
           if (protocol.isConnected()) {
-            (protocol.sendReply as (d: any, t?: any[]) => void)(sendData, [
-              response,
-            ]);
+            (protocol.sendReply as (d: any, t?: any[]) => void)(
+              sendData,
+              [].concat(response)
+            );
           }
           return;
         }

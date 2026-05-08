@@ -205,6 +205,284 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
+  packages/async/async-call-rpc-electron/examples/renderer-acquire-main-port-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/renderer-acquire-main-port-orchestrator-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/renderer-acquire-utility-port-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/renderer-acquire-utility-port-orchestrator-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc-web
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/utility-acquire-main-port-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/utility-acquire-main-port-orchestrator-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/utility-acquire-utility-port-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/utility-acquire-utility-port-orchestrator-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
   packages/async/async-call-rpc-electron/examples/utility-process-example:
     dependencies:
       '@x-oasis/async-call-rpc':
@@ -1653,6 +1931,12 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
+  '@babel/plugin-transform-arrow-functions@7.27.1':
+    resolution: {integrity: sha512-8Z4TGic6xW70FKThA5HYEKKyBpOOsucTOD1DjU3fZxDg+K3zBJcXMFnt/4yQiZnf5+MiOMSXQ9PaEK/Ilh1DeA==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+
   '@babel/plugin-transform-async-to-generator@7.20.7':
     resolution: {integrity: sha512-Uo5gwHPT9vgnSXQxqGtpdufUiWp96gk7yiP4Mp5bm1QMkEmLXBO7PAGYbKoJ6DhAwiNkcHFBol/x5zZZkL/t0Q==}
     engines: {node: '>=6.9.0'}
@@ -2682,66 +2966,79 @@ packages:
     resolution: {integrity: sha512-2QxQrM+KQ7DAW4o22j+XZ6RKdxjLD7BOWTP0Bv0tmjdyhXSsr2Ul1oJDQqh9Zf5qOwTuTc7Ek83mOFaKnodPjg==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.60.2':
     resolution: {integrity: sha512-TbziEu2DVsTEOPif2mKWkMeDMLoYjx95oESa9fkQQK7r/Orta0gnkcDpzwufEcAO2BLBsD7mZkXGFqEdMRRwfw==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.60.2':
     resolution: {integrity: sha512-bO/rVDiDUuM2YfuCUwZ1t1cP+/yqjqz+Xf2VtkdppefuOFS2OSeAfgafaHNkFn0t02hEyXngZkxtGqXcXwO8Rg==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.60.2':
     resolution: {integrity: sha512-hr26p7e93Rl0Za+JwW7EAnwAvKkehh12BU1Llm9Ykiibg4uIr2rbpxG9WCf56GuvidlTG9KiiQT/TXT1yAWxTA==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-loong64-gnu@4.60.2':
     resolution: {integrity: sha512-pOjB/uSIyDt+ow3k/RcLvUAOGpysT2phDn7TTUB3n75SlIgZzM6NKAqlErPhoFU+npgY3/n+2HYIQVbF70P9/A==}
     cpu: [loong64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-loong64-musl@4.60.2':
     resolution: {integrity: sha512-2/w+q8jszv9Ww1c+6uJT3OwqhdmGP2/4T17cu8WuwyUuuaCDDJ2ojdyYwZzCxx0GcsZBhzi3HmH+J5pZNXnd+Q==}
     cpu: [loong64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-ppc64-gnu@4.60.2':
     resolution: {integrity: sha512-11+aL5vKheYgczxtPVVRhdptAM2H7fcDR5Gw4/bTcteuZBlH4oP9f5s9zYO9aGZvoGeBpqXI/9TZZihZ609wKw==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-musl@4.60.2':
     resolution: {integrity: sha512-i16fokAGK46IVZuV8LIIwMdtqhin9hfYkCh8pf8iC3QU3LpwL+1FSFGej+O7l3E/AoknL6Dclh2oTdnRMpTzFQ==}
     cpu: [ppc64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-riscv64-gnu@4.60.2':
     resolution: {integrity: sha512-49FkKS6RGQoriDSK/6E2GkAsAuU5kETFCh7pG4yD/ylj9rKhTmO3elsnmBvRD4PgJPds5W2PkhC82aVwmUcJ7A==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.60.2':
     resolution: {integrity: sha512-mjYNkHPfGpUR00DuM1ZZIgs64Hpf4bWcz9Z41+4Q+pgDx73UwWdAYyf6EG/lRFldmdHHzgrYyge5akFUW0D3mQ==}
     cpu: [riscv64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.60.2':
     resolution: {integrity: sha512-ALyvJz965BQk8E9Al/JDKKDLH2kfKFLTGMlgkAbbYtZuJt9LU8DW3ZoDMCtQpXAltZxwBHevXz5u+gf0yA0YoA==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.60.2':
     resolution: {integrity: sha512-UQjrkIdWrKI626Du8lCQ6MJp/6V1LAo2bOK9OTu4mSn8GGXIkPXk/Vsp4bLHCd9Z9Iz2OTEaokUE90VweJgIYQ==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.60.2':
     resolution: {integrity: sha512-bTsRGj6VlSdn/XD4CGyzMnzaBs9bsRxy79eTqTCBsA8TMIEky7qg48aPkvJvFe1HyzQ5oMZdg7AnVlWQSKLTnw==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-openbsd-x64@4.60.2':
     resolution: {integrity: sha512-6d4Z3534xitaA1FcMWP7mQPq5zGwBmGbhphh2DwaA1aNIXUu3KTOfwrWpbwI4/Gr0uANo7NTtaykFyO2hPuFLg==}
@@ -4108,6 +4405,17 @@ packages:
 
   electron-to-chromium@1.5.278:
     resolution: {integrity: sha512-dQ0tM1svDRQOwxnXxm+twlGTjr9Upvt8UFWAgmLsxEzFQxhbti4VwxmMjsDxVC51Zo84swW7FVCXEV+VAkhuPw==}
+
+  electron-vite@2.3.0:
+    resolution: {integrity: sha512-lsN2FymgJlp4k6MrcsphGqZQ9fKRdJKasoaiwIrAewN1tapYI/KINLdfEL7n10LuF0pPSNf/IqjzZbB5VINctg==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.0.0
+      vite: ^4.0.0 || ^5.0.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
 
   electron@41.4.0:
     resolution: {integrity: sha512-1afmxJGyrZ4bve+PDCs8YtNjjVu4cPwUtSjx36o6gyJWI0NvhebMKtIzzKNOScRyXntH2hX0i350Xgm3BKiEYQ==}
@@ -8226,14 +8534,24 @@ snapshots:
       '@babel/core': 7.21.0
       '@babel/helper-plugin-utils': 7.20.2
 
-  '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.21.0)':
+  '@babel/plugin-syntax-async-generators@7.8.4(@babel/core@7.28.6)':
     dependencies:
-      '@babel/core': 7.21.0
+      '@babel/core': 7.28.6
       '@babel/helper-plugin-utils': 7.20.2
+
+  '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
+      '@babel/helper-plugin-utils': 7.28.6
 
   '@babel/plugin-syntax-class-properties@7.12.13(@babel/core@7.21.0)':
     dependencies:
       '@babel/core': 7.21.0
+      '@babel/helper-plugin-utils': 7.20.2
+
+  '@babel/plugin-syntax-class-properties@7.12.13(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
       '@babel/helper-plugin-utils': 7.20.2
 
   '@babel/plugin-syntax-class-static-block@7.14.5(@babel/core@7.21.0)':
@@ -8256,14 +8574,19 @@ snapshots:
       '@babel/core': 7.21.0
       '@babel/helper-plugin-utils': 7.20.2
 
-  '@babel/plugin-syntax-import-meta@7.10.4(@babel/core@7.21.0)':
+  '@babel/plugin-syntax-import-meta@7.10.4(@babel/core@7.28.6)':
     dependencies:
-      '@babel/core': 7.21.0
-      '@babel/helper-plugin-utils': 7.20.2
+      '@babel/core': 7.28.6
+      '@babel/helper-plugin-utils': 7.28.6
 
   '@babel/plugin-syntax-json-strings@7.8.3(@babel/core@7.21.0)':
     dependencies:
       '@babel/core': 7.21.0
+      '@babel/helper-plugin-utils': 7.20.2
+
+  '@babel/plugin-syntax-json-strings@7.8.3(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
       '@babel/helper-plugin-utils': 7.20.2
 
   '@babel/plugin-syntax-logical-assignment-operators@7.10.4(@babel/core@7.21.0)':
@@ -8271,9 +8594,19 @@ snapshots:
       '@babel/core': 7.21.0
       '@babel/helper-plugin-utils': 7.20.2
 
+  '@babel/plugin-syntax-logical-assignment-operators@7.10.4(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
+      '@babel/helper-plugin-utils': 7.20.2
+
   '@babel/plugin-syntax-nullish-coalescing-operator@7.8.3(@babel/core@7.21.0)':
     dependencies:
       '@babel/core': 7.21.0
+      '@babel/helper-plugin-utils': 7.20.2
+
+  '@babel/plugin-syntax-nullish-coalescing-operator@7.8.3(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
       '@babel/helper-plugin-utils': 7.20.2
 
   '@babel/plugin-syntax-numeric-separator@7.10.4(@babel/core@7.21.0)':
@@ -8281,9 +8614,19 @@ snapshots:
       '@babel/core': 7.21.0
       '@babel/helper-plugin-utils': 7.20.2
 
+  '@babel/plugin-syntax-numeric-separator@7.10.4(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
+      '@babel/helper-plugin-utils': 7.20.2
+
   '@babel/plugin-syntax-object-rest-spread@7.8.3(@babel/core@7.21.0)':
     dependencies:
       '@babel/core': 7.21.0
+      '@babel/helper-plugin-utils': 7.20.2
+
+  '@babel/plugin-syntax-object-rest-spread@7.8.3(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
       '@babel/helper-plugin-utils': 7.20.2
 
   '@babel/plugin-syntax-optional-catch-binding@7.8.3(@babel/core@7.21.0)':
@@ -8291,9 +8634,19 @@ snapshots:
       '@babel/core': 7.21.0
       '@babel/helper-plugin-utils': 7.20.2
 
+  '@babel/plugin-syntax-optional-catch-binding@7.8.3(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
+      '@babel/helper-plugin-utils': 7.20.2
+
   '@babel/plugin-syntax-optional-chaining@7.8.3(@babel/core@7.21.0)':
     dependencies:
       '@babel/core': 7.21.0
+      '@babel/helper-plugin-utils': 7.20.2
+
+  '@babel/plugin-syntax-optional-chaining@7.8.3(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
       '@babel/helper-plugin-utils': 7.20.2
 
   '@babel/plugin-syntax-private-property-in-object@7.14.5(@babel/core@7.21.0)':
@@ -8310,6 +8663,11 @@ snapshots:
     dependencies:
       '@babel/core': 7.21.0
       '@babel/helper-plugin-utils': 7.20.2
+
+  '@babel/plugin-transform-arrow-functions@7.27.1(@babel/core@7.28.6)':
+    dependencies:
+      '@babel/core': 7.28.6
+      '@babel/helper-plugin-utils': 7.28.6
 
   '@babel/plugin-transform-async-to-generator@7.20.7(@babel/core@7.21.0)':
     dependencies:
@@ -9334,7 +9692,7 @@ snapshots:
 
   '@jest/transform@25.5.1':
     dependencies:
-      '@babel/core': 7.21.0
+      '@babel/core': 7.28.6
       '@jest/types': 25.5.0
       babel-plugin-istanbul: 6.1.1
       chalk: 3.0.0
@@ -10397,14 +10755,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  babel-jest@25.5.1(@babel/core@7.21.0):
+  babel-jest@25.5.1(@babel/core@7.28.6):
     dependencies:
-      '@babel/core': 7.21.0
+      '@babel/core': 7.28.6
       '@jest/transform': 25.5.1
       '@jest/types': 25.5.0
       '@types/babel__core': 7.20.0
       babel-plugin-istanbul: 6.1.1
-      babel-preset-jest: 25.5.0(@babel/core@7.21.0)
+      babel-preset-jest: 25.5.0(@babel/core@7.28.6)
       chalk: 3.0.0
       graceful-fs: 4.2.10
       slash: 3.0.0
@@ -10421,7 +10779,7 @@ snapshots:
 
   babel-plugin-istanbul@6.1.1:
     dependencies:
-      '@babel/helper-plugin-utils': 7.20.2
+      '@babel/helper-plugin-utils': 7.28.6
       '@istanbuljs/load-nyc-config': 1.1.0
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-instrument: 5.2.1
@@ -10474,26 +10832,26 @@ snapshots:
 
   babel-plugin-transform-rename-import@2.3.0: {}
 
-  babel-preset-current-node-syntax@0.1.4(@babel/core@7.21.0):
+  babel-preset-current-node-syntax@0.1.4(@babel/core@7.28.6):
     dependencies:
-      '@babel/core': 7.21.0
-      '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@7.21.0)
-      '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.21.0)
-      '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@7.21.0)
-      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@7.21.0)
-      '@babel/plugin-syntax-json-strings': 7.8.3(@babel/core@7.21.0)
-      '@babel/plugin-syntax-logical-assignment-operators': 7.10.4(@babel/core@7.21.0)
-      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.21.0)
-      '@babel/plugin-syntax-numeric-separator': 7.10.4(@babel/core@7.21.0)
-      '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@7.21.0)
-      '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@7.21.0)
-      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.21.0)
+      '@babel/core': 7.28.6
+      '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@7.28.6)
+      '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.28.6)
+      '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@7.28.6)
+      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@7.28.6)
+      '@babel/plugin-syntax-json-strings': 7.8.3(@babel/core@7.28.6)
+      '@babel/plugin-syntax-logical-assignment-operators': 7.10.4(@babel/core@7.28.6)
+      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.28.6)
+      '@babel/plugin-syntax-numeric-separator': 7.10.4(@babel/core@7.28.6)
+      '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@7.28.6)
+      '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@7.28.6)
+      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.28.6)
 
-  babel-preset-jest@25.5.0(@babel/core@7.21.0):
+  babel-preset-jest@25.5.0(@babel/core@7.28.6):
     dependencies:
-      '@babel/core': 7.21.0
+      '@babel/core': 7.28.6
       babel-plugin-jest-hoist: 25.5.0
-      babel-preset-current-node-syntax: 0.1.4(@babel/core@7.21.0)
+      babel-preset-current-node-syntax: 0.1.4(@babel/core@7.28.6)
 
   balanced-match@1.0.2: {}
 
@@ -11133,6 +11491,18 @@ snapshots:
   electron-to-chromium@1.4.328: {}
 
   electron-to-chromium@1.5.278: {}
+
+  electron-vite@2.3.0(vite@5.4.21(@types/node@24.10.9)):
+    dependencies:
+      '@babel/core': 7.28.6
+      '@babel/plugin-transform-arrow-functions': 7.27.1(@babel/core@7.28.6)
+      cac: 6.7.14
+      esbuild: 0.21.5
+      magic-string: 0.30.21
+      picocolors: 1.1.1
+      vite: 5.4.21(@types/node@24.10.9)
+    transitivePeerDependencies:
+      - supports-color
 
   electron@41.4.0:
     dependencies:
@@ -12559,7 +12929,7 @@ snapshots:
 
   istanbul-lib-instrument@4.0.3:
     dependencies:
-      '@babel/core': 7.21.0
+      '@babel/core': 7.28.6
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.0
       semver: 6.3.1
@@ -12631,10 +13001,10 @@ snapshots:
 
   jest-config@25.5.4:
     dependencies:
-      '@babel/core': 7.21.0
+      '@babel/core': 7.28.6
       '@jest/test-sequencer': 25.5.4
       '@jest/types': 25.5.0
-      babel-jest: 25.5.1(@babel/core@7.21.0)
+      babel-jest: 25.5.1(@babel/core@7.28.6)
       chalk: 3.0.0
       deepmerge: 4.3.0
       glob: 7.2.3
@@ -12747,10 +13117,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:

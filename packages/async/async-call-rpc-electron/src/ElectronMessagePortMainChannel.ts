@@ -1,5 +1,6 @@
 import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
-import { MainPort, MessagePortMainChannelProps } from './types';
+import { MessagePortMainChannelProps } from './types';
+import { MessagePortMain } from 'electron';
 
 /**
  * RPC channel protocol for Electron's `MessagePortMain`.
@@ -53,7 +54,7 @@ import { MainPort, MessagePortMainChannelProps } from './types';
  * @see https://www.electronjs.org/docs/latest/api/message-port-main
  */
 export default class ElectronMessagePortMainChannel extends AbstractChannelProtocol {
-  private _port: MainPort | null;
+  private _port: MessagePortMain | null;
   private _detachListener: (() => void) | null;
   private _pendingListener: ((data: unknown) => void) | null;
 
@@ -66,7 +67,7 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
     this._pendingListener = null;
 
     if (port) {
-      this._attachPort(port);
+      this._attachPort(port as unknown as MessagePortMain);
     }
   }
 
@@ -77,7 +78,7 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
    *
    * No-op if a port is already bound.
    */
-  bindPort(port: MainPort): void {
+  bindPort(port: MessagePortMain): void {
     if (this._port) return;
     this._attachPort(port);
     this.activate();
@@ -100,7 +101,7 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
     return this._wireListener(this._port, listener);
   }
 
-  send(data: unknown, transfer?: MainPort[]): void {
+  send(data: unknown, transfer?: MessagePortMain[]): void {
     if (!this._port) {
       console.warn(
         '[ElectronMessagePortMainChannel] send called before port was bound.'
@@ -121,7 +122,7 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
     super.disconnect();
   }
 
-  private _attachPort(port: MainPort): void {
+  private _attachPort(port: MessagePortMain): void {
     this._port = port;
     if (port.start) port.start();
     port.on('close', () => this.disconnect());
@@ -132,15 +133,15 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
   }
 
   private _wireListener(
-    port: MainPort,
+    port: MessagePortMain,
     listener: (data: unknown) => void
   ): () => void {
-    const handler = (messageEvent: MessageEvent): void => {
+    const handler = (messageEvent: Electron.MessageEvent): void => {
       listener(messageEvent);
     };
     port.on('message', handler);
     return () => {
-      port.removeListener('message', handler);
+      port.off('message', handler);
     };
   }
 }

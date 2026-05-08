@@ -1,80 +1,133 @@
 import { NormalizedRawMessageOutput } from '../types';
 
+/**
+ * Normalize middleware for MessageChannel (WebSocket/Worker) raw messages.
+ *
+ * This middleware extracts event.data and event.ports from MessageEvent,
+ * providing a normalized interface for the rest of the middleware chain.
+ *
+ * ## The ports field:
+ *
+ * When sender calls channel.send(data, transfer),
+ * Transferable objects are moved to receiver side and appear in event.ports.
+ *
+ * This middleware MUST extract event.ports and include it in output:
+ * - event.ports becomes message.ports for downstream middleware
+ * - deserialize middleware keeps ports unchanged
+ * - handleResponse middleware uses ports[0] for PortSuccess
+ *
+ * If event.ports is not extracted here, it will be lost forever!
+ */
 export const normalizeMessageChannelRawMessage =
   () =>
   (event: MessageEvent): NormalizedRawMessageOutput => {
-    return {
-      event,
-      data: event.data,
-      ports: event.ports || [],
-    };
-  };
+    // STEP 1: Extract data and ports from MessageEvent
+    // MessageEvent has both data (the main message) and ports (transferred objects)
+    const data = event.data;
 
-export const normalizeIPCChannelRawMessage =
-  () => (event: MessageEvent, data: string) => {
+    // STEP 2: Extract ports from MessageEvent
+    // event.ports contains Transferable objects that were transferred via transfer list
+    // If no ports were transferred, event.ports is undefined or empty array
+    const ports = event.ports ? [...event.ports] : [];
+
+    // STEP 3: Return normalized message with both data and ports
+    // ⭐ CRITICAL: ports must be included in output for handleResponse to work!
     return {
       event,
       data,
-      ports: event.ports || [],
+      ports, // ← Do NOT forget this! handleResponse needs it
     };
   };
 
+/**
+ * Normalize middleware for Electron IPC raw messages.
+ *
+ * For Electron's ipcRenderer/ipcMain, messages come as (event, ...data) arguments.
+ * This middleware reconstructs a MessageEvent-like structure.
+ *
+ * ## Electron IPC specifics:
+ *
+ * ipcRenderer.on/ipcMain.on callbacks receive: (event, ...data)
+ * - event.ports contains transferred MessagePorts
+ * - data is the actual message content
+ *
+ * This must be normalized to match MessageEvent structure
+ * so downstream middleware can access event.ports consistently.
+ */
+export const normalizeIPCChannelRawMessage =
+  () => (event: MessageEvent, data: string) => {
+    // STEP 1: Extract ports from Electron IPC event
+    // Just like MessageChannel, Electron's event.ports contains transferred objects
+    const ports = event.ports ? [...event.ports] : [];
+
+    // STEP 2: Return normalized structure
+    // data parameter contains the main message
+    // ports extracted from event for downstream middleware
+    return {
+      event,
+      data,
+      ports, // ← Include ports from Electron IPC event
+    };
+  };
+
+/**
+ * Normalize middleware for pure data messages (no MessageEvent).
+ *
+ * Used when messages are received as plain data (e.g., from client-side-only RPC).
+ * No event or ports are available in this context.
+ */
 export const processClientRawMessage = () => (data: string) => {
   return {
     event: null,
     data,
-    ports: [],
+    ports: [], // ← No Transferables in client-only mode
   };
 };
 
 /**
- * Helper function to check if Buffer is available (Node.js environment)
+ * Utility functions for data normalization across browser and Node.js environments
  */
-function isBufferAvailable(): boolean {
-  return typeof Buffer !== 'undefined' && Buffer.isBuffer !== undefined;
-}
+const isBufferAvailable = (): boolean =>
+  typeof Buffer !== 'undefined' && Buffer.isBuffer !== undefined;
 
-/**
- * Helper function to check if value is a Buffer (works in both browser and Node.js)
- */
-function isBuffer(value: any): boolean {
-  if (!isBufferAvailable()) {
-    return false;
-  }
-  return Buffer.isBuffer(value);
-}
+const isBuffer = (value: any): boolean =>
+  isBufferAvailable() && Buffer.isBuffer(value);
 
-/**
- * Helper function to convert ArrayBuffer to string (works in both browser and Node.js)
- */
-function arrayBufferToString(buffer: ArrayBuffer): string {
-  if (isBufferAvailable()) {
-    return Buffer.from(buffer).toString('utf8');
-  } else {
-    // Browser environment: use TextDecoder
-    try {
-      return new TextDecoder('utf-8').decode(buffer);
-    } catch (e) {
-      // Fallback: convert Uint8Array to string
-      const uint8Array = new Uint8Array(buffer);
-      return String.fromCharCode.apply(null, Array.from(uint8Array));
-    }
-  }
-}
+const normalizeDataToString = (data: any): string => {
+  // Null or undefined
+  if (data == null) return '';
 
-/**
- * Helper function to convert Buffer to string (Node.js only)
- */
-function bufferToString(buffer: any): string {
-  if (isBufferAvailable() && Buffer.isBuffer(buffer)) {
-    return buffer.toString('utf8');
+  // Already a string
+  if (typeof data === 'string') return data;
+
+  // Buffer (Node.js)
+  if (isBuffer(data)) {
+    return data.toString('utf8');
   }
-  return String(buffer);
-}
+
+  // ArrayBuffer
+  if (data instanceof ArrayBuffer) {
+    return isBufferAvailable()
+      ? Buffer.from(data).toString('utf8')
+      : new TextDecoder('utf-8').decode(data);
+  }
+
+  // Fallback: stringify
+  return String(data);
+};
 
 /**
  * Normalize WebSocket raw message
  * Handles both browser MessageEvent and Node.js ws library format
+ *
+ * ## WebSocket ports handling:
+ *
+ * WebSocket doesn't natively support Transferables like MessageChannel does.
+ * However, if the server sends a message with MessagePort info,
+ * it would need custom serialization/deserialization logic.
+ *
+ * For now, WebSocket normalizer always returns empty ports array
+ * since the protocol doesn't support native Transferable transfer.
  */
 export const normalizeWebSocketRawMessage =
   () =>
@@ -90,7 +143,7 @@ export const normalizeWebSocketRawMessage =
       return {
         event: null,
         data: '',
-        ports: [],
+        ports: [], // ← No Transferables for WebSocket
       };
     }
 
@@ -110,20 +163,12 @@ export const normalizeWebSocketRawMessage =
       ports = event.ports ? [...event.ports] : [];
 
       // Handle different data types in MessageEvent
-      if (data === undefined || data === null) {
-        normalizedData = '';
-      } else if (typeof data === 'string') {
-        normalizedData = data;
-      } else if (isBuffer(data)) {
-        normalizedData = bufferToString(data);
-      } else if (data instanceof ArrayBuffer) {
-        normalizedData = arrayBufferToString(data);
-      } else if (data instanceof Blob) {
+      if (data instanceof Blob) {
         // For Blob, we'd need async handling, but for now return empty
         // In practice, WebSocket text frames should be strings
         normalizedData = '';
       } else {
-        normalizedData = String(data);
+        normalizedData = normalizeDataToString(data);
       }
     } else {
       // Node.js ws library: direct data (Buffer or string)
@@ -141,17 +186,8 @@ export const normalizeWebSocketRawMessage =
         actualData = eventOrData;
       }
 
-      // Convert Buffer to string if needed
-      if (isBuffer(actualData)) {
-        normalizedData = bufferToString(actualData);
-      } else if (typeof actualData === 'string') {
-        normalizedData = actualData;
-      } else if (actualData instanceof ArrayBuffer) {
-        normalizedData = arrayBufferToString(actualData);
-      } else {
-        // Fallback: try to stringify
-        normalizedData = String(actualData);
-      }
+      // Convert different data types to string
+      normalizedData = normalizeDataToString(actualData);
     }
 
     // Ensure normalizedData is never undefined or null
@@ -162,6 +198,6 @@ export const normalizeWebSocketRawMessage =
     return {
       event,
       data: normalizedData,
-      ports,
+      ports, // ← Extract ports from MessageEvent if available
     };
   };

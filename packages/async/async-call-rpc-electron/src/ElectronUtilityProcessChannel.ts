@@ -78,6 +78,7 @@ export default class ElectronUtilityProcessChannel extends AbstractChannelProtoc
   on(listener: (data: unknown) => void): void | (() => void) {
     const isMainSide = this.isUtilityProcess(this._target);
 
+    // https://www.electronjs.org/docs/latest/api/utility-process#childpostmessagemessage-transfer
     const handler = (messageEventOrValue: MessageEvent | unknown): void => {
       if (isMainSide) {
         // Main process side: UtilityProcess.on('message', (value) => ...)

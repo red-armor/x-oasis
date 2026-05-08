@@ -1,6 +1,6 @@
 # @x-oasis/async-call-rpc-node
 
-RPC channel implementation for Node.js
+RPC channel implementations and Connection Orchestrator for Node.js.
 
 ## Installation
 
@@ -8,13 +8,54 @@ RPC channel implementation for Node.js
 npm install @x-oasis/async-call-rpc-node
 ```
 
+## Features
+
+- **Process Channels**: Pre-built channels for `child_process.fork` and `worker_threads`
+- **Connection Orchestrator**: Automated direct MessagePort connection management between workers
+- **Full TypeScript Support**: Complete type definitions for all APIs
+- **Zero External Dependencies**: Self-contained package
+
+## Quick Links
+
+- [Connection Orchestrator](/packages/async/async-call-rpc-node/orchestrator) - Automated port connection management
+- [API Reference](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-node/src)
+- [Examples](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-node/examples)
+
 ## Quick Start
 
-```typescript
-import { /* exports */ } from '@x-oasis/async-call-rpc-node';
+### Process Channel
 
-// Your code here
+```typescript
+import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node';
+import { fork } from 'child_process';
+
+const child = fork('./worker.js');
+const channel = new NodeProcessChannel({ process: child });
 ```
+
+### Worker Thread Channel
+
+```typescript
+import { NodeMessagePortChannel } from '@x-oasis/async-call-rpc-node';
+import { Worker } from 'worker_threads';
+
+const worker = new Worker('./worker.js');
+const channel = new NodeMessagePortChannel({ bindPort: worker });
+```
+
+### Connection Orchestrator
+
+```typescript
+import { NodeConnectionOrchestrator } from '@x-oasis/async-call-rpc-node';
+
+const orchestrator = new NodeConnectionOrchestrator();
+orchestrator.registerParticipant('worker-a', channelA, 'worker');
+orchestrator.registerParticipant('worker-b', channelB, 'worker');
+
+await orchestrator.connect('worker-a', 'worker-b');
+```
+
+See the [Orchestrator Documentation](/packages/async/async-call-rpc-node/orchestrator) for complete details.
 
 ## Key Features
 
@@ -48,12 +89,13 @@ See the source code on [GitHub](https://github.com/red-armor/x-oasis/tree/main/p
 Full TypeScript definitions are included:
 
 ```typescript
-import { /* types */ } from '@x-oasis/async-call-rpc-node';
+import {} from /* types */ '@x-oasis/async-call-rpc-node';
 ```
 
 ## Performance
 
 This package is optimized for:
+
 - Small bundle size
 - Fast execution
 - Memory efficiency
@@ -66,11 +108,13 @@ This package is optimized for:
 ## Best Practices
 
 ✅ **Do:**
+
 - Use according to documentation
 - Check types before use
 - Handle edge cases
 
 ❌ **Don't:**
+
 - Misuse the API
 - Ignore error handling
 - Forget null checks

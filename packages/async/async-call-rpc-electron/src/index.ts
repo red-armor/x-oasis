@@ -4,6 +4,12 @@ export { default as IPCRendererChannel } from './IPCRendererChannel';
 export { default as ElectronMessagePortMainChannel } from './ElectronMessagePortMainChannel';
 export { default as ElectronUtilityProcessChannel } from './ElectronUtilityProcessChannel';
 
+// Orchestrator
+export {
+  ElectronConnectionOrchestrator,
+  registerOrchestratorHandler,
+} from './ElectronConnectionOrchestrator';
+
 // Types
 export type {
   MainPort,

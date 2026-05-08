@@ -28,7 +28,7 @@ describe('handleRequest port-return', () => {
     };
   });
 
-  test('handler returning a port-like value sends PortSuccess with transfer list', async () => {
+  test('handler returning a single port sends PortSuccess with transfer list', async () => {
     const fakePort = {
       postMessage: vi.fn(),
       start: vi.fn(),
@@ -47,7 +47,6 @@ describe('handleRequest port-return', () => {
       ],
     } as any);
 
-    // Wait for the async invokeHandler chain (await Promise.resolve(result))
     await Promise.resolve();
     await Promise.resolve();
     await Promise.resolve();
@@ -58,6 +57,42 @@ describe('handleRequest port-return', () => {
     expect(data[0][1]).toBe('seq-port');
     expect(data[1]).toEqual([]);
     expect(transfer).toEqual([fakePort]);
+  });
+
+  test('handler returning an array of ports sends PortArraySuccess', async () => {
+    const fakePort1 = {
+      postMessage: vi.fn(),
+      start: vi.fn(),
+      on: vi.fn(),
+    };
+    const fakePort2 = {
+      postMessage: vi.fn(),
+      start: vi.fn(),
+      on: vi.fn(),
+    };
+    serviceHost.registerServiceHandler('/svc', {
+      acquirePorts: () => [fakePort1, fakePort2],
+    });
+
+    const run = handleRequest(mockProtocol as AbstractChannelProtocol);
+    run({
+      event: null,
+      data: [
+        [RequestType.PromiseRequest, 'seq-arr', '/svc', 'acquirePorts'],
+        [[]],
+      ],
+    } as any);
+
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(sendReply).toHaveBeenCalledTimes(1);
+    const [data, transfer] = sendReply.mock.calls[0];
+    expect(data[0][0]).toBe(ResponseType.PortArraySuccess);
+    expect(data[0][1]).toBe('seq-arr');
+    expect(data[1]).toEqual([]);
+    expect(transfer).toEqual([fakePort1, fakePort2]);
   });
 
   test('handler returning a regular value still sends ReturnSuccess (no transfer)', async () => {
