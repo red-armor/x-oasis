@@ -1,5 +1,13 @@
+import { createIpcPageChannel } from '@x-oasis/async-call-rpc-electron/browser';
+import { clientHost } from '@x-oasis/async-call-rpc';
 import OrchestratorDashboard from '@shared-ui/OrchestratorDashboard';
 import useOrchestratorDashboard from '@shared-ui/useOrchestratorDashboard';
+
+const ipcPageChannel = createIpcPageChannel('page↔preload:ipc');
+
+const orchestratorClient = clientHost
+  .registerClient('orchestrator', { channel: ipcPageChannel })
+  .createProxy();
 
 function App(): JSX.Element {
   const dashboard = useOrchestratorDashboard({
@@ -7,11 +15,9 @@ function App(): JSX.Element {
       { id: 'main', type: 'process' },
       { id: 'utility', type: 'utility' },
     ],
+    api: orchestratorClient as any,
     sendRpc: async (message) => {
-      const api = (window as any).orchestratorAPI;
-      const res = await api?.sendRpc(message);
-      if (!res.success) throw new Error(res.error);
-      return res.result;
+      return (orchestratorClient as any).sendRpc(message);
     },
   });
 

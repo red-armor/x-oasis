@@ -1,25 +1,19 @@
-import { ipcRenderer, contextBridge } from 'electron';
-import {
-  IPCRendererChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-electron';
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
+import { ipcRenderer } from 'electron';
+import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
 import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
-import { createOrchestratorAPI } from '@shared-ui/createOrchestratorAPI';
 
-const ipcChannel = new IPCRendererChannel({
-  channelName: 'app-rpc',
+const bridge = createPageBridge({
   ipcRenderer,
-  projectName: 'renderer-acquire-utility-port-orchestrator',
-  description: 'renderer→main IPC channel',
+  channelName: 'app-rpc',
+  description: 'page↔utility bridge',
 });
 
-const directChannel = new RPCMessageChannel({
-  description: 'renderer↔utility direct port',
-});
+clientHost
+  .registerClient('utility-direct', { channel: bridge.channel })
+  .createProxy();
 
 serviceHost.registerService('renderer-direct', {
-  channel: directChannel,
+  channel: bridge.channel,
   serviceHost,
   handlers: {
     greet(msg: string): string {
@@ -27,29 +21,3 @@ serviceHost.registerService('renderer-direct', {
     },
   },
 });
-
-const utilityDirectClient = clientHost
-  .registerClient('utility-direct', { channel: directChannel })
-  .createProxy();
-
-const orchestratorClient = clientHost
-  .registerClient('orchestrator', { channel: ipcChannel })
-  .createProxy();
-
-registerOrchestratorHandler(ipcChannel, (port: MessagePort) => {
-  directChannel.bindPort(port);
-});
-
-contextBridge.exposeInMainWorld(
-  'orchestratorAPI',
-  createOrchestratorAPI(orchestratorClient, {
-    sendRpc: (message: string) =>
-      (utilityDirectClient as any).ping(message).then(
-        (r: any) => r,
-        (e: any) => {
-          throw e;
-        }
-      ),
-    killUtility: () => (orchestratorClient as any).killUtility(),
-  })
-);

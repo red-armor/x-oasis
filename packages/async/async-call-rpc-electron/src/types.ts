@@ -111,6 +111,12 @@ export interface ContextBridgeAPI {
   _offMessage: () => void;
 }
 
+export interface ContextBridgeIPCAPI {
+  _send: (data: unknown) => void;
+  _onMessage: (cb: (data: unknown) => void) => void;
+  _offMessage: () => void;
+}
+
 export type ContextBridgeChannelProps = AbstractChannelProtocolProps;
 
 // ─── Re-exports for convenience ──────────────────────────────────────────────

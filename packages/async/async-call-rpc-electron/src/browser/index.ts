@@ -12,6 +12,14 @@
 //                        `MessageChannelMain`, `utilityProcess`, etc.)
 // - root barrel        → re-exports all for back-compat
 export { default as ContextBridgeChannel } from './ContextBridgeChannel';
-export { createPageChannel } from './createPageChannel';
+export {
+  createPageChannel,
+  createIpcPageChannel,
+  IPC_BRIDGE_KEY,
+} from './createPageChannel';
 
-export type { ContextBridgeChannelProps, ContextBridgeAPI } from '../types';
+export type {
+  ContextBridgeChannelProps,
+  ContextBridgeAPI,
+  ContextBridgeIPCAPI,
+} from '../types';

@@ -8,8 +8,35 @@ import {
 
 let logIdCounter = 0;
 
+export interface OrchestratorAPI {
+  connect: () => Promise<any>;
+  disconnect: () => Promise<any>;
+  simulateLost: () => Promise<any>;
+  getStatus: () => Promise<any>;
+  killUtility?: () => Promise<any>;
+  onStateChange: (callback: (event: any) => void) => {
+    unsubscribe: () => void;
+  };
+  onReady: (callback: (event: any) => void) => { unsubscribe: () => void };
+  onDisconnected: (callback: (event: any) => void) => {
+    unsubscribe: () => void;
+  };
+  onReconnecting: (callback: (event: any) => void) => {
+    unsubscribe: () => void;
+  };
+  onReconnected: (callback: (event: any) => void) => {
+    unsubscribe: () => void;
+  };
+  onReconnectFailed: (callback: (event: any) => void) => {
+    unsubscribe: () => void;
+  };
+  onClosed: (callback: (event: any) => void) => { unsubscribe: () => void };
+  sendRpc?: (message: string) => Promise<any>;
+}
+
 export interface UseOrchestratorDashboardOptions {
   participants: ParticipantInfo[];
+  api: OrchestratorAPI;
   sendRpc?: (message: string) => Promise<string>;
   simulateLostLogMessage?: string;
 }
@@ -31,11 +58,10 @@ export default function useOrchestratorDashboard(
 ): UseOrchestratorDashboardReturn {
   const {
     participants,
+    api,
     sendRpc: customSendRpc,
     simulateLostLogMessage = 'Simulating participant lost...',
   } = options;
-
-  const api = (window as any).orchestratorAPI;
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus | null>(null);
   const [stats, setStats] = useState<StatsInfo | null>(null);
@@ -65,7 +91,7 @@ export default function useOrchestratorDashboard(
 
   const pollStatus = useCallback(async () => {
     try {
-      const s = await api?.getStatus();
+      const s = await api.getStatus();
       if (s) {
         setConnectionStatus({
           connectionId: s.connectionId,
@@ -82,7 +108,7 @@ export default function useOrchestratorDashboard(
 
   useEffect(() => {
     const unsubs = [
-      api?.onStateChange((e: any) => {
+      api.onStateChange((e: any) => {
         addLog(
           e.currentState === 'READY'
             ? 'success'
@@ -95,22 +121,22 @@ export default function useOrchestratorDashboard(
         );
         pollStatus();
       }),
-      api?.onReady((e: any) => {
+      api.onReady((e: any) => {
         addLog('success', 'ready', `Connection ready: ${e.connectionId}`);
         pollStatus();
       }),
-      api?.onDisconnected((e: any) => {
+      api.onDisconnected((e: any) => {
         addLog('warn', 'disconnect', `Connection lost`, e.error?.message);
         pollStatus();
       }),
-      api?.onReconnecting((e: any) => {
+      api.onReconnecting((e: any) => {
         addLog(
           'warn',
           'reconnect',
           `Reconnecting attempt #${e.attempt} in ${Math.round(e.delay)}ms`
         );
       }),
-      api?.onReconnected((e: any) => {
+      api.onReconnected((e: any) => {
         addLog(
           'success',
           'reconnect',
@@ -118,7 +144,7 @@ export default function useOrchestratorDashboard(
         );
         pollStatus();
       }),
-      api?.onReconnectFailed((e: any) => {
+      api.onReconnectFailed((e: any) => {
         addLog(
           'error',
           'reconnect',
@@ -126,7 +152,7 @@ export default function useOrchestratorDashboard(
         );
         pollStatus();
       }),
-      api?.onClosed((e: any) => {
+      api.onClosed((e: any) => {
         addLog('error', 'closed', `Connection closed: ${e.reason}`);
         pollStatus();
       }),
@@ -134,14 +160,14 @@ export default function useOrchestratorDashboard(
     pollStatus();
     const interval = setInterval(pollStatus, 2000);
     return () => {
-      unsubs.forEach((u) => u());
+      unsubs.forEach((u) => u.unsubscribe());
       clearInterval(interval);
     };
   }, [addLog, pollStatus]);
 
   const handleConnect = useCallback(async () => {
     addLog('info', 'action', 'Requesting connect...');
-    const result = await api?.connect();
+    const result = await api.connect();
     if (result.error)
       addLog('error', 'action', `Connect failed: ${result.error}`);
     else addLog('success', 'action', `Connected: ${result.state}`);
@@ -150,14 +176,14 @@ export default function useOrchestratorDashboard(
 
   const handleDisconnect = useCallback(async () => {
     addLog('info', 'action', 'Requesting disconnect...');
-    await api?.disconnect();
+    await api.disconnect();
     addLog('info', 'action', 'Disconnected');
     pollStatus();
   }, [addLog, pollStatus]);
 
   const handleSimulateLost = useCallback(async () => {
     addLog('warn', 'action', simulateLostLogMessage);
-    await api?.simulateLost();
+    await api.simulateLost();
     pollStatus();
   }, [addLog, pollStatus, simulateLostLogMessage]);
 
@@ -167,7 +193,7 @@ export default function useOrchestratorDashboard(
       try {
         const result = customSendRpc
           ? await customSendRpc(message)
-          : await api?.sendRpc(message);
+          : await api.sendRpc!(message);
         addLog('success', 'rpc', `Response: "${result}"`);
       } catch (err: any) {
         addLog('error', 'rpc', `Failed: ${err.message}`);
