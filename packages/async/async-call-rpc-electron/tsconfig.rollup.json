@@ -16,7 +16,8 @@
     "composite": false,
     "baseUrl": ".",
     "paths": {
-      "@x-oasis/async-call-rpc": ["../../async-call-rpc/src/index.ts"]
+      "@x-oasis/async-call-rpc": ["../../async-call-rpc/src/index.ts"],
+      "@x-oasis/async-call-rpc-web": ["../../async-call-rpc-web/src/index.ts"]
     }
   },
   "include": ["src/**/*"]

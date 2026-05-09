@@ -47,7 +47,7 @@ const rendererDirectClient = clientHost
   .createProxy();
 
 registerOrchestratorHandler(mainChannel, (port: any) => {
-  directChannel.bindPort(port);
+  directChannel.bindPort(port, { rebind: true });
 
   setTimeout(async () => {
     try {

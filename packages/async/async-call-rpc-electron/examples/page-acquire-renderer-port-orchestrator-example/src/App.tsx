@@ -5,7 +5,7 @@ import OrchestratorDashboard, {
   StatsInfo,
   ParticipantInfo,
 } from '../../shared-ui/OrchestratorDashboard';
-import { createPageChannel } from '@x-oasis/async-call-rpc-electron';
+import { createPageChannel } from '@x-oasis/async-call-rpc-electron/electron-browser';
 import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
 let logIdCounter = 0;

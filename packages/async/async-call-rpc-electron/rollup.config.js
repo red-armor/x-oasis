@@ -8,7 +8,11 @@ export default [
       format: 'cjs',
       sourcemap: true,
     },
-    external: ['electron', '@x-oasis/async-call-rpc'],
+    external: [
+      'electron',
+      '@x-oasis/async-call-rpc',
+      '@x-oasis/async-call-rpc-web',
+    ],
     plugins: [
       typescript({
         tsconfig: './tsconfig.rollup.json',
@@ -25,7 +29,11 @@ export default [
       format: 'cjs',
       sourcemap: true,
     },
-    external: ['electron', '@x-oasis/async-call-rpc'],
+    external: [
+      'electron',
+      '@x-oasis/async-call-rpc',
+      '@x-oasis/async-call-rpc-web',
+    ],
     plugins: [
       typescript({
         tsconfig: './tsconfig.rollup.json',
@@ -42,7 +50,11 @@ export default [
       format: 'cjs',
       sourcemap: true,
     },
-    external: ['electron', '@x-oasis/async-call-rpc'],
+    external: [
+      'electron',
+      '@x-oasis/async-call-rpc',
+      '@x-oasis/async-call-rpc-web',
+    ],
     plugins: [
       typescript({
         tsconfig: './tsconfig.rollup.json',

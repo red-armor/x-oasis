@@ -1,6 +1,9 @@
 import {
   AbstractChannelProtocol,
   AbstractChannelProtocolProps,
+  processClientRawMessage,
+  normalizeMessageChannelRawMessage,
+  ClientMiddleware,
 } from '@x-oasis/async-call-rpc';
 
 const BRIDGE_KEY = '__rpc_bridge__' as const;
@@ -22,12 +25,20 @@ export default class ContextBridgeChannel extends AbstractChannelProtocol {
     super({ ...props, connected: false });
   }
 
+  decorateOnMessageMiddleware(
+    middlewares: ClientMiddleware[]
+  ): ClientMiddleware[] {
+    return middlewares.map((mw) =>
+      mw === normalizeMessageChannelRawMessage ? processClientRawMessage : mw
+    );
+  }
+
   on(listener: (data: unknown) => void): () => void {
     this._listeners.add(listener);
     return () => this._listeners.delete(listener);
   }
 
-  send(data: unknown, transfer?: any[]): void {
+  send(data: unknown, _transfer?: any[]): void {
     if (!this._bridge) {
       console.warn(
         '[ContextBridgeChannel] send called before bridge was set up.'

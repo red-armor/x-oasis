@@ -26,6 +26,20 @@ export function resolveXOasisAliases(): AliasMap {
 
     for (const pkg of packages) {
       const pkgPath = resolve(categoryPath, pkg);
+      const srcDir = resolve(pkgPath, 'src');
+
+      if (fs.existsSync(srcDir)) {
+        const subDirs = fs
+          .readdirSync(srcDir)
+          .filter((name) => fs.statSync(resolve(srcDir, name)).isDirectory());
+        for (const sub of subDirs) {
+          const subIndexPath = resolve(srcDir, sub, 'index.ts');
+          if (fs.existsSync(subIndexPath)) {
+            aliases[`@x-oasis/${pkg}/${sub}`] = subIndexPath;
+          }
+        }
+      }
+
       const srcPath = resolve(pkgPath, 'src/index.ts');
       if (fs.existsSync(srcPath)) {
         aliases[`@x-oasis/${pkg}`] = srcPath;

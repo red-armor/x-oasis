@@ -2,6 +2,7 @@ import IPCRendererChannel from './IPCRendererChannel';
 import { registerOrchestratorHandler } from './registerOrchestratorHandler';
 import { ContextBridgeAPI } from './ContextBridgeChannel';
 import { IpcRenderer } from '../types';
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
 
 const BRIDGE_KEY = '__rpc_bridge__' as const;
 
@@ -23,29 +24,42 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
     projectName: channelName,
   });
 
-  let RPCMessageChannel: any;
-  try {
-    RPCMessageChannel = require('@x-oasis/async-call-rpc-web').default;
-  } catch {
-    throw new Error(
-      '[createPageBridge] @x-oasis/async-call-rpc-web is required but not installed. ' +
-        'Install it with: npm install @x-oasis/async-call-rpc-web'
-    );
-  }
-
   const realChannel = new RPCMessageChannel({
     description: description ?? `page-bridge:${channelName}`,
   });
 
+  const messageHandlers = new Set<(data: unknown) => void>();
+
+  let bridgePort: MessagePort | null = null;
+  let bridgePortListener: (() => void) | null = null;
+
   registerOrchestratorHandler(ipcChannel, (port: any) => {
+    if (bridgePortListener) {
+      bridgePortListener();
+      bridgePortListener = null;
+    }
+    if (bridgePort) {
+      try {
+        bridgePort.close();
+      } catch {}
+    }
+    bridgePort = port;
+    const handler = (ev: MessageEvent) => {
+      messageHandlers.forEach((cb) => cb(ev.data));
+    };
+    port.addEventListener('message', handler);
+    port.start();
+    bridgePortListener = () => port.removeEventListener('message', handler);
     realChannel.bindPort(port, { rebind: true });
   });
 
-  const messageHandlers = new Set<(data: unknown) => void>();
-
   const bridge: ContextBridgeAPI = {
     _send: (data: unknown) => {
-      realChannel.send(data);
+      if (bridgePort) {
+        bridgePort.postMessage(data);
+      } else {
+        realChannel.send(data);
+      }
     },
     _onMessage: (cb: (data: unknown) => void) => {
       messageHandlers.add(cb);
@@ -73,10 +87,6 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
       _offMessage: bridge._offMessage,
     };
   }
-
-  realChannel.on((data: unknown) => {
-    messageHandlers.forEach((cb) => cb(data));
-  });
 
   return { channel: realChannel, ipcChannel };
 }

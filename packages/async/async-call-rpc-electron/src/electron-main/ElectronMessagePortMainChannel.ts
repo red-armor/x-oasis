@@ -56,15 +56,14 @@ import { MessagePortMain } from 'electron';
 export default class ElectronMessagePortMainChannel extends AbstractChannelProtocol {
   private _port: MessagePortMain | null;
   private _detachListener: (() => void) | null;
-  private _pendingListener: ((data: unknown) => void) | null;
+  private _onMessageListener: ((data: unknown) => void) | null;
 
   constructor(props: MessagePortMainChannelProps = {}) {
-    // When no port is supplied, start disconnected so sends queue.
     const { port, ...protocolOptions } = props;
     super(port ? protocolOptions : { ...protocolOptions, connected: false });
     this._port = null;
     this._detachListener = null;
-    this._pendingListener = null;
+    this._onMessageListener = null;
 
     if (port) {
       this._attachPort(port as unknown as MessagePortMain);
@@ -114,12 +113,11 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
+    this._onMessageListener = listener;
     if (!this._port) {
-      // Defer: the listener will be wired once bindPort attaches a port.
-      this._pendingListener = listener;
       return () => {
-        if (this._pendingListener === listener) {
-          this._pendingListener = null;
+        if (this._onMessageListener === listener) {
+          this._onMessageListener = null;
         }
         if (this._detachListener) {
           this._detachListener();
@@ -127,7 +125,14 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
         }
       };
     }
-    return this._wireListener(this._port, listener);
+    this._detachListener = this._wireListener(this._port, listener);
+    return () => {
+      if (this._detachListener) {
+        this._detachListener();
+        this._detachListener = null;
+      }
+      if (this._onMessageListener === listener) this._onMessageListener = null;
+    };
   }
 
   send(data: unknown, transfer?: MessagePortMain[]): void {
@@ -155,9 +160,8 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
     this._port = port;
     if (port.start) port.start();
     port.on('close', () => this.disconnect());
-    if (this._pendingListener) {
-      this._detachListener = this._wireListener(port, this._pendingListener);
-      this._pendingListener = null;
+    if (this._onMessageListener) {
+      this._detachListener = this._wireListener(port, this._onMessageListener);
     }
   }
 

@@ -46,7 +46,8 @@
     "vitest": "^1.0.0"
   },
   "dependencies": {
-    "@x-oasis/async-call-rpc": "workspace:*"
+    "@x-oasis/async-call-rpc": "workspace:*",
+    "@x-oasis/async-call-rpc-web": "workspace:*"
   },
   "peerDependencies": {
     "electron": ">=20.0.0"

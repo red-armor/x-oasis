@@ -1,4 +1,3 @@
-// https://developer.mozilla.org/en-US/docs/Web/API/MessageChannel
 import {
   AbstractChannelProtocol,
   IMessageChannel,
@@ -7,38 +6,6 @@ import {
   ClientMiddleware,
 } from '@x-oasis/async-call-rpc';
 
-/**
- * RPC channel protocol for the Web `MessagePort` API.
- *
- * Wraps a `MessagePort` (from `new MessageChannel()`) for bidirectional
- * RPC communication between browsing contexts — iframes, windows,
- * or a renderer ↔ worker.
- *
- * ## Late port binding
- *
- * The `port` may be supplied at construction time, or attached later via
- * {@link bindPort}. The "construct now, bind later" pattern is useful
- * when the port arrives on a `MessageEvent` transfer after a service
- * has already been registered. While unbound, the channel is in the
- * disconnected state — sends queue and flush on {@link bindPort}.
- *
- * @example
- * ```ts
- * const { port1, port2 } = new MessageChannel();
- *
- * const channelA = new RPCMessageChannel({ port: port1 });
- * const channelB = new RPCMessageChannel({ port: port2 });
- *
- * // Or: bind later
- * const pending = new RPCMessageChannel({});
- * pending.setServiceHost(host);
- * window.addEventListener('message', (e) => {
- *   if (e.data === 'port') pending.bindPort(e.ports[0]);
- * });
- * ```
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/MessageChannel
- */
 export default class RPCMessageChannel
   extends AbstractChannelProtocol
   implements IMessageChannel
@@ -47,7 +14,7 @@ export default class RPCMessageChannel
   private sender: any;
   private targetOrigin: string;
   private _detachListener: (() => void) | null;
-  private _pendingListener: ((event: MessageEvent) => void) | null;
+  private _onMessageListener: ((event: MessageEvent) => void) | null;
 
   constructor(
     options: {
@@ -56,7 +23,6 @@ export default class RPCMessageChannel
       targetOrigin?: string;
     } & AbstractChannelProtocolProps = {}
   ) {
-    // No port → start disconnected so sends queue.
     super(
       options.port
         ? (options as AbstractChannelProtocolProps)
@@ -64,7 +30,7 @@ export default class RPCMessageChannel
     );
     this.port = null;
     this._detachListener = null;
-    this._pendingListener = null;
+    this._onMessageListener = null;
     this.targetOrigin = options.targetOrigin || '*';
     this.sender =
       options.sender !== undefined
@@ -75,41 +41,40 @@ export default class RPCMessageChannel
     if (options.port) this._attachPort(options.port);
   }
 
-  /**
-   * Attach a `MessagePort` to a previously-unbound channel and activate
-   * it. Queued sends will flush via the framework's `resumePendingEntry`
-   * on the `onDidConnected` event.
-   *
-   * No-op if a port is already bound.
-   */
-  bindPort(port: MessagePort): void {
-    if (this.port) return;
+  bindPort(port: MessagePort, options?: { rebind?: boolean }): void {
+    if (this.port) {
+      if (options?.rebind) {
+        this._detachPort();
+      } else {
+        return;
+      }
+    }
     this._attachPort(port);
     this.activate();
   }
 
   on(listener: (event: MessageEvent) => void): void | (() => void) {
+    this._onMessageListener = listener;
     if (!this.port) {
-      this._pendingListener = listener;
       return () => {
-        if (this._pendingListener === listener) this._pendingListener = null;
+        if (this._onMessageListener === listener)
+          this._onMessageListener = null;
         if (this._detachListener) {
           this._detachListener();
           this._detachListener = null;
         }
       };
     }
-    return this._wireListener(this.port, listener);
+    this._detachListener = this._wireListener(this.port, listener);
+    return () => {
+      if (this._detachListener) {
+        this._detachListener();
+        this._detachListener = null;
+      }
+      if (this._onMessageListener === listener) this._onMessageListener = null;
+    };
   }
 
-  /**
-   * Send a message through the underlying `MessagePort`.
-   *
-   * Note: `MessagePort.postMessage(message, transferList)` differs from
-   * `Window.postMessage(message, targetOrigin)`. `targetOrigin` is kept
-   * on the constructor for API flexibility but is unused for ports —
-   * a `MessagePort` is already a point-to-point channel.
-   */
   send(message: any, transfer?: Transferable[]) {
     if (!this.port) {
       console.warn('[RPCMessageChannel] send called before port was bound.');
@@ -131,18 +96,28 @@ export default class RPCMessageChannel
   }
 
   disconnect() {
-    if (this.port) {
-      this.port.close();
-    }
+    this._detachPort();
     super.disconnect();
+  }
+
+  private _detachPort(): void {
+    if (!this.port) return;
+    if (this._detachListener) {
+      this._detachListener();
+      this._detachListener = null;
+    }
+    try {
+      this.port.close();
+    } catch {}
+    this.port = null;
+    this._isConnected = false;
   }
 
   private _attachPort(port: MessagePort): void {
     this.port = port;
     if (port.start) port.start();
-    if (this._pendingListener) {
-      this._detachListener = this._wireListener(port, this._pendingListener);
-      this._pendingListener = null;
+    if (this._onMessageListener) {
+      this._detachListener = this._wireListener(port, this._onMessageListener);
     }
   }
 
