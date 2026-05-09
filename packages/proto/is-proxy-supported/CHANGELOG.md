@@ -1,4 +1,4 @@
-# @x-oasis/can-i-use-proxy
+# @x-oasis/is-proxy-supported
 
 ## 0.7.0
 

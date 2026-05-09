@@ -1,10 +1,10 @@
 {
-  "name": "@x-oasis/can-i-use-proxy",
+  "name": "@x-oasis/is-proxy-supported",
   "version": "0.7.0",
-  "description": "can-i-use-proxy function",
+  "description": "Check if the runtime environment supports Proxy",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/can-i-use-proxy.esm.js",
+  "module": "dist/is-proxy-supported.esm.js",
   "files": [
     "dist",
     "index.ts",
