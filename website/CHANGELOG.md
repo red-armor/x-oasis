@@ -1,5 +1,15 @@
 # @x-oasis/website
 
+## 0.6.0
+
+### Minor Changes
+
+- f7ae61f: feat: add page / renderer channel
+
+### Patch Changes
+
+- 7385260: feat: update lock file
+
 ## 0.5.1
 
 ### Patch Changes

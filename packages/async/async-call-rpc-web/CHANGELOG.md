@@ -1,5 +1,18 @@
 # @x-oasis/async-call-rpc-web
 
+## 0.7.0
+
+### Minor Changes
+
+- f7ae61f: feat: add page / renderer channel
+
+### Patch Changes
+
+- 7385260: feat: update lock file
+- Updated dependencies [f7ae61f]
+- Updated dependencies [7385260]
+  - @x-oasis/async-call-rpc@0.9.0
+
 ## 0.6.1
 
 ### Patch Changes
