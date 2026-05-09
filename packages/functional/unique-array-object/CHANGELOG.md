@@ -1,5 +1,11 @@
 # @x-oasis/unique-array-object
 
+## 0.8.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+
 ## 0.8.0
 
 ### Minor Changes

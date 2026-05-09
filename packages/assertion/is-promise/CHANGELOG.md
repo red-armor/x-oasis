@@ -1,5 +1,13 @@
 # @x-oasis/is-promise
 
+## 0.8.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+- Updated dependencies [ec92705]
+  - @x-oasis/to-string@0.8.1
+
 ## 0.8.0
 
 ### Minor Changes

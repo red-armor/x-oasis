@@ -1,5 +1,20 @@
 # @x-oasis/async-call-rpc
 
+## 0.8.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+- Updated dependencies [ec92705]
+  - @x-oasis/is-ascii@0.8.1
+  - @x-oasis/is-function@0.8.1
+  - @x-oasis/is-object@0.8.1
+  - @x-oasis/is-promise@0.8.1
+  - @x-oasis/disposable@0.8.1
+  - @x-oasis/emitter@0.8.1
+  - @x-oasis/id@0.8.1
+  - @x-oasis/deferred@0.8.1
+
 ## 0.8.0
 
 ### Minor Changes

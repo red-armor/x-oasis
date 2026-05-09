@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.8.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+- Updated dependencies [ec92705]
+  - @x-oasis/is-clamped@0.8.1
+  - @x-oasis/invariant@0.8.1
+  - @x-oasis/return-hook@0.8.1
+  - @x-oasis/heap@0.8.1
+
 ## 0.8.0
 
 ### Minor Changes

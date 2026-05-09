@@ -1,5 +1,13 @@
 # @x-oasis/async-call-rpc-web
 
+## 0.6.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+- Updated dependencies [ec92705]
+  - @x-oasis/async-call-rpc@0.8.1
+
 ## 0.6.0
 
 ### Minor Changes

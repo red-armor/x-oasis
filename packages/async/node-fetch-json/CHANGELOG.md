@@ -1,5 +1,11 @@
 # @x-oasis/node-fetch-json
 
+## 0.6.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+
 ## 0.6.0
 
 ### Minor Changes

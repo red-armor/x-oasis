@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.5.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+
 ## 0.5.0
 
 ### Minor Changes

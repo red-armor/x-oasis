@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.9.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+
 ## 0.9.0
 
 ### Minor Changes
