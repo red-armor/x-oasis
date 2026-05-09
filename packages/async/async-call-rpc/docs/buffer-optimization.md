@@ -90,9 +90,8 @@ const channel = new MessageChannel({ port });
 ### 使用 MessagePack（高性能）
 
 ```typescript
-// 1. 先注册 MessagePack（如果还没注册）
-import { registerMessagePack } from '@x-oasis/async-call-rpc/buffer/examples';
-registerMessagePack();
+// 1. 注册 MessagePack（参考 buffer-serialization 文档中的"注册自定义序列化器"）
+// 注册完成后即可使用
 
 // 2. 创建 Channel 时指定格式
 const channel = new WebSocketChannel(socket, {

@@ -11,6 +11,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js",
+      "require": "./dist/browser/index.js"
+    },
     "./electron-browser": {
       "types": "./dist/electron-browser/index.d.ts",
       "import": "./dist/electron-browser/index.js",

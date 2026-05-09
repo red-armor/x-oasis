@@ -1,7 +1,7 @@
+import { contextBridge } from 'electron';
 import IPCRendererChannel from './IPCRendererChannel';
 import { registerOrchestratorHandler } from './registerOrchestratorHandler';
-import { ContextBridgeAPI } from './ContextBridgeChannel';
-import { IpcRenderer } from '../types';
+import { ContextBridgeAPI, IpcRenderer } from '../types';
 import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
 
 const BRIDGE_KEY = '__rpc_bridge__' as const;
@@ -70,7 +70,6 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
   };
 
   try {
-    const { contextBridge } = require('electron');
     contextBridge.exposeInMainWorld(BRIDGE_KEY, {
       _send: bridge._send,
       _onMessage: bridge._onMessage,

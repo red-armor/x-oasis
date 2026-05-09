@@ -39,5 +39,7 @@ export function resolveXOasisAliases(): AliasMap {
     }
   }
 
+  aliases['@shared-ui'] = resolve(__dirname, '../shared-ui');
+
   return aliases;
 }

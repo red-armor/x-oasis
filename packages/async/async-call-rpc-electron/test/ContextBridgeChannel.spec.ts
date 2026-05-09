@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import ContextBridgeChannel from '../src/electron-browser/ContextBridgeChannel';
-import { createPageChannel } from '../src/electron-browser/createPageChannel';
+import ContextBridgeChannel from '../src/browser/ContextBridgeChannel';
+import { createPageChannel } from '../src/browser/createPageChannel';
 
 const BRIDGE_KEY = '__rpc_bridge__';
 

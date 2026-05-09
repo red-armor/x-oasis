@@ -1,20 +1,13 @@
 import {
   AbstractChannelProtocol,
-  AbstractChannelProtocolProps,
   processClientRawMessage,
   normalizeMessageChannelRawMessage,
   ClientMiddleware,
 } from '@x-oasis/async-call-rpc';
 
+import { ContextBridgeAPI, ContextBridgeChannelProps } from '../types';
+
 const BRIDGE_KEY = '__rpc_bridge__' as const;
-
-export type ContextBridgeChannelProps = AbstractChannelProtocolProps;
-
-export interface ContextBridgeAPI {
-  _send: (data: unknown) => void;
-  _onMessage: (cb: (data: unknown) => void) => void;
-  _offMessage: () => void;
-}
 
 export default class ContextBridgeChannel extends AbstractChannelProtocol {
   private _bridge: ContextBridgeAPI | null = null;

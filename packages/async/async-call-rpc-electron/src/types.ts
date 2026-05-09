@@ -103,6 +103,16 @@ export type IPCRendererChannelProps = {
   projectName: string;
 } & AbstractChannelProtocolProps;
 
+// ─── ContextBridge types (shared between preload & renderer) ──────────────────
+
+export interface ContextBridgeAPI {
+  _send: (data: unknown) => void;
+  _onMessage: (cb: (data: unknown) => void) => void;
+  _offMessage: () => void;
+}
+
+export type ContextBridgeChannelProps = AbstractChannelProtocolProps;
+
 // ─── Re-exports for convenience ──────────────────────────────────────────────
 
 export type {

@@ -23,6 +23,27 @@ export default [
     ],
   },
   {
+    input: 'src/browser/index.ts',
+    output: {
+      file: 'dist/browser/index.js',
+      format: 'cjs',
+      sourcemap: true,
+    },
+    external: [
+      'electron',
+      '@x-oasis/async-call-rpc',
+      '@x-oasis/async-call-rpc-web',
+    ],
+    plugins: [
+      typescript({
+        tsconfig: './tsconfig.rollup.json',
+        compilerOptions: {
+          outDir: './dist',
+        },
+      }),
+    ],
+  },
+  {
     input: 'src/electron-browser/index.ts',
     output: {
       file: 'dist/electron-browser/index.js',

@@ -266,6 +266,7 @@ function LogViewer({
           fontSize: 11,
           lineHeight: 1.6,
           minHeight: 120,
+          maxHeight: '100%',
         }}
       >
         {logs.length === 0 && (
@@ -370,7 +371,7 @@ export default function OrchestratorDashboard({
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         backgroundColor: '#f8fafc',
-        minHeight: '100vh',
+        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
       }}
