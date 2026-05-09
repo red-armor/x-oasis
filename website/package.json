@@ -1,7 +1,7 @@
 {
   "name": "@x-oasis/website",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "npm run sync-docs && (npm run sync-docs:watch & vitepress dev src)",

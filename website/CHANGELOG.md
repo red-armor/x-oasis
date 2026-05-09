@@ -1,5 +1,15 @@
 # @x-oasis/website
 
+## 0.5.0
+
+### Minor Changes
+
+- d9de1de: fix: types dist issue
+
+### Patch Changes
+
+- 05cc74a: feat: rename to is-proxy-supported
+
 ## 0.4.0
 
 ### Minor Changes

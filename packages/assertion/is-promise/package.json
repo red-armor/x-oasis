@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/is-promise",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "is-promise function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -20,6 +20,6 @@
     "tsdx": "^0.14.1"
   },
   "dependencies": {
-    "@x-oasis/to-string": "workspace:^0.7.0"
+    "@x-oasis/to-string": "workspace:^0.8.0"
   }
 }

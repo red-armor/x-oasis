@@ -1,5 +1,21 @@
 # @x-oasis/integer-buffer-set
 
+## 0.8.0
+
+### Minor Changes
+
+- d9de1de: fix: types dist issue
+
+### Patch Changes
+
+- 05cc74a: feat: rename to is-proxy-supported
+- Updated dependencies [05cc74a]
+- Updated dependencies [d9de1de]
+  - @x-oasis/is-clamped@0.8.0
+  - @x-oasis/invariant@0.8.0
+  - @x-oasis/return-hook@0.8.0
+  - @x-oasis/heap@0.8.0
+
 ## 0.7.0
 
 ### Minor Changes

@@ -1,5 +1,15 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.9.0
+
+### Minor Changes
+
+- d9de1de: fix: types dist issue
+
+### Patch Changes
+
+- 05cc74a: feat: rename to is-proxy-supported
+
 ## 0.8.0
 
 ### Minor Changes
