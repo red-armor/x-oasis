@@ -14,6 +14,9 @@
 //                      don't care about renderer bundle size.
 export { default as IPCRendererChannel } from './IPCRendererChannel';
 export { registerOrchestratorHandler } from './registerOrchestratorHandler';
+export { default as ContextBridgeChannel } from './ContextBridgeChannel';
+export { createPageBridge } from './createPageBridge';
+export { createPageChannel } from './createPageChannel';
 
 // Re-export the shared types so renderer code never has to dip into the root
 // to grab `IPCRendererChannelProps` etc.
@@ -22,3 +25,10 @@ export type {
   IpcRenderer,
   IpcRendererEvent,
 } from '../types';
+
+export type {
+  ContextBridgeChannelProps,
+  ContextBridgeAPI,
+} from './ContextBridgeChannel';
+
+export type { CreatePageBridgeOptions } from './createPageBridge';
