@@ -1,5 +1,14 @@
 # @x-oasis/batchinator
 
+## 0.8.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+- Updated dependencies [ec92705]
+  - @x-oasis/default-boolean-value@0.8.1
+  - @x-oasis/debounce@0.8.1
+
 ## 0.8.0
 
 ### Minor Changes

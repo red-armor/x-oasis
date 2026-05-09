@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/format-date",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "tiny token-based date formatter (yyyy/MM/dd HH:mm:ss/sss)",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

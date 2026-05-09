@@ -1,5 +1,11 @@
 # @x-oasis/push-stream
 
+## 0.7.1
+
+### Patch Changes
+
+- ec92705: feat: finish rpc electron gap
+
 ## 0.7.0
 
 ### Minor Changes
