@@ -78,12 +78,16 @@ const VALID_TRANSITIONS: ReadonlyArray<
   [ConnectionState.CONNECTING, ConnectionState.READY],
   // port closed / process exit / heartbeat timeout
   [ConnectionState.READY, ConnectionState.TRANSIENT_FAILURE],
+  // participant lost during CONNECTING (handshake in progress)
+  [ConnectionState.CONNECTING, ConnectionState.TRANSIENT_FAILURE],
   // user calls disconnect() while READY
   [ConnectionState.READY, ConnectionState.DISCONNECTING],
   // retry timer fires → attempt reconnect
   [ConnectionState.TRANSIENT_FAILURE, ConnectionState.CONNECTING],
   // reconnect policy returned null → give up
   [ConnectionState.TRANSIENT_FAILURE, ConnectionState.DISCONNECTING],
+  // first-attempt failed with retryOnInitialFailure: IDLE → TRANSIENT_FAILURE
+  [ConnectionState.IDLE, ConnectionState.TRANSIENT_FAILURE],
   // graceful teardown complete
   [ConnectionState.DISCONNECTING, ConnectionState.CLOSED],
   // user calls connect() again after CLOSED

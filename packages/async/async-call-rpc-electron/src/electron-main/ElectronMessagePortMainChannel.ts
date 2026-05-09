@@ -76,12 +76,41 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
    * activate it. Queued sends will flush via the framework's
    * `resumePendingEntry` on the `onDidConnected` event.
    *
-   * No-op if a port is already bound.
+   * If a port is already bound:
+   * - By default, this is a no-op (the existing port remains).
+   * - With `{ rebind: true }`, the old port is closed and replaced with
+   *   the new one. The channel is deactivated, the old port is detached,
+   *   the new port is attached, and then the channel is re-activated.
    */
-  bindPort(port: MessagePortMain): void {
-    if (this._port) return;
+  bindPort(port: MessagePortMain, options?: { rebind?: boolean }): void {
+    if (this._port) {
+      if (options?.rebind) {
+        this._detachPort();
+      } else {
+        return;
+      }
+    }
     this._attachPort(port);
     this.activate();
+  }
+
+  /**
+   * Detach the current port without disconnecting the channel entirely.
+   * The channel enters the disconnected state and sends will queue.
+   */
+  private _detachPort(): void {
+    if (!this._port) return;
+    if (this._detachListener) {
+      this._detachListener();
+      this._detachListener = null;
+    }
+    try {
+      this._port.close();
+    } catch {
+      // Port may already be closed
+    }
+    this._port = null;
+    this._isConnected = false;
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {

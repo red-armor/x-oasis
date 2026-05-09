@@ -187,7 +187,7 @@ abstract class AbstractChannelProtocol
 
   private _serializationFormat: string;
 
-  private _isConnected = true;
+  protected _isConnected = true;
 
   /**
    * Tracks pending RPC requests awaiting responses (keyed by seqId).

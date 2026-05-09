@@ -50,14 +50,23 @@ import {
 export default class ElectronUtilityProcessChannel extends AbstractChannelProtocol {
   private _target: UtilityProcess | ParentPort;
 
+  /**
+   * When true, `disconnect()` will call `target.kill()` (main side only).
+   * Set to false when you want to detach from the process without killing it,
+   * e.g. when replacing the channel after a process respawn.
+   */
+  private _killOnDisconnect: boolean;
+
   constructor(
     props: UtilityProcessChannelProps | UtilityProcessParentPortChannelProps
   ) {
     const { ...rest } = props;
 
     let target: UtilityProcess | ParentPort;
+    let killOnDisconnect = false;
     if ('process' in props) {
       target = props.process;
+      killOnDisconnect = true;
       delete (rest as any).process;
     } else {
       target = (props as UtilityProcessParentPortChannelProps).parentPort;
@@ -66,13 +75,23 @@ export default class ElectronUtilityProcessChannel extends AbstractChannelProtoc
 
     super(rest);
     this._target = target;
+    this._killOnDisconnect = killOnDisconnect;
 
-    // Auto-disconnect when the utility process exits (main side only)
     if (this.isUtilityProcess(this._target)) {
       this._target.on('exit', () => {
         this.disconnect();
       });
     }
+  }
+
+  /**
+   * Set whether disconnect() should also kill the UtilityProcess.
+   * Default: true on main side, false on parentPort side.
+   * Set to false before calling disconnect() if you want to keep the
+   * child process alive (e.g. channel replacement scenario).
+   */
+  setKillOnDisconnect(kill: boolean): void {
+    this._killOnDisconnect = kill;
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
@@ -115,7 +134,7 @@ export default class ElectronUtilityProcessChannel extends AbstractChannelProtoc
   }
 
   disconnect(): void {
-    if (this.isUtilityProcess(this._target)) {
+    if (this._killOnDisconnect && this.isUtilityProcess(this._target)) {
       this._target.kill();
     }
     super.disconnect();
