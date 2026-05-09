@@ -54,7 +54,7 @@
 '@x-oasis/return-hook': minor
 '@x-oasis/url-search-params': minor
 '@x-oasis/deferred': minor
-'@x-oasis/can-i-use-proxy': minor
+'@x-oasis/is-proxy-supported': minor
 '@x-oasis/hide-property': minor
 '@x-oasis/create-hidden-property': minor
 '@x-oasis/inherit': minor
