@@ -1,243 +1,209 @@
-# x-oasis 连接问题快速参考
+# @x-oasis/async-call-rpc-electron - Quick Reference
 
-## 文件清单与关键代码位置
+## Where @x-oasis/async-call-rpc-web Is Used
 
-| 文件 | 功能 | 关键代码行 | 关键信息 |
-|------|------|----------|---------|
-| **ElectronConnectionOrchestrator.ts** | Electron 连接编排器实现 | 103-118 | `activateParticipant()` 方法 |
-| | | 144-153 | `registerOrchestratorHandler()` 处理器注册 |
-| **AbstractChannelProtocol.ts** | RPC 通道基类 | 501-518 | `makeRequest()` 方法 |
-| | | 169-174 | 接收中间件管道 |
-| | | 176-182 | 发送中间件管道 |
-| | | 195 | `ongoingRequests` 存储 pending 请求 |
-| **IPCMainChannel.ts** | Electron IPC 主进程通道 | 146-180 | `send()` 方法 - 发送带 transfer 列表的消息 |
-| | | 70-144 | `on()` 方法 - 接收并提取 ports |
-| | | 125 | ⭐ 提取 `_event.ports` 关键行 |
-| **RPCService.ts** | RPC 服务注册 | 22-26 | `setChannel()` 方法 |
-| **types.ts** (types/rpc.ts) | 请求/响应类型定义 | 1-106 | 请求类型 (RequestType) 和响应类型 (ResponseType) |
-| | | 49 | `TransferableArgsRequest = 'tar'` |
-| | | 88 | `PortSuccess = 'ps'` |
-| **types.ts** (orchestrator/types.ts) | 编排器常量 | 18 | `ORCHESTRATOR_SERVICE_PATH = '__x_oasis_orchestrator__'` |
-| **prepareRequestData.ts** | 请求准备中间件 | 76-132 | 自动检测 Transferable 对象 |
-| **sendRequest.ts** | 发送中间件 | 53-79 | 调用 `channel.send(data, transfer)` |
-| **handleRequest.ts** | 请求处理中间件 | 65-156 | 从 `message.ports` 中提取参数 |
-| | | 336-412 | 调用处理器并发送响应 |
-| **handleResponse.ts** | 响应处理中间件 | 129-250 | 解析响应并 resolve deferred |
-| | | 204-207 | PortSuccess/PortArraySuccess 处理 |
-| **normalize.ts** | 消息规范化中间件 | 21-40 | 提取 `event.ports` |
-| **Deferred.ts** | Promise 包装器 | 1-21 | Deferred 类型和 createDeferred 工厂 |
-| **BaseConnectionOrchestrator.ts** | 基础编排器 | 204-253 | `connect()` 方法流程 |
-| | | 341-406 | `_doConnect()` 的完整流程 |
+**Single Location**: `src/electron-browser/createPageBridge.ts` (lines 26-34)
 
----
-
-## 关键数据流向
-
-### 1️⃣ 发送 MessagePort
-
-```
-activateParticipant()
-  ↓
-channel.makeRequest('__x_oasis_orchestrator__', 'activateConnection', port)
-  ↓
-prepareNormalData (自动检测 port 为 Transferable)
-  ↓ seqId: "key_0"
-  ↓ requestType: TransferableArgsRequest
-  ↓ transfer: [port]
-  ↓
-updateSeqInfo (创建 Deferred)
-  ↓
-  └─ ongoingRequests.set("key_0", deferred)
-  └─ return deferred
-  
-serialize & sendRequest
-  ↓
-channel.send(data, [port])
-  ↓ (IPCMainChannel)
-  ↓
-webContents.postMessage(channelName, data, [port])
+```typescript
+let RPCMessageChannel: any;
+try {
+  RPCMessageChannel = require('@x-oasis/async-call-rpc-web').default;
+} catch {
+  throw new Error(
+    '[createPageBridge] @x-oasis/async-call-rpc-web is required but not installed. ' +
+      'Install it with: npm install @x-oasis/async-call-rpc-web'
+  );
+}
 ```
 
-### 2️⃣ 接收 MessagePort
+## Key Facts
+
+| Aspect | Details |
+|--------|---------|
+| **Import Type** | Dynamic `require()` (not static import) |
+| **When Loaded** | Only when `createPageBridge()` is called |
+| **Why** | Optional feature, keeps bundles small |
+| **Dependency** | NOT in package.json (neither dependencies nor peerDependencies) |
+| **Build Config** | NOT in rollup external list (dynamic require) |
+| **Test Setup** | vitest aliases to workspace source |
+| **Error Handling** | Try-catch with helpful error message |
+
+## What createPageBridge Does
 
 ```
-ipcRenderer 接收 (event.ports 包含 port)
-  ↓
-normalizeIPCChannelRawMessage
-  ↓
-  └─ ports = event.ports (⭐ 必须包含)
-  
-deserialize
-  ↓
-handleRequest
-  ↓
-  ├─ type === TransferableArgsRequest?
-  ├─ args = ports[0]  ⭐ 从 ports 中提取参数
+createPageBridge({
+  ipcRenderer,
+  channelName,
+  description?
+})
   │
-  └─ handler(args)  // onPort(port)
-     ↓
-     response = undefined
-     ↓
-     invokeHandler() (异步)
-       ├─ sendResponse(ReturnSuccess)
-       └─ ipcRenderer.send(channelName, responseData)
-```
-
-### 3️⃣ 处理响应
-
-```
-ipcMain 接收响应
-  ↓
-normalizeMessageChannelRawMessage
-  ↓
-deserialize
-  ↓
-handleResponse
-  ↓
-  ├─ seqId = data[0][1]  // "key_0"?
-  ├─ findDefer = ongoingRequests.get(seqId)
+  ├─ Create IPCRendererChannel (control-plane)
   │
-  └─ if (findDefer) {
-       findDefer.resolve(body[0])  ⭐ 这里 resolve promise
-     }
+  ├─ Require RPCMessageChannel from async-call-rpc-web
+  │   └─ This is where async-call-rpc-web enters!
+  │
+  ├─ Instantiate RPCMessageChannel
+  │
+  ├─ Register orchestrator handler
+  │   └─ Listens for MessagePort from main process
+  │
+  ├─ Setup contextBridge
+  │   └─ Exposes _send, _onMessage, _offMessage
+  │
+  └─ Return { channel, ipcChannel }
 ```
 
----
+## Package Exports
 
-## 🔴 关键问题点
+### Root: `@x-oasis/async-call-rpc-electron`
+Exports everything from both sub-paths (larger bundle)
 
-| 序号 | 检查项 | 现状 | 风险 |
-|------|--------|------|------|
-| 1 | Deferred 创建 | ✅ updateSeqInfo 中创建 | 无 |
-| 2 | port 转移 | ✅ 通过 transfer 列表 | 无 |
-| 3 | ports 提取 (接收端) | ⚠️ IPCMainChannel.on() 需检查 | **高** |
-| 4 | 处理器调用 | ⚠️ onPort(port) 是否被调用? | **中** |
-| 5 | 响应发送 | ⚠️ safeSendReply() 可能被跳过 | **高** |
-| 6 | SeqId 匹配 | ⚠️ 响应的 seqId 是否能匹配? | **极高** |
-| 7 | Deferred resolve | ❓ handleResponse 是否找到? | **极高** |
-
----
-
-## ⭐ 最可能的问题
-
-### 问题 1: 响应的 seqId 不匹配
-
-```
-发送端: ongoingRequests.set("main_0", deferred)
-接收端: seqId = "renderer_0"  ❌
-回到发送端: ongoingRequests.get("renderer_0") ❌ undefined
-结果: Deferred 永不 resolve
+### Renderer: `@x-oasis/async-call-rpc-electron/electron-browser`
+```typescript
+export { IPCRendererChannel }
+export { createPageBridge }           // ← Uses async-call-rpc-web
+export { createPageChannel }
+export { ContextBridgeChannel }
+export { registerOrchestratorHandler }
 ```
 
-**解决**: 确保 seqId 在 RPC 消息中被正确序列化和反序列化
+### Main: `@x-oasis/async-call-rpc-electron/electron-main`
+```typescript
+export { IPCMainChannel }
+export { ElectronMessagePortMainChannel }
+export { ElectronUtilityProcessChannel }
+export { ElectronConnectionOrchestrator }
+export { registerOrchestratorHandler }
+```
 
-### 问题 2: ports 在 IPCMainChannel.on() 中未提取
+## All 13 Source Files
+
+### Renderer-Only (6 files)
+1. `src/electron-browser/index.ts` - Entry point
+2. `src/electron-browser/createPageBridge.ts` - **Uses async-call-rpc-web here**
+3. `src/electron-browser/createPageChannel.ts` - Helper
+4. `src/electron-browser/ContextBridgeChannel.ts` - Bridge API
+5. `src/electron-browser/IPCRendererChannel.ts` - ipcRenderer channel
+6. `src/electron-browser/registerOrchestratorHandler.ts` - Orchestrator handler
+
+### Main-Only (5 files)
+7. `src/electron-main/index.ts` - Entry point
+8. `src/electron-main/IPCMainChannel.ts` - ipcMain channel
+9. `src/electron-main/ElectronMessagePortMainChannel.ts` - MessagePortMain channel
+10. `src/electron-main/ElectronUtilityProcessChannel.ts` - UtilityProcess channel
+11. `src/electron-main/ElectronConnectionOrchestrator.ts` - Orchestrator
+
+### Shared (2 files)
+12. `src/index.ts` - Root barrel
+13. `src/types.ts` - Type definitions
+
+## Architecture Patterns
+
+1. **Channel Protocol Pattern**
+   - All channels extend `AbstractChannelProtocol`
+   - Implement `on(listener)` and `send(data, transfer?)`
+
+2. **Event Normalization**
+   - Electron IPC: `(event, ...args)` format
+   - Normalized to: `{data, ports, event}` (MessageEvent-like)
+
+3. **Dynamic Imports**
+   - Optional dependencies via `require()` at runtime
+   - Better error messages when missing
+   - Enables tree-shaking
+
+4. **Sub-path Exports**
+   - Renderer bundle uses `electron-browser` entry
+   - Main bundle uses `electron-main` entry
+   - Avoids pulling unnecessary dependencies
+
+5. **Late Binding Pattern**
+   - `ElectronMessagePortMainChannel` can bind port later
+   - Useful for orchestrator scenarios
+
+## Build Output
+
+```
+dist/
+├── index.js                          (8.6 KB root barrel)
+├── electron-browser/index.js         (renderer bundle)
+└── electron-main/index.js            (main bundle)
+```
+
+## Dependencies
+
+**Hard Dependencies**
+- `@x-oasis/async-call-rpc` (workspace)
+
+**Peer Dependencies (optional)**
+- `electron` >= 20.0.0
+
+**NOT Dependencies**
+- `@x-oasis/async-call-rpc-web` (dynamic require only)
+
+## Config Files
+
+| File | Purpose |
+|------|---------|
+| `package.json` | Package metadata, dependencies |
+| `rollup.config.js` | Build configuration (3 separate bundles) |
+| `tsconfig.build.json` | TypeScript compilation |
+| `vitest.config.ts` | Test configuration with aliases |
+
+## How to Use
+
+### For Renderer Process
 
 ```typescript
-// ❌ 错误
-const ports = [];  // 丢失！
+import { createPageBridge } from '@x-oasis/async-call-rpc-electron/electron-browser';
+import { ipcRenderer } from 'electron';
 
-// ✅ 正确
-const ports = _event.ports || [];
+// In preload.ts
+const { channel, ipcChannel } = createPageBridge({
+  ipcRenderer,
+  channelName: 'my-rpc',
+  description: 'renderer bridge',
+});
+
+// channel: RPCMessageChannel from async-call-rpc-web
+// ipcChannel: IPCRendererChannel for control plane
 ```
 
-**解决**: 验证 `_event.ports` 在处理器中被提取
-
-### 问题 3: 响应被 safeSendReply() 中的检查阻止
+### For Main Process
 
 ```typescript
-if (!protocol.isConnected()) {
-  return;  // ❌ 响应未发送
-}
+import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main';
+import { ipcMain } from 'electron';
+
+const channel = new IPCMainChannel({
+  channelName: 'my-rpc',
+  webContents: window.webContents,
+  description: 'main channel',
+});
 ```
 
-**解决**: 确保接收端 channel 的 `_isConnected` 状态正确
-
----
-
-## 快速诊断命令
-
-```bash
-# 1. 搜索所有 ongoingRequests 使用
-grep -r "ongoingRequests\." /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc/src
-
-# 2. 搜索所有 seqId 的处理
-grep -r "seqId" /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc/src/middlewares
-
-# 3. 搜索 safeSendReply 的调用
-grep -r "safeSendReply" /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc/src
-
-# 4. 搜索 Transferable 相关代码
-grep -r "TransferableArgsRequest\|PortSuccess" /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc/src
-```
-
----
-
-## Deferred 类型定义
+### For Orchestrator Setup
 
 ```typescript
-type Deferred<T = any> = {
-  resolve: (value: T | PromiseLike<T>) => void;
-  reject: (err?: unknown) => void;
-  promise: PromiseLike<T>;
-};
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main';
+
+const orchestrator = new ElectronConnectionOrchestrator();
+orchestrator.registerParticipant('renderer', ipcChannel, 'renderer');
+orchestrator.registerParticipant('utility', utilityChannel, 'utility');
+
+const info = await orchestrator.connect('renderer', 'utility');
+// Now renderer and utility communicate directly via MessagePort
 ```
 
-**创建方式**: `createDeferred()` 工厂函数
+## Files You Need to Know
 
-**存储位置**: `channel.ongoingRequests.get(seqId)`
-
-**激活时机**: 在 `handleResponse` 中匹配 seqId 时
-
----
-
-## 中间件执行顺序
-
-### 发送管道 (AbstractChannelProtocol._senderMiddleware)
-
-```
-1. prepareNormalData        → 构建请求结构，检测 Transferable
-2. updateSeqInfo            → 分配 seqId，创建 Deferred
-3. handleDisconnectedRequest → 检查连接状态
-4. serialize                → 编码为二进制
-5. sendRequest              → 调用 channel.send(data, transfer)
-```
-
-### 接收管道 (AbstractChannelProtocol._onMessageMiddleware)
-
-```
-1. normalizeMessageChannelRawMessage → 提取 data 和 ports
-2. deserialize                       → 解码
-3. handleRequest                     → 分发到处理器
-4. handleResponse                    → 路由响应到 Deferred
-```
-
----
-
-## ResponseType 枚举
-
-```typescript
-enum ResponseType {
-  ReturnSuccess = 'rs',        // 常规返回值
-  ReturnFail = 'rf',           // 错误
-  PortSuccess = 'ps',          // 单个 Transferable
-  PortArraySuccess = 'pas',    // 多个 Transferable
-  PortFail = 'pf',             // Transferable 失败
-  SubscriptionStopped = 'ss',  // 订阅结束
-  EventMethodStopped = 'evt-stopped',  // 事件方法结束
-}
-```
-
----
-
-## RequestType 枚举 (Transferable 相关)
-
-```typescript
-enum RequestType {
-  PromiseRequest = 'pr',
-  TransferableArgsRequest = 'tar',      // 单个 Transferable: handler(ports[0])
-  TransferableArrayArgsRequest = 'taar', // 多个 Transferable: handler(ports)
-  // ...
-}
-```
+| Purpose | File |
+|---------|------|
+| Understanding architecture | ASYNC_CALL_RPC_ELECTRON_ANALYSIS.md (794 lines) |
+| Quick lookup | SOURCE_FILES_SUMMARY.txt |
+| Where async-call-rpc-web is used | src/electron-browser/createPageBridge.ts |
+| How dynamic require works | src/electron-browser/createPageBridge.ts (lines 26-34) |
+| Package configuration | package.json |
+| Build configuration | rollup.config.js |
+| Test setup | vitest.config.ts |
 

@@ -19,6 +19,10 @@ export default defineConfig({
         __dirname,
         '../async-call-rpc/src/index.ts'
       ),
+      '@x-oasis/async-call-rpc-web': path.resolve(
+        __dirname,
+        '../async-call-rpc-web/src/index.ts'
+      ),
       // Mock electron module so tests run outside Electron
       electron: path.resolve(__dirname, 'test/__mocks__/electron.ts'),
     },

@@ -132,17 +132,71 @@ const msgpackWriteBuffer = BufferFactory.createWriteBuffer(
 
 ## 内容协商
 
-未来可以支持在 RPC 握手时协商序列化格式：
+在 RPC 握手时协商序列化格式，客户端和服务端选择双方都支持的最佳格式：
 
 ```typescript
-// 客户端发送支持的格式列表
-const supportedFormats = [
-  SerializationFormat.MESSAGEPACK,
-  SerializationFormat.JSON,
-];
+function negotiateFormat(
+  clientFormats: string[],
+  serverFormats: string[]
+): string | null {
+  for (const format of clientFormats) {
+    if (serverFormats.includes(format)) {
+      return format;
+    }
+  }
 
-// 服务端选择最佳格式并返回
-const selectedFormat = negotiateFormat(supportedFormats);
+  if (
+    clientFormats.includes(SerializationFormat.JSON) &&
+    serverFormats.includes(SerializationFormat.JSON)
+  ) {
+    return SerializationFormat.JSON;
+  }
+
+  return null;
+}
+```
+
+## 自定义压缩格式示例
+
+以"压缩 JSON"为例，展示如何注册完全自定义的序列化格式：
+
+```typescript
+import { BufferFactory } from '@x-oasis/async-call-rpc/buffer';
+import ReadBaseBuffer from '@x-oasis/async-call-rpc/buffer/ReadBaseBuffer';
+import WriteBaseBuffer from '@x-oasis/async-call-rpc/buffer/WriteBaseBuffer';
+
+class CompressedJSONReadBuffer extends ReadBaseBuffer {
+  decode(data: string | ArrayBuffer | Uint8Array): any {
+    if (typeof data === 'string') {
+      return JSON.parse(data);
+    }
+    const decoder = new TextDecoder();
+    return JSON.parse(decoder.decode(data));
+  }
+
+  getFormat(): string {
+    return 'compressed-json';
+  }
+}
+
+class CompressedJSONWriteBuffer extends WriteBaseBuffer {
+  encode(data: any): string {
+    return JSON.stringify(data);
+  }
+
+  getFormat(): string {
+    return 'compressed-json';
+  }
+}
+
+BufferFactory.registerReadBuffer(
+  'compressed-json',
+  () => new CompressedJSONReadBuffer()
+);
+BufferFactory.registerWriteBuffer(
+  'compressed-json',
+  () => new CompressedJSONWriteBuffer()
+);
 ```
 
 ## 注意事项

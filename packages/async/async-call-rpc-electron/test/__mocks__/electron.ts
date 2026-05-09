@@ -73,3 +73,9 @@ export const ipcRenderer = {
   send: vi.fn(),
   invoke: vi.fn(),
 };
+
+export const contextBridge = {
+  exposeInMainWorld: vi.fn((key: string, api: Record<string, any>) => {
+    (globalThis as any)[key] = api;
+  }),
+};

@@ -45,6 +45,7 @@ export function registerOrchestratorHandler(
   const service = new RPCService(ORCHESTRATOR_SERVICE_PATH, {
     handlers: {
       activateConnection: onPort,
+      ping: () => 'pong',
     },
   });
   service.setChannel(channel);

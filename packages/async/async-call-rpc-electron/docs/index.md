@@ -15,6 +15,26 @@ npm install @x-oasis/async-call-rpc-electron
 - **Full TypeScript Support**: Complete type definitions for all APIs
 - **Zero External Dependencies**: Self-contained package
 
+## Directory Structure & Sub-path Exports
+
+The source code is organized by Electron process environment, with **sub-path exports** to prevent bundles from pulling in unnecessary dependencies.
+
+```
+src/
+├── browser/            → Renderer process (no Electron API dependency)
+├── electron-browser/   → Preload script (ipcRenderer, contextBridge access)
+├── electron-main/      → Main / Utility process (ipcMain, utilityProcess, etc.)
+├── types.ts            → Cross-environment shared types (erased at compile time)
+└── index.ts            → Root barrel, re-exports all sub-paths
+```
+
+| Import Path            | Runtime           | Dependencies                                     | Typical Use                                        |
+| ---------------------- | ----------------- | ------------------------------------------------ | -------------------------------------------------- |
+| `.../browser`          | Renderer          | No Electron APIs                                 | `createPageChannel`, `ContextBridgeChannel`        |
+| `.../electron-browser` | Preload           | `ipcRenderer`, `contextBridge` (type-level only) | `createPageBridge`, `IPCRendererChannel`           |
+| `.../electron-main`    | Main / Utility    | `ipcMain`, `utilityProcess` runtime APIs         | `IPCMainChannel`, `ElectronConnectionOrchestrator` |
+| `...` (root)           | Any (back-compat) | All                                              | Re-exports everything                              |
+
 ## Quick Links
 
 - [Connection Orchestrator](/packages/async/async-call-rpc-electron/orchestrator) - Automated port connection management

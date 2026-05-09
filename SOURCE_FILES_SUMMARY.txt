@@ -1,0 +1,131 @@
+==============================================
+ASYNC-CALL-RPC-ELECTRON: ALL SOURCE FILES
+==============================================
+
+ABSOLUTE PATHS:
+===============
+
+1. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/index.ts
+   - Root barrel re-export (13 lines)
+   - Exports everything from both electron-browser and electron-main
+   - Includes warning comment about bundle size implications
+
+2. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/types.ts
+   - Shared type definitions (115 lines)
+   - MainPort interface (NodeJS EventEmitter-style API)
+   - ParentPort interface (for UtilityProcess)
+   - Props types: MessagePortMainChannelProps, UtilityProcessChannelProps, IPCMainChannelProps, IPCRendererChannelProps
+   - Re-exports Electron types
+
+3. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-browser/index.ts
+   - Renderer-side entry point (34 lines)
+   - Exports: IPCRendererChannel, registerOrchestratorHandler, ContextBridgeChannel, createPageBridge, createPageChannel
+   - Re-exports relevant types
+   - Safe for renderer bundles (no electron runtime imports)
+
+4. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-browser/createPageBridge.ts
+   - PRIMARY LOCATION FOR @x-oasis/async-call-rpc-web USAGE (82 lines)
+   - Dynamic require() of @x-oasis/async-call-rpc-web.default at lines 26-34
+   - Instantiates RPCMessageChannel from async-call-rpc-web
+   - Exposes bridge API via contextBridge
+   - Returns { channel, ipcChannel }
+
+5. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-browser/createPageChannel.ts
+   - Helper function (9 lines)
+   - Creates and activates ContextBridgeChannel
+
+6. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-browser/ContextBridgeChannel.ts
+   - Bridge between preload and renderer (74 lines)
+   - Communicates via global __rpc_bridge__ object
+   - Implements activate(), send(), on()
+
+7. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-browser/IPCRendererChannel.ts
+   - ipcRenderer RPC channel (156 lines)
+   - Extends AbstractChannelProtocol
+   - Normalizes Electron IPC events to MessageEvent format
+   - Handles port transfers via event.ports
+
+8. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-browser/registerOrchestratorHandler.ts
+   - Orchestrator handler registration (51 lines)
+   - Creates RPCService for receiving MessagePorts from main process
+   - Used by both renderer and utility processes
+
+9. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-main/index.ts
+   - Main/utility process entry point (39 lines)
+   - Exports: IPCMainChannel, ElectronMessagePortMainChannel, ElectronUtilityProcessChannel, ElectronConnectionOrchestrator
+   - Re-exports registerOrchestratorHandler from electron-browser
+   - Re-exports types
+
+10. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-main/IPCMainChannel.ts
+    - ipcMain RPC channel (189 lines)
+    - Two modes: bound (specific WebContents) or broadcast (multiple senders)
+    - Handles port transfers
+    - Auto-disconnects when WebContents destroyed
+
+11. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-main/ElectronMessagePortMainChannel.ts
+    - MessagePortMain channel (176 lines)
+    - Supports late binding via bindPort()
+    - Can rebind ports dynamically
+    - Defers listener registration until port attached
+
+12. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-main/ElectronUtilityProcessChannel.ts
+    - UtilityProcess/ParentPort channel (150 lines)
+    - Handles both main-side (UtilityProcess) and utility-side (ParentPort)
+    - Normalizes message formats for each side
+    - Optional kill-on-disconnect
+
+13. /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/electron-main/ElectronConnectionOrchestrator.ts
+    - Multi-process orchestrator (186 lines)
+    - Extends BaseConnectionOrchestrator
+    - Creates MessageChannelMain port pairs
+    - Activates participants via control-plane RPC
+    - Heartbeat mechanism
+
+CONFIG FILES:
+=============
+
+- /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/package.json
+  Only dependency: @x-oasis/async-call-rpc
+  Peer dependency (optional): electron >= 20.0.0
+  NO @x-oasis/async-call-rpc-web in dependencies
+
+- /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/rollup.config.js
+  Three builds: root, electron-browser, electron-main
+  External: ['electron', '@x-oasis/async-call-rpc']
+  Note: async-call-rpc-web NOT external (dynamic require)
+
+- /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/tsconfig.build.json
+  Compilation to dist/ directory
+
+- /Users/ryuyutyo/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/vitest.config.ts
+  Aliases async-call-rpc-web to workspace source
+  Mocks electron module for testing
+
+CRITICAL FINDINGS:
+==================
+
+1. @x-oasis/async-call-rpc-web is ONLY used in:
+   - createPageBridge.ts (line 28: require('@x-oasis/async-call-rpc-web').default)
+
+2. Usage Pattern:
+   - Dynamic require at runtime
+   - Only when createPageBridge() is called
+   - NOT a static import
+   - NOT declared in package.json dependencies or peerDependencies
+
+3. Why Not a Hard Dependency:
+   - Optional feature (only for page bridge scenarios)
+   - Keeps bundle sizes small for other use cases
+   - Testable without npm installation (via vitest alias)
+
+4. How It Works in createPageBridge:
+   - Requires RPCMessageChannel from async-call-rpc-web
+   - Creates instance with description
+   - Binds MessagePort via orchestrator handler
+   - Exposes send/onMessage API via contextBridge
+
+5. Error Handling:
+   - Try-catch around require
+   - Helpful error message if package not installed
+   - Falls back to globalThis if contextBridge unavailable
+
