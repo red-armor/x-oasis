@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "lib": ["esnext", "dom"],
+    "declaration": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "composite": false,
+    "baseUrl": ".",
+    "paths": {
+      "@x-oasis/async-call-rpc": ["../../async-call-rpc/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}

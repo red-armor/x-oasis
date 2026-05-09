@@ -9,7 +9,14 @@ export default [
       sourcemap: true,
     },
     external: ['electron', '@x-oasis/async-call-rpc'],
-    plugins: [typescript({ tsconfig: './tsconfig.build.json' })],
+    plugins: [
+      typescript({
+        tsconfig: './tsconfig.rollup.json',
+        compilerOptions: {
+          outDir: './dist',
+        },
+      }),
+    ],
   },
   {
     input: 'src/electron-browser/index.ts',
@@ -19,7 +26,14 @@ export default [
       sourcemap: true,
     },
     external: ['electron', '@x-oasis/async-call-rpc'],
-    plugins: [typescript({ tsconfig: './tsconfig.build.json' })],
+    plugins: [
+      typescript({
+        tsconfig: './tsconfig.rollup.json',
+        compilerOptions: {
+          outDir: './dist',
+        },
+      }),
+    ],
   },
   {
     input: 'src/electron-main/index.ts',
@@ -29,6 +43,13 @@ export default [
       sourcemap: true,
     },
     external: ['electron', '@x-oasis/async-call-rpc'],
-    plugins: [typescript({ tsconfig: './tsconfig.build.json' })],
+    plugins: [
+      typescript({
+        tsconfig: './tsconfig.rollup.json',
+        compilerOptions: {
+          outDir: './dist',
+        },
+      }),
+    ],
   },
 ];

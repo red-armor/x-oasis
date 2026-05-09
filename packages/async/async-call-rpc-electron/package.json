@@ -27,7 +27,7 @@
     "src"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "npm run compile && rollup -c",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "test": "vitest run",
