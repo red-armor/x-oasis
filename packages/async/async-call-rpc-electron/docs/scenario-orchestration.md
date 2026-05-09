@@ -494,6 +494,349 @@ Every complex RPC topology has two layers:
 
 ---
 
+## Multi-Service Path Over a Shared Channel
+
+One of the most powerful features of `async-call-rpc` is that multiple service paths can share the same transport channel without cross-talk. This is critical for the orchestrator pattern because the control-plane channel carries both your application RPCs and the internal orchestrator signaling (`activateConnection`) on the same wire.
+
+### How It Works
+
+Each `RPCService` is bound to a `requestPath`. When a message arrives, the framework dispatches it only to the service whose path matches — all other services ignore it. This means you can register application services and the orchestrator handler on the same channel simultaneously:
+
+```typescript
+// Application service on the control-plane channel
+serviceHost.registerService('app-api', {
+  channel: ipcChannel,
+  serviceHost,
+  handlers: {
+    getVersion: () => app.getVersion(),
+  },
+});
+
+// Orchestrator handler on the SAME channel — no conflict
+registerOrchestratorHandler(ipcChannel, (port) => {
+  directChannel.bindPort(port);
+});
+```
+
+The internal orchestrator service path (`__x_oasis_orchestrator__`) never collides with user-defined service names.
+
+### Use Case: Forwarding Proxy
+
+When a renderer needs to call services on a utility process without a direct port, you can expose the utility's services through the main process as a **forwarding proxy**:
+
+```typescript
+// Main process forwards calls from renderer to utility
+serviceHost.registerService('utility-proxy', {
+  channel: rendererChannel,
+  serviceHost,
+  handlers: {
+    processImage: async (path: string) => {
+      return utilityClient.processImage(path);
+    },
+  },
+});
+```
+
+This pattern is especially useful when:
+
+- The utility process hasn't started yet and you need a fallback
+- The direct port connection is in `TRANSIENT_FAILURE` state
+- You want to add middleware (logging, auth) at the broker level
+
+---
+
+## Process Restart & Channel Replacement
+
+When a utility process crashes and is respawned, its PID and underlying transport change. The orchestrator's `replaceParticipantChannel` API lets you swap the control-plane channel without losing connection history, stats, or subscriptions.
+
+### Typical Flow
+
+```
+1. Utility process crashes
+2. Main process detects via onDidDisconnected or process 'exit'
+3. Main process respawns utility
+4. Call orchestrator.replaceParticipantChannel('utility', newChannel)
+5. All connections automatically transition to TRANSIENT_FAILURE → reconnect
+6. Reconnect succeeds with new ports delivered via new channel
+```
+
+### Example
+
+```typescript
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron';
+
+// Initial setup
+let utilityProc = utilityProcess.fork(workerPath);
+let utilityChannel = new ElectronUtilityProcessChannel({
+  process: utilityProc,
+  description: 'main→utility',
+});
+
+orchestrator.registerParticipant('utility', utilityChannel, 'utility');
+await orchestrator.connect('renderer', 'utility');
+
+// Listen for process exit
+utilityProc.on('exit', () => {
+  // Respawn
+  utilityProc = utilityProcess.fork(workerPath);
+  const newChannel = new ElectronUtilityProcessChannel({
+    process: utilityProc,
+    description: 'main→utility (respawned)',
+  });
+
+  // Replace without losing connection state
+  orchestrator.replaceParticipantChannel('utility', newChannel);
+  // All connections auto-reconnect via the new channel
+});
+```
+
+### Without replaceParticipantChannel (Bad)
+
+```typescript
+// ❌ Loses all stats, connection history, subscriptions
+orchestrator.unregisterParticipant('utility');
+orchestrator.registerParticipant('utility', newChannel, 'utility');
+await orchestrator.connect('renderer', 'utility');
+```
+
+### Disabling Auto-Reconnect
+
+If you want to control reconnection manually (e.g., wait for user confirmation):
+
+```typescript
+orchestrator.replaceParticipantChannel('utility', newChannel, {
+  autoReconnect: false,
+});
+
+// Later, when ready:
+// The connection is still in TRANSIENT_FAILURE and will be
+// picked up by the reconnect scheduler on the next attempt.
+```
+
+---
+
+## Disconnect vs Kill (Utility Process)
+
+By default, `ElectronUtilityProcessChannel.disconnect()` kills the child process. In the channel-replacement scenario, you only want to detach from the old transport without killing the process.
+
+### Using `setKillOnDisconnect`
+
+```typescript
+const channel = new ElectronUtilityProcessChannel({
+  process: utilityProc,
+});
+
+// Before replacing — don't kill the process on disconnect
+channel.setKillOnDisconnect(false);
+channel.disconnect();
+// Process is still alive, but the RPC channel is disconnected
+
+// To re-enable kill-on-disconnect for the new channel:
+const newChannel = new ElectronUtilityProcessChannel({
+  process: utilityProc,
+});
+// newChannel defaults to killOnDisconnect: true
+```
+
+---
+
+## Rebinding MessagePortMain Channels
+
+When a participant reconnects, it receives a new `MessagePortMain`. The `bindPort` method on `ElectronMessagePortMainChannel` supports a `rebind` option to replace an existing port:
+
+### Basic Rebind
+
+```typescript
+const channel = new ElectronMessagePortMainChannel({
+  port: oldPort,
+  description: 'direct data channel',
+});
+
+// When orchestrator delivers a new port after reconnection:
+channel.bindPort(newPort, { rebind: true });
+// oldPort is closed, newPort is activated
+```
+
+### Inside registerOrchestratorHandler
+
+For reconnection to work end-to-end, the handler should use `rebind: true`:
+
+```typescript
+const directChannel = new ElectronMessagePortMainChannel({
+  description: 'utility↔renderer direct',
+});
+
+registerOrchestratorHandler(mainChannel, (port: any) => {
+  directChannel.bindPort(port, { rebind: true });
+});
+```
+
+Without `rebind: true`, the second `bindPort` call is a no-op if a port is already bound — meaning the participant would keep using the stale port from before the crash.
+
+---
+
+## Event Forwarding
+
+When building a debug dashboard or monitoring UI, you often need to observe all orchestrator events in a single stream. The `createEventForwarder` API consolidates all 7 event types into one callback:
+
+```typescript
+const forwarder = orchestrator.createEventForwarder((event) => {
+  console.log(`[${event.type}]`, event.payload);
+  // event.type: 'stateChange' | 'ready' | 'disconnected' |
+  //             'reconnecting' | 'reconnected' | 'reconnectFailed' | 'closed'
+
+  // Forward to renderer for UI
+  mainWindow?.webContents.send('orchestrator:event', event);
+});
+
+// Clean up when no longer needed
+forwarder.dispose();
+```
+
+This eliminates the need to subscribe to each of the 7 event types individually.
+
+---
+
+## Topology Query APIs
+
+For monitoring and debugging, the orchestrator provides list APIs to inspect all registered participants and managed connections:
+
+### List Participants
+
+```typescript
+const participants = orchestrator.listParticipants();
+// Returns: Array<{ id: string; type: ParticipantType; registeredAt: number }>
+```
+
+### List Connections
+
+```typescript
+const connections = orchestrator.listConnections();
+// Returns: Array<{ connectionId: string; fromId: string; toId: string;
+//                   state: ConnectionState; stats?: ConnectionStats }>
+```
+
+### Use Case: Connection Dashboard
+
+```typescript
+ipcMain.handle('orchestrator:getStatus', async () => {
+  return {
+    participants: orchestrator.listParticipants(),
+    connections: orchestrator.listConnections(),
+  };
+});
+```
+
+---
+
+## Bidirectional Connection Semantics
+
+`connect('a', 'b')` and `connect('b', 'a')` resolve to the **same** connection — the connection ID is always the lexicographically smaller ID first (e.g., `'a--b'`, never `'b--a'`). This means:
+
+- Both `connect('renderer', 'utility')` and `connect('utility', 'renderer')` return the same `ConnectionInfo`
+- `getConnectionInfo('renderer', 'utility')` and `getConnectionInfo('utility', 'renderer')` return the same result
+
+If you need directional semantics (e.g., different service sets per direction), use `fromServices` and `toServices` in the `ConnectionConfig`:
+
+```typescript
+await orchestrator.connect('renderer', 'utility', {
+  fromServices: { rendererApi: { ping: () => 'pong' } },
+  toServices: { utilityApi: { compute: (n: number) => n * 2 } },
+});
+```
+
+---
+
+## Heartbeat Configuration
+
+The `ElectronConnectionOrchestrator` provides a concrete heartbeat implementation that sends RPC pings through the control plane (`__x_oasis_orchestrator__`) and detects dead connections when pong responses time out.
+
+### How It Works
+
+```
+Every intervalMs:
+  orchestrator → ping → participant A's channel
+  orchestrator → ping → participant B's channel
+  └─ If no pong within timeoutMs → _handleHeartbeatTimeout()
+     └─ Connection transitions to TRANSIENT_FAILURE
+        └─ Reconnect scheduled
+```
+
+### Production Configuration
+
+```typescript
+const orchestrator = new ElectronConnectionOrchestrator({
+  heartbeat: {
+    enabled: true,
+    intervalMs: 30_000, // Ping every 30s
+    timeoutMs: 5_000, // 5s to respond
+  },
+});
+```
+
+### Important Notes
+
+- Heartbeat pings travel through the **control plane** (the same channel used for port delivery), not the data plane
+- This validates that the control-plane channel is alive, which is a prerequisite for reconnection
+- If you need to validate the data plane separately, implement your own application-level ping on the direct port
+
+---
+
+## First-Connection Timeout & Retry
+
+By default, `connect()` hangs forever if a participant never acknowledges `activateConnection` (e.g., a utility stuck in cold start). Two options address this:
+
+### `activateTimeoutMs`
+
+```typescript
+const info = await orchestrator.connect('renderer', 'utility', {
+  activateTimeoutMs: 10_000, // Fail after 10s if no ack
+});
+```
+
+On timeout, `connect()` rejects with a `TimeoutError` and the connection is left in `IDLE`.
+
+### `retryOnInitialFailure`
+
+When `true`, a first-attempt failure transitions the connection to `TRANSIENT_FAILURE` and schedules automatic reconnection instead of throwing:
+
+```typescript
+const info = await orchestrator.connect('renderer', 'utility', {
+  activateTimeoutMs: 10_000,
+  retryOnInitialFailure: true,
+});
+// info.state === TRANSIENT_FAILURE — reconnect will be attempted
+```
+
+This is useful when utility process startup time is unpredictable and you want the orchestrator to keep trying automatically.
+
+---
+
+## Pending Request Behavior
+
+When a connection drops, in-flight RPC requests need to be handled. The `pendingRequests` configuration controls this:
+
+```typescript
+const orchestrator = new ElectronConnectionOrchestrator({
+  pendingRequests: {
+    onDisconnect: 'reject', // Immediately reject in-flight requests
+    duringReconnect: 'reject', // Reject new requests while reconnecting
+    maxQueueSize: 100,
+    queueTimeoutMs: 5_000,
+  },
+});
+```
+
+| Option            | Value       | Behavior                                            |
+| ----------------- | ----------- | --------------------------------------------------- |
+| `onDisconnect`    | `'reject'`  | Reject all in-flight requests when connection drops |
+| `onDisconnect`    | `'queue'`   | Queue requests, replay when reconnected             |
+| `onDisconnect`    | `'timeout'` | Let requests time out naturally                     |
+| `duringReconnect` | `'reject'`  | Reject new requests while in TRANSIENT_FAILURE      |
+| `duringReconnect` | `'queue'`   | Queue new requests for replay on reconnect          |
+
+---
+
 ## Channel Selection Guide
 
 ```

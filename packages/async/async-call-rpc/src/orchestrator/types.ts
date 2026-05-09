@@ -73,6 +73,49 @@ export interface ConnectOptions {
    * but tight enough that production failures fail fast rather than hang.
    */
   activateTimeoutMs?: number;
+
+  /**
+   * Whether to apply reconnect policy on first-attempt failure.
+   * Default: false — first attempt failure leaves the connection in IDLE
+   * without auto-retry, preserving backward compatibility.
+   */
+  retryOnInitialFailure?: boolean;
+}
+
+export interface ReplaceChannelOptions {
+  /**
+   * Whether to immediately attempt reconnection for connections that were
+   * in READY or TRANSIENT_FAILURE state after the channel is replaced.
+   * Default: true.
+   */
+  autoReconnect?: boolean;
+}
+
+export interface ListParticipantEntry {
+  id: string;
+  type: ParticipantType;
+  registeredAt: number;
+}
+
+export interface ListConnectionEntry {
+  connectionId: string;
+  fromId: string;
+  toId: string;
+  state: ConnectionState;
+  stats?: ConnectionStats;
+}
+
+export interface BindPortOptions {
+  /**
+   * When true and a port is already bound, unbind the old port first then
+   * bind the new one. Default: false — throws if already bound.
+   */
+  rebind?: boolean;
+}
+
+export interface OrchestratorEvent {
+  type: string;
+  payload: unknown;
 }
 
 // ─── ConnectionInfo — returned by connect() / getConnectionInfo() ─────────────

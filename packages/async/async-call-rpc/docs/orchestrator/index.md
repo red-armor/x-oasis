@@ -83,14 +83,16 @@ interface ParticipantInfo {
 
 ```
 IDLE → CONNECTING → READY ←──────┐
- ↑         │            │        │
- │         ↓            ↓        │
- │    (failure)    TRANSIENT_FAILURE
- │                            │
- │                            │ (retry)
- │                            ↓
- └────────────────────────────┘
+ ↑    │      │         │         │
+ │    │      ↓         ↓         │
+ │    │  (failure)  TRANSIENT_FAILURE
+ │    │                  │       │
+ │    │                  │(retry)│
+ │    └──────────────────┘       │
+ └───────────────────────────────┘
 ```
+
+> **Note:** `IDLE` and `CONNECTING` can also transition directly to `TRANSIENT_FAILURE` (e.g., when `retryOnInitialFailure` is `true` or a participant's channel is replaced mid-connect).
 
 ### State Descriptions
 
@@ -112,9 +114,41 @@ The base class provides:
 #### Connection Management
 
 - `registerParticipant(id, channel, type)`: Register a participant
-- `connect(fromId, toId, config)`: Establish a connection
+- `connect(fromId, toId, config?, options?)`: Establish a connection
 - `disconnect(connectionId)`: Close a connection
 - `getConnectionInfo(fromId, toId)`: Get connection status
+- `replaceParticipantChannel(id, channel, options?)`: Swap a participant's control-plane channel without losing stats/history/subscriptions
+- `listParticipants()`: List all registered participants
+- `listConnections()`: List all managed connections with state and stats
+
+#### Topology Query
+
+- `listParticipants()`: Returns `Array<{ id, type, registeredAt }>`
+- `listConnections()`: Returns `Array<{ connectionId, fromId, toId, state, stats? }>`
+
+#### Channel Replacement
+
+When a process restarts, use `replaceParticipantChannel` to swap the channel while preserving all connection state:
+
+```typescript
+orchestrator.replaceParticipantChannel('utility', newChannel, {
+  autoReconnect: true,
+});
+```
+
+If `autoReconnect` is `true` (default), connections in `READY`, `CONNECTING`, or `TRANSIENT_FAILURE` automatically transition and schedule reconnection.
+
+#### Event Consolidation
+
+- `createEventForwarder(sink)`: Subscribe to all 7 event types via a single callback
+
+```typescript
+const forwarder = orchestrator.createEventForwarder((event) => {
+  console.log(`[${event.type}]`, event.payload);
+});
+// Clean up
+forwarder.dispose();
+```
 
 #### Event Handling
 
@@ -131,6 +165,9 @@ The base class provides:
 - **Reconnect Policy**: Configurable retry strategy
 - **Circuit Breaker**: Prevent cascading failures
 - **Stats Tracking**: Monitor connection health
+- **Pending Request Behavior**: Control in-flight requests on disconnect/reconnect
+- **First-Connection Timeout**: `activateTimeoutMs` prevents `connect()` from hanging forever
+- **Initial Failure Retry**: `retryOnInitialFailure` auto-schedules reconnect on first-attempt failure
 
 ### Circuit Breaker
 
@@ -257,6 +294,40 @@ interface CircuitBreakerConfig {
   volumeThreshold: number; // Default: 5
   rollingWindowMs: number; // Default: 10000
   openDurationMs: number; // Default: 30000
+}
+
+interface PendingRequestBehavior {
+  onDisconnect: 'reject' | 'queue' | 'timeout'; // Default: 'timeout'
+  duringReconnect: 'reject' | 'queue'; // Default: 'queue'
+  maxQueueSize: number; // Default: 1000
+  queueTimeoutMs: number; // Default: 30000
+}
+```
+
+### ConnectOptions
+
+```typescript
+interface ConnectOptions {
+  activateTimeoutMs?: number; // Default: 30000
+  retryOnInitialFailure?: boolean; // Default: false
+}
+```
+
+- `activateTimeoutMs`: First-attempt activation timeout. If both `activateParticipant` promises haven't resolved by then, `connect()` rejects with a `TimeoutError` and the connection is left in `IDLE`.
+- `retryOnInitialFailure`: When `true`, a first-attempt failure transitions to `TRANSIENT_FAILURE` and schedules automatic reconnection instead of throwing.
+
+```typescript
+const info = await orchestrator.connect('renderer', 'utility', undefined, {
+  activateTimeoutMs: 10_000,
+  retryOnInitialFailure: true,
+});
+```
+
+### ReplaceChannelOptions
+
+```typescript
+interface ReplaceChannelOptions {
+  autoReconnect?: boolean; // Default: true
 }
 ```
 

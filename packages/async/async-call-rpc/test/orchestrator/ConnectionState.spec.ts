@@ -27,6 +27,10 @@ describe('isValidTransition', () => {
       [ConnectionState.TRANSIENT_FAILURE, ConnectionState.DISCONNECTING],
       [ConnectionState.DISCONNECTING, ConnectionState.CLOSED],
       [ConnectionState.CLOSED, ConnectionState.CONNECTING],
+      // retryOnInitialFailure: IDLE → TRANSIENT_FAILURE
+      [ConnectionState.IDLE, ConnectionState.TRANSIENT_FAILURE],
+      // participant lost during CONNECTING
+      [ConnectionState.CONNECTING, ConnectionState.TRANSIENT_FAILURE],
     ];
 
     it.each(valid)('%s → %s should be valid', (from, to) => {
@@ -41,10 +45,8 @@ describe('isValidTransition', () => {
       [ConnectionState.READY, ConnectionState.READY],
       // Cannot skip states
       [ConnectionState.IDLE, ConnectionState.READY],
-      [ConnectionState.IDLE, ConnectionState.TRANSIENT_FAILURE],
       [ConnectionState.IDLE, ConnectionState.CLOSED],
       [ConnectionState.IDLE, ConnectionState.DISCONNECTING],
-      [ConnectionState.CONNECTING, ConnectionState.TRANSIENT_FAILURE],
       [ConnectionState.CONNECTING, ConnectionState.DISCONNECTING],
       [ConnectionState.CONNECTING, ConnectionState.CLOSED],
       [ConnectionState.READY, ConnectionState.IDLE],

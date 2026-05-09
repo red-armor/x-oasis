@@ -256,7 +256,7 @@ registerParticipant(
 - `channel`: RPC channel for control-plane communication
 - `type`: Type of participant (`'renderer'`, `'utility'`, `'worker'`, `'process'`)
 
-##### `connect(fromId, toId, config?)`
+##### `connect(fromId, toId, config?, options?)`
 
 Establish a direct connection between two registered participants.
 
@@ -264,11 +264,52 @@ Establish a direct connection between two registered participants.
 connect(
   fromId: string,
   toId: string,
-  config?: ConnectionConfig
+  config?: ConnectionConfig,
+  options?: ConnectOptions
 ): Promise<ConnectionInfo>
 ```
 
-**Returns:** `ConnectionInfo` object with state and event tracking.
+**ConnectOptions:**
+
+| Option                  | Type      | Default | Description                                               |
+| ----------------------- | --------- | ------- | --------------------------------------------------------- |
+| `activateTimeoutMs`     | `number`  | `30000` | Timeout for the first activation handshake                |
+| `retryOnInitialFailure` | `boolean` | `false` | Auto-schedule reconnect instead of throwing on first fail |
+
+```typescript
+const info = await orchestrator.connect('renderer', 'utility', undefined, {
+  activateTimeoutMs: 10_000,
+  retryOnInitialFailure: true,
+});
+```
+
+##### `replaceParticipantChannel(id, channel, options?)`
+
+Replace a participant's control-plane channel without losing connection stats, history, or event subscriptions.
+
+```typescript
+replaceParticipantChannel(
+  id: string,
+  channel: AbstractChannelProtocol,
+  options?: ReplaceChannelOptions
+): void
+```
+
+**ReplaceChannelOptions:**
+
+| Option          | Type      | Default | Description                                                    |
+| --------------- | --------- | ------- | -------------------------------------------------------------- |
+| `autoReconnect` | `boolean` | `true`  | Automatically reconnect connections in READY/TRANSIENT_FAILURE |
+
+```typescript
+utilityProc.on('exit', () => {
+  utilityProc = utilityProcess.fork(workerPath);
+  const newChannel = new ElectronUtilityProcessChannel({
+    process: utilityProc,
+  });
+  orchestrator.replaceParticipantChannel('utility', newChannel);
+});
+```
 
 ##### `disconnect(connectionId)`
 
@@ -276,6 +317,36 @@ Gracefully close a connection.
 
 ```typescript
 disconnect(connectionId: string): Promise<void>
+```
+
+##### `listParticipants()`
+
+List all registered participants.
+
+```typescript
+listParticipants(): Array<{ id: string; type: ParticipantType; registeredAt: number }>
+```
+
+##### `listConnections()`
+
+List all managed connections with current state and optional stats.
+
+```typescript
+listConnections(): Array<{
+  connectionId: string; fromId: string; toId: string;
+  state: ConnectionState; stats?: ConnectionStats
+}>
+```
+
+##### `createEventForwarder(sink)`
+
+Consolidate all 7 event types into a single callback. Returns a disposable.
+
+```typescript
+const forwarder = orchestrator.createEventForwarder((event) => {
+  console.log(`[${event.type}]`, event.payload);
+});
+forwarder.dispose(); // Clean up
 ```
 
 ##### Events
@@ -306,6 +377,47 @@ registerOrchestratorHandler(ipcChannel, (port) => {
 });
 ```
 
+### `ElectronUtilityProcessChannel`
+
+#### `setKillOnDisconnect(kill)`
+
+Control whether the child utility process is killed when the channel disconnects.
+
+```typescript
+setKillOnDisconnect(kill: boolean): void
+```
+
+- Default: `true` — calling `disconnect()` kills the child process
+- Set to `false` when replacing channels to detach from the old transport without killing the process
+
+```typescript
+const channel = new ElectronUtilityProcessChannel({ process: utilityProc });
+channel.setKillOnDisconnect(false);
+channel.disconnect(); // Process stays alive
+```
+
+### `ElectronMessagePortMainChannel`
+
+#### `bindPort(port, options?)`
+
+Bind a `MessagePortMain` to the channel.
+
+```typescript
+bindPort(port: MessagePortMain, options?: { rebind?: boolean }): void
+```
+
+| Option   | Type      | Default | Description                            |
+| -------- | --------- | ------- | -------------------------------------- |
+| `rebind` | `boolean` | `false` | Unbind old port first if already bound |
+
+Use `rebind: true` inside `registerOrchestratorHandler` so reconnection delivers new ports:
+
+```typescript
+registerOrchestratorHandler(channel, (port) => {
+  directChannel.bindPort(port, { rebind: true });
+});
+```
+
 ## Configuration
 
 ### `ConnectionOrchestratorConfig`
@@ -329,6 +441,14 @@ interface ConnectionOrchestratorConfig {
     volumeThreshold: number;
     rollingWindowMs: number;
     openDurationMs: number;
+  };
+
+  // Pending request behavior during disconnect/reconnect
+  pendingRequests?: {
+    onDisconnect: 'reject' | 'queue' | 'timeout';
+    duringReconnect: 'reject' | 'queue';
+    maxQueueSize: number;
+    queueTimeoutMs: number;
   };
 
   // Stats tracking
@@ -364,22 +484,38 @@ const orchestrator = new ElectronConnectionOrchestrator({
     rollingWindowMs: 10000,
     openDurationMs: 30000,
   },
+  pendingRequests: {
+    onDisconnect: 'reject',
+    duringReconnect: 'reject',
+    maxQueueSize: 100,
+    queueTimeoutMs: 5000,
+  },
   enableStats: true,
   logger: (level, msg, data) => console.log(`[${level}] ${msg}`, data),
 });
 ```
 
+### Heartbeat
+
+The `ElectronConnectionOrchestrator` overrides `_sendHeartbeat` to send RPC pings through the control plane. If a pong is not received within `timeoutMs`, the connection transitions to `TRANSIENT_FAILURE` and reconnection is scheduled.
+
+Pings travel through the **control plane** (the same channel used for port delivery), validating that the control-plane channel is alive — a prerequisite for reconnection.
+
+### Bidirectional Connection Semantics
+
+`connect('a', 'b')` and `connect('b', 'a')` resolve to the **same** connection. The connection ID is always normalized to lexicographic order (e.g., `'a--b'`, never `'b--a'`). Both calls return the same `ConnectionInfo`.
+
 ## Connection State Machine
 
 ```
 IDLE → CONNECTING → READY ←──────┐
- ↑         │            │        │
- │         ↓            ↓        │
- │    (failure)    TRANSIENT_FAILURE
- │                            │
- │                            │ (retry)
- │                            ↓
- └────────────────────────────┘
+ ↑    │      │         │         │
+ │    │      ↓         ↓         │
+ │    │  (failure)  TRANSIENT_FAILURE
+ │    │                  │       │
+ │    │                  │(retry)│
+ │    └──────────────────┘       │
+ └───────────────────────────────┘
 ```
 
 **States:**
@@ -390,6 +526,8 @@ IDLE → CONNECTING → READY ←──────┐
 - `TRANSIENT_FAILURE`: Connection lost, attempting reconnection
 - `DISCONNECTING`: Graceful shutdown in progress
 - `CLOSED`: Connection terminated
+
+> **Note:** `IDLE` and `CONNECTING` can also transition directly to `TRANSIENT_FAILURE` (e.g., when `retryOnInitialFailure` is `true` or a participant's channel is replaced mid-connect).
 
 ## Best Practices
 

@@ -5,6 +5,7 @@ import {
   ActivationConfig,
   ParticipantInfo,
   ORCHESTRATOR_SERVICE_PATH,
+  HeartbeatConfig,
 } from '@x-oasis/async-call-rpc';
 
 /**
@@ -112,6 +113,74 @@ export class ElectronConnectionOrchestrator extends BaseConnectionOrchestrator {
 
     if (deferred && typeof (deferred as any).promise === 'object') {
       await (deferred as any).promise;
+    }
+  }
+
+  /**
+   * Concrete heartbeat: send a ping via the control plane and schedule a
+   * timeout check. If the participant's channel does not deliver a pong
+   * within `hbConfig.timeoutMs`, the connection is treated as lost.
+   */
+  protected _sendHeartbeat(mc: any, hbConfig: HeartbeatConfig): void {
+    if (mc.state !== 'READY') {
+      this._stopHeartbeat(mc);
+      return;
+    }
+
+    const fromInfo = this.participants.get(mc.fromId);
+    const toInfo = this.participants.get(mc.toId);
+    if (!fromInfo || !toInfo) {
+      this._stopHeartbeat(mc);
+      return;
+    }
+
+    const participants = [fromInfo, toInfo];
+    let pendingCount = participants.length;
+    let failed = false;
+
+    const timeoutTimer = setTimeout(() => {
+      if (!failed && pendingCount > 0) {
+        failed = true;
+        this._handleHeartbeatTimeout(mc);
+      }
+    }, hbConfig.timeoutMs);
+
+    for (const info of participants) {
+      try {
+        const deferred = info.channel.makeRequest(
+          ORCHESTRATOR_SERVICE_PATH,
+          'ping'
+        );
+
+        if (deferred && typeof (deferred as any).promise === 'object') {
+          (deferred as any).promise.then(
+            () => {
+              pendingCount--;
+              if (pendingCount === 0 && !failed) {
+                clearTimeout(timeoutTimer);
+              }
+            },
+            () => {
+              if (!failed) {
+                failed = true;
+                clearTimeout(timeoutTimer);
+                this._handleHeartbeatTimeout(mc);
+              }
+            }
+          );
+        } else {
+          pendingCount--;
+          if (pendingCount === 0 && !failed) {
+            clearTimeout(timeoutTimer);
+          }
+        }
+      } catch {
+        if (!failed) {
+          failed = true;
+          clearTimeout(timeoutTimer);
+          this._handleHeartbeatTimeout(mc);
+        }
+      }
     }
   }
 }

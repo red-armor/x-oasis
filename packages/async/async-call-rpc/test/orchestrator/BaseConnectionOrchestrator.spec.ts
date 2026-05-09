@@ -5,7 +5,7 @@
  * - `createPortPair()` returns plain objects (no real MessageChannel needed).
  * - `activateParticipant()` is a no-op by default (can be mocked per test).
  */
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import {
   BaseConnectionOrchestrator,
   TimeoutError,
@@ -431,6 +431,312 @@ describe('BaseConnectionOrchestrator', () => {
       expect(stats!.connectionId).toBe('x--y');
       expect(stats!.state).toBe(ConnectionState.READY);
       orchWithStats.dispose();
+    });
+  });
+
+  // ─── Gap 1: replaceParticipantChannel ─────────────────────────────────────
+
+  describe('replaceParticipantChannel', () => {
+    it('throws for unknown participant', () => {
+      const newChannel = new StubChannel();
+      expect(() => orch.replaceParticipantChannel('ghost', newChannel)).toThrow(
+        /Cannot replace channel for unknown participant/
+      );
+    });
+
+    it('replaces the channel while preserving participant metadata', () => {
+      const newChannel = new StubChannel();
+      orch.replaceParticipantChannel('a', newChannel);
+
+      const participants = orch.listParticipants();
+      const p = participants.find((entry) => entry.id === 'a');
+      expect(p).toBeDefined();
+      expect(p!.type).toBe('process');
+    });
+
+    it('triggers TRANSIENT_FAILURE → reconnect for READY connections', async () => {
+      await orch.connect('a', 'b');
+
+      const onReconnecting = vi.fn();
+      orch.onReconnecting(onReconnecting);
+
+      const newChannel = new StubChannel();
+      orch.replaceParticipantChannel('a', newChannel);
+
+      const info = orch.getConnectionInfo('a', 'b');
+      expect(
+        info!.state === ConnectionState.TRANSIENT_FAILURE ||
+          info!.state === ConnectionState.CONNECTING
+      ).toBe(true);
+    });
+
+    it('preserves stats across channel replacement', async () => {
+      const orchWithStats = new TestOrchestrator({ enableStats: true });
+      const ch1 = new StubChannel();
+      const ch2 = new StubChannel();
+      orchWithStats.registerParticipant('x', ch1);
+      orchWithStats.registerParticipant('y', ch2);
+      await orchWithStats.connect('x', 'y');
+
+      const newCh1 = new StubChannel();
+      orchWithStats.replaceParticipantChannel('x', newCh1, {
+        autoReconnect: false,
+      });
+
+      const stats = orchWithStats.getConnectionStats('x--y');
+      expect(stats).toBeDefined();
+      orchWithStats.dispose();
+    });
+
+    it('does not reconnect when autoReconnect is false', async () => {
+      await orch.connect('a', 'b');
+
+      const onReconnecting = vi.fn();
+      orch.onReconnecting(onReconnecting);
+
+      const newChannel = new StubChannel();
+      orch.replaceParticipantChannel('a', newChannel, { autoReconnect: false });
+
+      expect(onReconnecting).not.toHaveBeenCalled();
+    });
+
+    it('cleans up old onDidDisconnected subscription', async () => {
+      const oldChannel = new StubChannel();
+      const orch2 = new TestOrchestrator();
+      orch2.registerParticipant('a', oldChannel, 'process');
+      orch2.registerParticipant('b', new StubChannel(), 'process');
+
+      const newChannel = new StubChannel();
+      orch2.replaceParticipantChannel('a', newChannel);
+
+      // Disconnecting the OLD channel should NOT trigger handleParticipantLost
+      const onDisconnected = vi.fn();
+      orch2.onDisconnected(onDisconnected);
+
+      await orch2.connect('a', 'b');
+      oldChannel.disconnect();
+
+      expect(onDisconnected).not.toHaveBeenCalled();
+      orch2.dispose();
+    });
+  });
+
+  // ─── Gap 4: listParticipants / listConnections ────────────────────────────
+
+  describe('listParticipants', () => {
+    it('lists all registered participants', () => {
+      const participants = orch.listParticipants();
+      expect(participants).toHaveLength(2);
+      expect(participants.map((p) => p.id)).toContain('a');
+      expect(participants.map((p) => p.id)).toContain('b');
+    });
+
+    it('includes type and registeredAt', () => {
+      const participants = orch.listParticipants();
+      expect(participants[0].type).toBe('process');
+      expect(participants[0].registeredAt).toBeGreaterThan(0);
+    });
+
+    it('reflects unregistration', () => {
+      orch.unregisterParticipant('a');
+      const participants = orch.listParticipants();
+      expect(participants).toHaveLength(1);
+      expect(participants[0].id).toBe('b');
+    });
+  });
+
+  describe('listConnections', () => {
+    it('returns empty before any connect', () => {
+      expect(orch.listConnections()).toHaveLength(0);
+    });
+
+    it('lists connections after connect', async () => {
+      await orch.connect('a', 'b');
+      const connections = orch.listConnections();
+      expect(connections).toHaveLength(1);
+      expect(connections[0].state).toBe(ConnectionState.READY);
+    });
+
+    it('includes stats when enabled', async () => {
+      const orchWithStats = new TestOrchestrator({ enableStats: true });
+      const ch1 = new StubChannel();
+      const ch2 = new StubChannel();
+      orchWithStats.registerParticipant('x', ch1);
+      orchWithStats.registerParticipant('y', ch2);
+      await orchWithStats.connect('x', 'y');
+
+      const connections = orchWithStats.listConnections();
+      expect(connections[0].stats).toBeDefined();
+      orchWithStats.dispose();
+    });
+  });
+
+  // ─── Gap 5: createEventForwarder ──────────────────────────────────────────
+
+  describe('createEventForwarder', () => {
+    it('forwards all event types to sink', async () => {
+      const events: any[] = [];
+      const forwarder = orch.createEventForwarder((event) => {
+        events.push(event);
+      });
+
+      await orch.connect('a', 'b');
+
+      expect(events.some((e) => e.type === 'stateChange')).toBe(true);
+      expect(events.some((e) => e.type === 'ready')).toBe(true);
+
+      forwarder.dispose();
+    });
+
+    it('stops forwarding after dispose', async () => {
+      const events: any[] = [];
+      const forwarder = orch.createEventForwarder((event) => {
+        events.push(event);
+      });
+
+      forwarder.dispose();
+      await orch.connect('a', 'b');
+
+      expect(events).toHaveLength(0);
+    });
+
+    it('forwards disconnected event', async () => {
+      await orch.connect('a', 'b');
+      const events: any[] = [];
+      const forwarder = orch.createEventForwarder((event) => {
+        events.push(event);
+      });
+
+      orch.testHandleConnectionLost('a--b');
+
+      expect(events.some((e) => e.type === 'disconnected')).toBe(true);
+      forwarder.dispose();
+    });
+  });
+
+  // ─── New Gap D: handleParticipantLost for CONNECTING state ──────────────
+
+  describe('handleParticipantLost (extended)', () => {
+    it('handles CONNECTING state connections', async () => {
+      // Directly test the state machine: set connection to CONNECTING
+      // then call handleParticipantLost
+      const orch3 = new TestOrchestrator();
+      const ch1 = new StubChannel();
+      const ch2 = new StubChannel();
+      orch3.registerParticipant('a', ch1, 'process');
+      orch3.registerParticipant('b', ch2, 'process');
+
+      // Connect normally
+      await orch3.connect('a', 'b');
+
+      // Force the connection back to CONNECTING for test purposes
+      const connectionId = orch3.getConnectionInfo('a', 'b')!.connectionId;
+      orch3.testTransitionState(connectionId, ConnectionState.CONNECTING);
+
+      // Now simulate participant loss while in CONNECTING state
+      orch3.handleParticipantLost('a', 'process died during handshake');
+
+      const infoAfter = orch3.getConnectionInfo('a', 'b');
+      expect(infoAfter!.state).toBe(ConnectionState.TRANSIENT_FAILURE);
+      orch3.dispose();
+    });
+  });
+
+  // ─── New Gap G: bidirectional connection dedup ────────────────────────────
+
+  describe('bidirectional connection dedup', () => {
+    it('connect(a,b) and connect(b,a) return same connectionId', async () => {
+      const info1 = await orch.connect('a', 'b');
+      const info2 = await orch.connect('b', 'a');
+      expect(info1.connectionId).toBe(info2.connectionId);
+    });
+
+    it('getConnectionInfo works regardless of argument order', async () => {
+      await orch.connect('a', 'b');
+      const info1 = orch.getConnectionInfo('a', 'b');
+      const info2 = orch.getConnectionInfo('b', 'a');
+      expect(info1).toBeDefined();
+      expect(info2).toBeDefined();
+      expect(info1!.connectionId).toBe(info2!.connectionId);
+    });
+  });
+
+  // ─── New Gap C: reconnect preserves fromServices/toServices ────────────
+
+  describe('reconnect preserves service config', () => {
+    it('stores lastConfig on connect', async () => {
+      const fromServices = { hello: () => 'world' };
+      const toServices = { ping: () => 'pong' };
+
+      await orch.connect('a', 'b', { fromServices, toServices });
+
+      const mc = orch.getManagedConnection(
+        orch.getConnectionInfo('a', 'b')!.connectionId
+      );
+      expect(mc.lastConfig).toBeDefined();
+      expect(mc.lastConfig!.fromServices).toBe(fromServices);
+      expect(mc.lastConfig!.toServices).toBe(toServices);
+    });
+  });
+
+  // ─── connect with retryOnInitialFailure ────────────────────────────────
+
+  describe('connect with retryOnInitialFailure', () => {
+    it('schedules reconnect instead of throwing when set to true', async () => {
+      const orch2 = new TestOrchestrator();
+      const ch1 = new StubChannel();
+      const ch2 = new StubChannel();
+      orch2.registerParticipant('a', ch1, 'process');
+      orch2.registerParticipant('b', ch2, 'process');
+
+      // First: verify that without retryOnInitialFailure, it throws
+      orch2.activateImpl = async () => {
+        throw new Error('first attempt fails');
+      };
+      await expect(orch2.connect('a', 'b')).rejects.toThrow(
+        'first attempt fails'
+      );
+
+      // After failed connect, state should be IDLE
+      const connId = orch2.getConnectionInfo('a', 'b')!.connectionId;
+      const mc = orch2.getManagedConnection(connId);
+      expect(mc.state).toBe(ConnectionState.IDLE);
+
+      // With retryOnInitialFailure → should not throw, should be TRANSIENT_FAILURE
+      const info = await orch2.connect('a', 'b', {
+        retryOnInitialFailure: true,
+      });
+      expect(info.state).toBe(ConnectionState.TRANSIENT_FAILURE);
+      orch2.dispose();
+    });
+  });
+
+  // ─── PendingRequestBehavior ─────────────────────────────────────────────
+
+  describe('PendingRequestBehavior', () => {
+    it('does not crash when handleParticipantLost is called with pendingRequests config', async () => {
+      const orchWithPending = new TestOrchestrator({
+        pendingRequests: {
+          onDisconnect: 'reject',
+          duringReconnect: 'reject',
+          maxQueueSize: 100,
+          queueTimeoutMs: 5000,
+        },
+      });
+
+      const ch1 = new StubChannel();
+      const ch2 = new StubChannel();
+      orchWithPending.registerParticipant('a', ch1, 'process');
+      orchWithPending.registerParticipant('b', ch2, 'process');
+
+      await orchWithPending.connect('a', 'b');
+
+      // Should not crash or stack overflow
+      orchWithPending.handleParticipantLost('a', 'test');
+
+      const info = orchWithPending.getConnectionInfo('a', 'b');
+      expect(info!.state).toBe(ConnectionState.TRANSIENT_FAILURE);
+      orchWithPending.dispose();
     });
   });
 });

@@ -19,6 +19,10 @@ import {
   HeartbeatConfig,
   RetryContext,
   StateChangeEvent,
+  ReplaceChannelOptions,
+  ListParticipantEntry,
+  ListConnectionEntry,
+  OrchestratorEvent,
 } from './types';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
 
@@ -49,6 +53,12 @@ interface ManagedConnection {
   // Reconnect state
   reconnectAttempt: number;
   firstFailedAt?: number;
+
+  /**
+   * Last ConnectionConfig used to establish this connection.
+   * Preserved across reconnects so that fromServices/toServices are not lost.
+   */
+  lastConfig?: ConnectionConfig;
 }
 
 // ─── TimeoutError ─────────────────────────────────────────────────────────────
@@ -255,6 +265,156 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
   }
 
   /**
+   * Replace the channel for an existing participant without losing its
+   * connection history, stats, or subscriptions.
+   *
+   * All connections involving this participant that are in READY or
+   * TRANSIENT_FAILURE will be transitioned to TRANSIENT_FAILURE and
+   * reconnect will be scheduled (unless `autoReconnect: false`).
+   *
+   * Typical use-case: a utility process was killed and respawned with a new
+   * pid / MessagePortMain; you want the orchestrator to re-establish
+   * connections automatically.
+   */
+  replaceParticipantChannel(
+    id: string,
+    channel: AbstractChannelProtocol,
+    options: ReplaceChannelOptions = {}
+  ): void {
+    const existing = this.participants.get(id);
+    if (!existing) {
+      throw new Error(
+        `[Orchestrator] Cannot replace channel for unknown participant: "${id}". ` +
+          `Call registerParticipant() first.`
+      );
+    }
+
+    const { autoReconnect = true } = options;
+
+    channel.ensureListenerAttached();
+
+    const previousCleanup = this._participantDisconnectCleanups.get(id);
+    if (previousCleanup) {
+      previousCleanup();
+      this._participantDisconnectCleanups.delete(id);
+    }
+
+    this.participants.set(id, {
+      id,
+      channel,
+      type: existing.type,
+      registeredAt: existing.registeredAt,
+    });
+
+    const subscription = channel.onDidDisconnected(() => {
+      if (this.participants.get(id)?.channel === channel) {
+        this.handleParticipantLost(id, 'channel disconnected');
+      }
+    });
+    this._participantDisconnectCleanups.set(id, () => subscription.dispose());
+
+    this._log('info', `replaceParticipantChannel: ${id}`);
+
+    if (autoReconnect) {
+      for (const mc of this.connections.values()) {
+        if (mc.fromId === id || mc.toId === id) {
+          if (
+            mc.state === ConnectionState.READY ||
+            mc.state === ConnectionState.TRANSIENT_FAILURE
+          ) {
+            this._handleConnectionLost(
+              mc,
+              new Error(`participant "${id}" channel replaced`)
+            );
+          } else if (mc.state === ConnectionState.CONNECTING) {
+            this._transitionState(
+              mc,
+              ConnectionState.TRANSIENT_FAILURE,
+              `participant "${id}" channel replaced during CONNECTING`
+            );
+            this._scheduleReconnect(
+              mc,
+              new Error(`participant "${id}" channel replaced`)
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * List all registered participants with their metadata.
+   */
+  listParticipants(): ListParticipantEntry[] {
+    const result: ListParticipantEntry[] = [];
+    for (const info of this.participants.values()) {
+      result.push({
+        id: info.id,
+        type: info.type,
+        registeredAt: info.registeredAt,
+      });
+    }
+    return result;
+  }
+
+  /**
+   * List all managed connections with their current state and optional stats.
+   */
+  listConnections(): ListConnectionEntry[] {
+    const result: ListConnectionEntry[] = [];
+    for (const mc of this.connections.values()) {
+      result.push({
+        connectionId: mc.connectionId,
+        fromId: mc.fromId,
+        toId: mc.toId,
+        state: mc.state,
+        stats: mc.statsTracker?.snapshot(mc.state),
+      });
+    }
+    return result;
+  }
+
+  /**
+   * Create an event forwarder that subscribes to all orchestrator events and
+   * pipes them into a single sink callback. Returns a Disposable that cleans
+   * up all subscriptions when disposed.
+   */
+  createEventForwarder(sink: (event: OrchestratorEvent) => void): {
+    dispose: () => void;
+  } {
+    const subscriptions: Array<{ dispose: () => void }> = [];
+
+    const wire = <T>(
+      eventSource: {
+        subscribe: (cb: (e: T) => void) => { dispose: () => void };
+      },
+      type: string
+    ) => {
+      const sub = eventSource.subscribe((payload) => {
+        sink({ type, payload });
+      });
+      subscriptions.push(sub);
+    };
+
+    wire(this._onStateChangeEvent, 'stateChange');
+    wire(this._onReadyEvent, 'ready');
+    wire(this._onDisconnectedEvent, 'disconnected');
+    wire(this._onReconnectingEvent, 'reconnecting');
+    wire(this._onReconnectedEvent, 'reconnected');
+    wire(this._onReconnectFailedEvent, 'reconnectFailed');
+    wire(this._onClosedEvent, 'closed');
+
+    return {
+      dispose: () => {
+        for (const sub of subscriptions) {
+          sub.dispose();
+        }
+        subscriptions.length = 0;
+      },
+    };
+  }
+
+  /**
    * Establish a direct connection between two registered participants.
    *
    * Flow:
@@ -304,7 +464,8 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
       options = maybeOptions;
     } else if (
       configOrOptions &&
-      'activateTimeoutMs' in configOrOptions &&
+      ('activateTimeoutMs' in configOrOptions ||
+        'retryOnInitialFailure' in configOrOptions) &&
       !('fromServices' in configOrOptions) &&
       !('toServices' in configOrOptions) &&
       !('heartbeat' in configOrOptions) &&
@@ -317,11 +478,17 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
       options = {};
     }
 
-    const connectionId = `${fromId}--${toId}`;
+    const connectionId = this._canonicalConnectionId(fromId, toId);
 
-    // If there is already a managed connection, return its info (idempotent).
+    // If there is already a managed connection in a live state, return its
+    // info (idempotent). IDLE connections are re-entrant so that retry
+    // attempts (including retryOnInitialFailure) can re-execute connect().
     const existing = this.connections.get(connectionId);
-    if (existing && existing.state !== ConnectionState.CLOSED) {
+    if (
+      existing &&
+      existing.state !== ConnectionState.CLOSED &&
+      existing.state !== ConnectionState.IDLE
+    ) {
       return this._buildConnectionInfo(existing);
     }
 
@@ -346,8 +513,24 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
 
     this.connections.set(connectionId, mc);
 
-    // Execute the first-attempt connect flow (not auto-retried on failure).
-    await this._doConnect(mc, config, options);
+    // Preserve config for reconnects so that fromServices/toServices survive.
+    mc.lastConfig = config;
+
+    // Execute the first-attempt connect flow.
+    // If retryOnInitialFailure is true, treat first-attempt failure like a
+    // connection loss and schedule reconnect instead of throwing.
+    try {
+      await this._doConnect(mc, config, options);
+    } catch (err) {
+      if (options.retryOnInitialFailure) {
+        this._handleConnectionLost(
+          mc,
+          err instanceof Error ? err : new Error(String(err))
+        );
+      } else {
+        throw err;
+      }
+    }
 
     return this._buildConnectionInfo(mc);
   }
@@ -383,7 +566,9 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
 
   /** Get the live connection info for a given pair. */
   getConnectionInfo(fromId: string, toId?: string): ConnectionInfo | undefined {
-    const connectionId = toId ? `${fromId}--${toId}` : fromId;
+    const connectionId = toId
+      ? this._canonicalConnectionId(fromId, toId)
+      : fromId;
     const mc = this.connections.get(connectionId);
     if (!mc) return undefined;
     return this._buildConnectionInfo(mc);
@@ -398,14 +583,19 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
 
   /**
    * Notify the orchestrator that a participant became unavailable.
-   * Transitions all of its connections to TRANSIENT_FAILURE and schedules
-   * reconnect.
+   * Transitions all of its connections (READY, CONNECTING, or TRANSIENT_FAILURE)
+   * to TRANSIENT_FAILURE and schedules reconnect.
    */
   handleParticipantLost(participantId: string, reason: string): void {
     for (const mc of this.connections.values()) {
       if (mc.fromId === participantId || mc.toId === participantId) {
         if (mc.state === ConnectionState.READY) {
           this._handleConnectionLost(mc, new Error(reason));
+        } else if (mc.state === ConnectionState.CONNECTING) {
+          this._transitionState(mc, ConnectionState.TRANSIENT_FAILURE, reason);
+          this._scheduleReconnect(mc, new Error(reason));
+        } else if (mc.state === ConnectionState.TRANSIENT_FAILURE) {
+          this._scheduleReconnect(mc, new Error(reason));
         }
       }
     }
@@ -437,6 +627,10 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
   }
 
   // ── Internal: connection flow ─────────────────────────────────────────────
+
+  private _canonicalConnectionId(a: string, b: string): string {
+    return a < b ? `${a}--${b}` : `${b}--${a}`;
+  }
 
   private async _doConnect(
     mc: ManagedConnection,
@@ -557,7 +751,29 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     this._stopHeartbeat(mc);
     mc.error = error;
 
-    if (mc.state !== ConnectionState.READY) return;
+    if (mc.state === ConnectionState.CLOSED) return;
+    if (mc.state === ConnectionState.DISCONNECTING) return;
+
+    // If we were in IDLE (first-attempt failed with retryOnInitialFailure),
+    // transition to TRANSIENT_FAILURE directly so reconnect can be scheduled.
+    if (mc.state === ConnectionState.IDLE) {
+      this._transitionState(
+        mc,
+        ConnectionState.TRANSIENT_FAILURE,
+        error?.message
+      );
+      mc.statsTracker?.recordDisconnect();
+      this._scheduleReconnect(mc, error);
+      return;
+    }
+
+    if (
+      mc.state !== ConnectionState.READY &&
+      mc.state !== ConnectionState.CONNECTING
+    )
+      return;
+
+    const prevState = mc.state;
 
     this._transitionState(
       mc,
@@ -566,10 +782,12 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     );
     mc.statsTracker?.recordDisconnect();
 
-    this._onDisconnectedEvent.fire({
-      connectionId: mc.connectionId,
-      error,
-    });
+    if (prevState === ConnectionState.READY) {
+      this._onDisconnectedEvent.fire({
+        connectionId: mc.connectionId,
+        error,
+      });
+    }
 
     this._scheduleReconnect(mc, error);
   }
@@ -595,7 +813,6 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     const delay = policy.nextRetryDelayMs(context);
 
     if (delay === null) {
-      // Policy gave up → move to CLOSED.
       this._log(
         'warn',
         `reconnect policy gave up for ${mc.connectionId} after ${mc.reconnectAttempt} attempts`
@@ -629,6 +846,28 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
         mc.reconnectAttempt + 1
       } in ${Math.round(delay)}ms`
     );
+
+    // Apply PendingRequestBehavior.duringReconnect: if 'reject', reject any
+    // in-flight requests on both participant channels. We don't call
+    // channel.disconnect() here because that would trigger onDidDisconnected
+    // → handleParticipantLost → infinite loop.
+    const pendingBehavior = this.config.pendingRequests;
+    if (pendingBehavior?.duringReconnect === 'reject') {
+      const fromInfo = this.participants.get(mc.fromId);
+      const toInfo = this.participants.get(mc.toId);
+      for (const info of [fromInfo, toInfo]) {
+        if (info) {
+          for (const [, deferred] of info.channel.ongoingRequests) {
+            try {
+              deferred.reject(new Error('connection lost, during reconnect'));
+            } catch {
+              // Deferred may already be settled
+            }
+          }
+          info.channel.ongoingRequests.clear();
+        }
+      }
+    }
 
     this._onReconnectingEvent.fire({
       connectionId: mc.connectionId,
@@ -675,7 +914,6 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     const toInfo = this.participants.get(mc.toId);
 
     if (!fromInfo || !toInfo) {
-      // Participant was unregistered → give up.
       this._transitionState(
         mc,
         ConnectionState.DISCONNECTING,
@@ -685,19 +923,34 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
       return;
     }
 
+    const savedConfig = mc.lastConfig ?? {};
+
+    const fromActivation: ActivationConfig = {
+      connectionId: mc.connectionId,
+      port: portPair.port1,
+      role: 'initiator',
+      myServices: savedConfig.fromServices,
+      peerServices: savedConfig.toServices,
+    };
+    const toActivation: ActivationConfig = {
+      connectionId: mc.connectionId,
+      port: portPair.port2,
+      role: 'receiver',
+      myServices: savedConfig.toServices,
+      peerServices: savedConfig.fromServices,
+    };
+
+    const activateTimeoutMs = this.DEFAULT_ACTIVATE_TIMEOUT_MS;
+
     try {
-      await Promise.all([
-        this.activateParticipant(fromInfo, {
-          connectionId: mc.connectionId,
-          port: portPair.port1,
-          role: 'initiator',
-        }),
-        this.activateParticipant(toInfo, {
-          connectionId: mc.connectionId,
-          port: portPair.port2,
-          role: 'receiver',
-        }),
-      ]);
+      await this._withActivationTimeout(
+        Promise.all([
+          this.activateParticipant(fromInfo, fromActivation),
+          this.activateParticipant(toInfo, toActivation),
+        ]),
+        activateTimeoutMs,
+        mc.connectionId
+      );
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       mc.error = error;
@@ -710,7 +963,6 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
       return;
     }
 
-    // Success!
     mc.error = undefined;
     mc.circuitBreaker?.reset();
     mc.statsTracker?.recordReconnect();
@@ -720,7 +972,8 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
 
     this._transitionState(mc, ConnectionState.READY, 'reconnected');
 
-    const hbConfig = this.config.heartbeat ?? this.defaultHeartbeat;
+    const hbConfig =
+      savedConfig.heartbeat ?? this.config.heartbeat ?? this.defaultHeartbeat;
     if (hbConfig.enabled) {
       this._startHeartbeat(mc, hbConfig);
     }
@@ -732,7 +985,7 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
 
   // ── Internal: heartbeat ───────────────────────────────────────────────────
 
-  private _startHeartbeat(
+  protected _startHeartbeat(
     mc: ManagedConnection,
     hbConfig: HeartbeatConfig
   ): void {
@@ -743,7 +996,7 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     }, hbConfig.intervalMs);
   }
 
-  private _stopHeartbeat(mc: ManagedConnection): void {
+  protected _stopHeartbeat(mc: ManagedConnection): void {
     if (mc.heartbeatTimer != null) {
       clearInterval(mc.heartbeatTimer);
       mc.heartbeatTimer = undefined;
