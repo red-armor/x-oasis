@@ -175,6 +175,9 @@ importers:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
         version: link:../async-call-rpc
+      '@x-oasis/async-call-rpc-web':
+        specifier: workspace:*
+        version: link:../async-call-rpc-web
       electron:
         specifier: '>=20.0.0'
         version: 41.4.0
@@ -13416,10 +13419,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:
