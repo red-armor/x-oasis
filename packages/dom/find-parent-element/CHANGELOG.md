@@ -1,5 +1,15 @@
 # @x-oasis/find-parent-element
 
+## 0.9.0
+
+### Minor Changes
+
+- f7ae61f: feat: add page / renderer channel
+
+### Patch Changes
+
+- 7385260: feat: update lock file
+
 ## 0.8.1
 
 ### Patch Changes

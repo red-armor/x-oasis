@@ -1,5 +1,18 @@
 # @x-oasis/is-ref
 
+## 0.9.0
+
+### Minor Changes
+
+- f7ae61f: feat: add page / renderer channel
+
+### Patch Changes
+
+- 7385260: feat: update lock file
+- Updated dependencies [f7ae61f]
+- Updated dependencies [7385260]
+  - @x-oasis/is-object@0.9.0
+
 ## 0.8.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/url-search-params",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "flatten plain params object to query string and append to a url",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
