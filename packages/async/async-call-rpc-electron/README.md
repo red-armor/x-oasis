@@ -235,6 +235,57 @@ new ElectronUtilityProcessChannel({
 - 主进程侧：进程退出时自动断开，`disconnect()` 会 kill 子进程
 - Utility 进程侧：通过 `process.parentPort` 通信
 
+## 目录结构与子路径导出
+
+本包按 Electron 进程环境划分源码目录，并通过 **子路径导出**（sub-path exports）确保各环境的 bundle 不会引入不必要的依赖。
+
+```
+src/
+├── browser/            → 渲染进程（浏览器环境，无 Electron API 依赖）
+├── electron-browser/   → Preload 脚本（有 ipcRenderer、contextBridge 访问权限）
+├── electron-main/      → 主进程 / Utility 进程（有 ipcMain、utilityProcess 等运行时 API）
+├── types.ts            → 跨环境共享类型（编译后擦除）
+└── index.ts            → 根入口，re-export 所有子路径
+```
+
+### 导入路径选择
+
+| 导入路径                                            | 运行环境         | 依赖                                       | 典型用途                                                                            |
+| --------------------------------------------------- | ---------------- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `@x-oasis/async-call-rpc-electron/browser`          | 渲染进程         | 无 Electron API                            | `createPageChannel`、`ContextBridgeChannel`                                         |
+| `@x-oasis/async-call-rpc-electron/electron-browser` | Preload          | `ipcRenderer`、`contextBridge`（类型级别） | `createPageBridge`、`IPCRendererChannel`、`registerOrchestratorHandler`             |
+| `@x-oasis/async-call-rpc-electron/electron-main`    | 主进程 / Utility | `ipcMain`、`utilityProcess` 等运行时 API   | `IPCMainChannel`、`ElectronConnectionOrchestrator`、`ElectronUtilityProcessChannel` |
+| `@x-oasis/async-call-rpc-electron`                  | 任意（兼容）     | 全部                                       | 向后兼容，会引入所有依赖                                                            |
+
+### 为什么这样划分？
+
+1. **`browser/`** — 渲染进程的代码不依赖任何 Electron 运行时 API，只通过 `globalThis.__rpc_bridge__`（由 preload 注入）通信。独立导出确保渲染进程 bundle 不会误引 `electron` 模块。
+
+2. **`electron-browser/`** — Preload 脚本需要 `ipcRenderer` 和 `contextBridge`，但不引用主进程 API（如 `ipcMain`）。类型通过 `electron` 模块声明引入，编译后擦除，避免 bundle 问题。
+
+3. **`electron-main/`** — 主进程和 Utility 进程使用完整 Electron 运行时 API，不能在渲染进程加载。
+
+### 使用示例
+
+```typescript
+// 渲染进程（App.tsx）— 无 Electron 依赖
+import { createPageChannel } from '@x-oasis/async-call-rpc-electron/browser';
+const channel = createPageChannel('page↔preload');
+
+// Preload 脚本 — 需要 ipcRenderer、contextBridge
+import { createPageBridge } from '@x-oasis/async-call-rpc-electron/electron-browser';
+const { channel, ipcChannel } = createPageBridge({
+  ipcRenderer,
+  channelName: 'app-rpc',
+});
+
+// 主进程 — 需要 ipcMain、utilityProcess 等
+import {
+  IPCMainChannel,
+  ElectronConnectionOrchestrator,
+} from '@x-oasis/async-call-rpc-electron/electron-main';
+```
+
 ## Peer Dependencies
 
 | 包         | 版本    | 说明     |
