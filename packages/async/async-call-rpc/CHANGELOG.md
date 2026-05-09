@@ -1,5 +1,25 @@
 # @x-oasis/async-call-rpc
 
+## 0.8.0
+
+### Minor Changes
+
+- d9de1de: fix: types dist issue
+
+### Patch Changes
+
+- 05cc74a: feat: rename to is-proxy-supported
+- Updated dependencies [05cc74a]
+- Updated dependencies [d9de1de]
+  - @x-oasis/is-ascii@0.8.0
+  - @x-oasis/is-function@0.8.0
+  - @x-oasis/is-object@0.8.0
+  - @x-oasis/is-promise@0.8.0
+  - @x-oasis/disposable@0.8.0
+  - @x-oasis/emitter@0.8.0
+  - @x-oasis/id@0.8.0
+  - @x-oasis/deferred@0.8.0
+
 ## 0.7.0
 
 ### Minor Changes

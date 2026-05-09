@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/default-value",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "default-value function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

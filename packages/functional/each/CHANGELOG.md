@@ -1,5 +1,18 @@
 # @x-oasis/each
 
+## 0.8.0
+
+### Minor Changes
+
+- d9de1de: fix: types dist issue
+
+### Patch Changes
+
+- 05cc74a: feat: rename to is-proxy-supported
+- Updated dependencies [05cc74a]
+- Updated dependencies [d9de1de]
+  - @x-oasis/is-object@0.8.0
+
 ## 0.7.0
 
 ### Minor Changes
