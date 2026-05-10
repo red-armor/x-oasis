@@ -1,5 +1,12 @@
 # @x-oasis/node-fetch-json
 
+## 0.8.0
+
+### Minor Changes
+
+- 86816b6: feat: update lock
+- b29baa0: feat: more readable async call rpc client
+
 ## 0.7.0
 
 ### Minor Changes

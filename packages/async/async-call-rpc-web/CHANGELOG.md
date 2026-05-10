@@ -1,5 +1,18 @@
 # @x-oasis/async-call-rpc-web
 
+## 0.8.0
+
+### Minor Changes
+
+- 86816b6: feat: update lock
+- b29baa0: feat: more readable async call rpc client
+
+### Patch Changes
+
+- Updated dependencies [86816b6]
+- Updated dependencies [b29baa0]
+  - @x-oasis/async-call-rpc@0.10.0
+
 ## 0.7.0
 
 ### Minor Changes

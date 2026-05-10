@@ -1,5 +1,12 @@
 # @x-oasis/website
 
+## 0.7.0
+
+### Minor Changes
+
+- 86816b6: feat: update lock
+- b29baa0: feat: more readable async call rpc client
+
 ## 0.6.0
 
 ### Minor Changes
