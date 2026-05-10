@@ -1,21 +1,10 @@
-import {
-  createPageChannel,
-  createIpcPageChannel,
-} from '@x-oasis/async-call-rpc-electron/browser';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
 import OrchestratorDashboard from '@shared-ui/OrchestratorDashboard';
 import useOrchestratorDashboard from '@shared-ui/useOrchestratorDashboard';
 
-const pageChannel = createPageChannel('page↔preload');
-const ipcPageChannel = createIpcPageChannel('page↔preload:ipc');
+const client = createOrchestratorClient();
 
-const mainDirectClient = clientHost
-  .registerClient('main-direct', { channel: pageChannel })
-  .createProxy();
-
-const orchestratorClient = clientHost
-  .registerClient('orchestrator', { channel: ipcPageChannel })
-  .createProxy();
+const mainDirectClient = (client as any).mainDirectClient;
 
 function App(): JSX.Element {
   const dashboard = useOrchestratorDashboard({
@@ -23,16 +12,18 @@ function App(): JSX.Element {
       { id: 'main', type: 'process' },
       { id: 'renderer', type: 'renderer' },
     ],
-    api: orchestratorClient as any,
+    api: client as any,
     sendRpc: async (message) => {
-      return (mainDirectClient as any).greet(message);
+      return (
+        mainDirectClient?.greet(message) || { message: 'Service not available' }
+      );
     },
   });
 
   return (
     <OrchestratorDashboard
       title="Renderer ↔ Main (Orchestrator)"
-      description="ElectronConnectionOrchestrator wiring a direct MessagePort between renderer and main process — with stats & lifecycle"
+      description="ElectronConnectionOrchestrator wiring a direct MessagePort between renderer and main process — optimized setup with abstracted orchestrator"
       rpcTargetLabel="Main"
       {...dashboard}
     />

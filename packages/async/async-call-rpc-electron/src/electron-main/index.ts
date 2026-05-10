@@ -19,10 +19,12 @@ export {
   UtilityOrchestratorParticipant,
   createUtilityParticipant,
 } from './UtilityOrchestratorParticipant';
+export type { UtilityParticipantOptions } from './UtilityOrchestratorParticipant';
+export { setupMainOrchestrator } from './MainOrchestratorSetup';
 export type {
-  UtilityParticipantOptions,
-  UtilityGetServiceOptions,
-} from './UtilityOrchestratorParticipant';
+  MainOrchestratorSetupOptions,
+  MainOrchestratorSetupResult,
+} from './MainOrchestratorSetup';
 
 // Utility processes (node runtime) participating in the orchestrator topology
 // also need `registerOrchestratorHandler` to receive `MessagePortMain`s on
