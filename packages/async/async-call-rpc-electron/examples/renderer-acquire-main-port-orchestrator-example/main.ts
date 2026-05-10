@@ -76,6 +76,10 @@ app.whenReady().then(async () => {
   clientHost
     .registerClient('renderer-direct', { channel: mainDirectChannel })
     .createProxy();
+
+  // Establish initial connection
+  const info = await orchestrator.connect('main', 'renderer');
+  console.log(`[main] initial connection state: ${info.state}`);
 });
 
 app.on('window-all-closed', () => {
