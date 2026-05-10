@@ -14,7 +14,7 @@
  */
 
 import { app, utilityProcess } from 'electron';
-import { ElectronUtilityProcessChannel } from '../../../src/index.ts';
+import { ElectronUtilityProcessChannel } from '../../../src/electron-main/index.js';
 import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
 
 import path from 'path';

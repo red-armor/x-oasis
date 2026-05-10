@@ -10,7 +10,7 @@
  */
 
 import { ipcRenderer } from 'electron';
-import { IPCRendererChannel } from '../../../src/index.ts';
+import { IPCRendererChannel } from '../../../src/electron-browser/index.js';
 import { clientHost } from '@x-oasis/async-call-rpc';
 
 // ─── 定义远程服务接口（与主进程注册的 handlers 对应） ──────────────────────────

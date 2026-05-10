@@ -9,7 +9,7 @@
  * 3. 反向调用主进程提供的回调方法
  */
 
-import { ElectronUtilityProcessChannel } from '../../../src/index.ts';
+import { ElectronUtilityProcessChannel } from '../../../src/electron-main/index.js';
 import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
 
 import crypto from 'crypto';

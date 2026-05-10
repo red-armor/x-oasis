@@ -5,7 +5,7 @@ export default [
     input: 'src/index.ts',
     output: {
       file: 'dist/index.js',
-      format: 'cjs',
+      format: 'esm',
       sourcemap: true,
     },
     external: [
@@ -26,7 +26,7 @@ export default [
     input: 'src/browser/index.ts',
     output: {
       file: 'dist/browser/index.js',
-      format: 'cjs',
+      format: 'esm',
       sourcemap: true,
     },
     external: [
@@ -47,7 +47,7 @@ export default [
     input: 'src/electron-browser/index.ts',
     output: {
       file: 'dist/electron-browser/index.js',
-      format: 'cjs',
+      format: 'esm',
       sourcemap: true,
     },
     external: [
@@ -68,7 +68,7 @@ export default [
     input: 'src/electron-main/index.ts',
     output: {
       file: 'dist/electron-main/index.js',
-      format: 'cjs',
+      format: 'esm',
       sourcemap: true,
     },
     external: [

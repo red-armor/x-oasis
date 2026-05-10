@@ -13,7 +13,7 @@
  */
 
 import { app, BrowserWindow, dialog } from 'electron';
-import { IPCMainChannel } from '../../../src/index.ts';
+import { IPCMainChannel } from '../../../src/electron-main/index.js';
 import { serviceHost } from '@x-oasis/async-call-rpc';
 import path from 'path';
 
