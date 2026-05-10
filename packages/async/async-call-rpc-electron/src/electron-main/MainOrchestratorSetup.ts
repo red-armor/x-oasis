@@ -7,6 +7,10 @@ export interface MainOrchestratorSetupOptions {
   /** Main window's IPC channel */
   ipcChannel: IPCMainChannel;
 
+  /** Participant IDs for the default connection handlers */
+  fromId?: string;
+  toId?: string;
+
   /** Orchestrator configuration */
   orchestratorConfig?: {
     logger?: (level: string, msg: string) => void;
@@ -52,6 +56,8 @@ export async function setupMainOrchestrator(
 ): Promise<MainOrchestratorSetupResult> {
   const {
     ipcChannel,
+    fromId = 'main',
+    toId,
     orchestratorConfig,
     handlers,
     setupParticipants,
@@ -80,7 +86,11 @@ export async function setupMainOrchestrator(
   orchestrator.registerParticipant('main', mainParticipantChannel, 'process');
 
   // Create default handlers merged with custom handlers
-  const defaultHandlers = createDefaultOrchestratorHandlers(orchestrator);
+  const defaultHandlers = createDefaultOrchestratorHandlers(
+    orchestrator,
+    fromId,
+    toId
+  );
   const mergedHandlers = { ...defaultHandlers, ...handlers };
 
   // Register orchestrator service on IPC channel
@@ -135,13 +145,14 @@ function createMainParticipantChannel(
  * These handlers provide standard orchestrator functionality
  */
 function createDefaultOrchestratorHandlers(
-  orchestrator: ElectronConnectionOrchestrator
+  orchestrator: ElectronConnectionOrchestrator,
+  fromId: string,
+  toId?: string
 ): Record<string, (...args: any[]) => any> {
   return {
-    async connect(fromId?: string, toId?: string): Promise<any> {
+    async connect(): Promise<any> {
       try {
-        const from = fromId || 'main';
-        const info = await orchestrator.connect(from, toId!);
+        const info = await orchestrator.connect(fromId, toId!);
         return {
           connectionId: info.connectionId,
           fromId: info.fromId,
@@ -155,9 +166,8 @@ function createDefaultOrchestratorHandlers(
       }
     },
 
-    async disconnect(fromId?: string, toId?: string): Promise<void> {
-      const from = fromId || 'main';
-      const info = orchestrator.getConnectionInfo(from, toId!);
+    async disconnect(): Promise<void> {
+      const info = orchestrator.getConnectionInfo(fromId, toId!);
       if (info) {
         await orchestrator.disconnect(info.connectionId);
       }
@@ -170,9 +180,8 @@ function createDefaultOrchestratorHandlers(
       );
     },
 
-    async getStatus(fromId?: string, toId?: string): Promise<any> {
-      const from = fromId || 'main';
-      const info = orchestrator.getConnectionInfo(from, toId!);
+    async getStatus(): Promise<any> {
+      const info = orchestrator.getConnectionInfo(fromId, toId!);
       if (!info) return null;
 
       const stats = orchestrator.getConnectionStats(info.connectionId);

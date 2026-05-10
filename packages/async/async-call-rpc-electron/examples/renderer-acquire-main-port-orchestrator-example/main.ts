@@ -42,12 +42,13 @@ app.whenReady().then(async () => {
   // Setup orchestrator using abstraction
   const { orchestrator, mainDirectChannel } = await setupMainOrchestrator({
     ipcChannel,
+    fromId: 'main',
+    toId: 'renderer',
     orchestratorConfig: {
       logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
       enableStats: true,
     },
     setupParticipants: (orch) => {
-      // Register renderer as a participant in the orchestrator
       orch.registerParticipant('renderer', ipcChannel, 'renderer');
     },
   });
@@ -75,12 +76,6 @@ app.whenReady().then(async () => {
   clientHost
     .registerClient('renderer-direct', { channel: mainDirectChannel })
     .createProxy();
-
-  // Delay initial connection to allow renderer to load
-  setTimeout(async () => {
-    const info = await orchestrator.connect('main', 'renderer');
-    console.log(`[main] initial connection state: ${info.state}`);
-  }, 1000);
 });
 
 app.on('window-all-closed', () => {
