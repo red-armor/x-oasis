@@ -4,7 +4,7 @@ import useOrchestratorDashboard from '@shared-ui/useOrchestratorDashboard';
 
 const client = createOrchestratorClient();
 
-const utilityService = client.getService<any>('utility');
+const utilityService = client.getService<any>('utility-direct');
 
 function App(): JSX.Element {
   const dashboard = useOrchestratorDashboard({

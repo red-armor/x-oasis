@@ -34,7 +34,7 @@ export class OrchestratorClient {
     this._ipcChannel = createIpcPageChannel(ipcChannelDescription);
 
     this._orchestratorProxy = clientHost
-      .registerClient('__orchestrator_client__', {
+      .registerClient('orchestrator', {
         channel: this._ipcChannel,
       })
       .createProxy();
@@ -49,22 +49,22 @@ export class OrchestratorClient {
   }
 
   getService<T extends Record<string, (...args: any[]) => any>>(
-    participantId: string,
+    servicePath: string,
     options: GetServiceOptions = {}
   ): T {
     const { autoConnect = this._defaultAutoConnect } = options;
 
-    if (this._serviceProxies.has(participantId)) {
-      return this._serviceProxies.get(participantId) as T;
+    if (this._serviceProxies.has(servicePath)) {
+      return this._serviceProxies.get(servicePath) as T;
     }
 
     const proxy = clientHost
-      .registerClient(`__svc_${participantId}__`, {
+      .registerClient(servicePath, {
         channel: this._directChannel,
       })
       .createProxy<T>();
 
-    this._serviceProxies.set(participantId, proxy);
+    this._serviceProxies.set(servicePath, proxy);
 
     if (autoConnect) {
       this.connect().catch(() => {});
@@ -102,6 +102,10 @@ export class OrchestratorClient {
 
   killUtility(...args: any[]): any {
     return this._orchestratorProxy.killUtility(...args);
+  }
+
+  async sendRpc(...args: any[]): Promise<any> {
+    return this._orchestratorProxy.sendRpc(...args);
   }
 
   onStateChange(callback: (event: any) => void): { unsubscribe: () => void } {

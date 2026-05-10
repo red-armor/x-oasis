@@ -1,13 +1,10 @@
-import { createIpcPageChannel } from '@x-oasis/async-call-rpc-electron/browser';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
 import OrchestratorDashboard from '@shared-ui/OrchestratorDashboard';
-import useOrchestratorDashboard from '@shared-ui/useOrchestratorDashboard';
+import useOrchestratorDashboard, {
+  OrchestratorAPI,
+} from '@shared-ui/useOrchestratorDashboard';
 
-const ipcPageChannel = createIpcPageChannel('page↔preload:ipc');
-
-const orchestratorClient = clientHost
-  .registerClient('orchestrator', { channel: ipcPageChannel })
-  .createProxy();
+const client = createOrchestratorClient();
 
 function App(): JSX.Element {
   const dashboard = useOrchestratorDashboard({
@@ -15,12 +12,10 @@ function App(): JSX.Element {
       { id: 'utility-a', type: 'utility' },
       { id: 'utility-b', type: 'utility' },
     ],
-    api: orchestratorClient as any,
+    api: client as unknown as OrchestratorAPI,
     simulateLostLogMessage: 'Simulating utility-b lost...',
-    sendRpc: async () => {
-      throw new Error(
-        'Direct RPC from renderer not available — utility↔utility only'
-      );
+    sendRpc: async (message: string) => {
+      return (client as any).sendRpc(message);
     },
   });
 

@@ -1,42 +1,31 @@
-import {
-  ElectronUtilityProcessChannel,
-  ElectronMessagePortMainChannel,
-  registerOrchestratorHandler,
-} from '../../src/index.js';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { createUtilityParticipant } from '../../src/index.js';
 
 if (!process.parentPort) {
   throw new Error('parentPort is not available');
 }
 
-const mainChannel = new ElectronUtilityProcessChannel({
+const participant = createUtilityParticipant({
   parentPort: process.parentPort as any,
-  description: 'utility-b→main IPC channel',
+  mainChannelDescription: 'utility-b→main IPC channel',
+  directChannelDescription: 'utility-b↔utility-a direct port',
 });
 
-const directChannel = new ElectronMessagePortMainChannel({
-  description: 'utility-b↔utility-a direct port',
-});
+const utilityAService = participant.getService<any>('utility-a-direct');
 
 let callCount = 0;
 
-serviceHost.registerService('utility-b-direct', {
-  channel: directChannel,
-  serviceHost,
-  handlers: {
-    echo(msg: string): string {
-      callCount++;
-      return `echo from utility-b (#${callCount}): ${msg}`;
-    },
+participant.registerService('utility-b-direct', {
+  echo(msg: string): string {
+    callCount++;
+    console.log('[utility-b] echo() called via DIRECT port, responding');
+    return `echo from utility-b (#${callCount}): ${msg}`;
   },
-});
-
-const utilityADirectClient = clientHost
-  .registerClient('utility-a-direct', { channel: directChannel })
-  .createProxy();
-
-registerOrchestratorHandler(mainChannel, (port: any) => {
-  directChannel.bindPort(port);
+  async pingA(msg: string): Promise<string> {
+    console.log('[utility-b] → direct port → utility-a.greet()');
+    const fromA = await utilityAService.greet(msg);
+    console.log('[utility-b] ← direct port ← utility-a:', fromA);
+    return fromA;
+  },
 });
 
 console.log('[utility-worker-b] initialized');

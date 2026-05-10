@@ -4,7 +4,7 @@ import {
   ElectronUtilityProcessChannel,
   ElectronConnectionOrchestrator,
 } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;
@@ -62,7 +62,10 @@ app.whenReady().then(async () => {
   orchestrator.registerParticipant('utility-a', utilityAChannel, 'utility');
   orchestrator.registerParticipant('utility-b', utilityBChannel, 'utility');
 
-  // Register orchestrator service for RPC calls
+  const utilityARelayClient = clientHost
+    .registerClient('utility-a-relay', { channel: utilityAChannel })
+    .createProxy();
+
   serviceHost.registerService('orchestrator', {
     channel: ipcChannel,
     serviceHost,
@@ -137,6 +140,9 @@ app.whenReady().then(async () => {
       },
       onClosed(remoteCallback: (event: any) => void) {
         orchestrator.onClosed((event) => remoteCallback(event));
+      },
+      async sendRpc(message: string): Promise<string> {
+        return (utilityARelayClient as any).pingPong(message);
       },
     },
   });

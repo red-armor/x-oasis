@@ -15,6 +15,14 @@ export { default as ElectronMessagePortMainChannel } from './ElectronMessagePort
 export { default as ElectronUtilityProcessChannel } from './ElectronUtilityProcessChannel';
 export { ElectronConnectionOrchestrator } from './ElectronConnectionOrchestrator';
 export type { MessageChannelMainFactory } from './ElectronConnectionOrchestrator';
+export {
+  UtilityOrchestratorParticipant,
+  createUtilityParticipant,
+} from './UtilityOrchestratorParticipant';
+export type {
+  UtilityParticipantOptions,
+  UtilityGetServiceOptions,
+} from './UtilityOrchestratorParticipant';
 
 // Utility processes (node runtime) participating in the orchestrator topology
 // also need `registerOrchestratorHandler` to receive `MessagePortMain`s on
