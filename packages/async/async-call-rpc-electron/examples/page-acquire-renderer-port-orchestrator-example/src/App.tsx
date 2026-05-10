@@ -1,29 +1,17 @@
-import {
-  createPageChannel,
-  createIpcPageChannel,
-} from '@x-oasis/async-call-rpc-electron/browser';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
 import OrchestratorDashboard from '@shared-ui/OrchestratorDashboard';
 import useOrchestratorDashboard from '@shared-ui/useOrchestratorDashboard';
 
-const pageChannel = createPageChannel('page↔preload');
-const ipcPageChannel = createIpcPageChannel('page↔preload:ipc');
+const client = createOrchestratorClient({
+  directChannelDescription: 'page↔preload',
+  ipcChannelDescription: 'page↔preload:ipc',
+});
 
-const utilityDirectClient = clientHost
-  .registerClient('utility-direct', { channel: pageChannel })
-  .createProxy();
+const utilityService = client.getService<any>('utility');
 
-const orchestratorClient = clientHost
-  .registerClient('orchestrator', { channel: ipcPageChannel })
-  .createProxy();
-
-serviceHost.registerService('page-api', {
-  channel: pageChannel,
-  serviceHost,
-  handlers: {
-    greet(msg: string): string {
-      return `greeting from page: ${msg}`;
-    },
+client.registerService('page-api', {
+  greet(msg: string): string {
+    return `greeting from page: ${msg}`;
   },
 });
 
@@ -33,9 +21,9 @@ function App(): JSX.Element {
       { id: 'renderer (page)', type: 'renderer' },
       { id: 'utility', type: 'utility' },
     ],
-    api: orchestratorClient as any,
+    api: client as any,
     sendRpc: async (message) => {
-      return (utilityDirectClient as any).ping(message);
+      return utilityService.ping(message);
     },
   });
 

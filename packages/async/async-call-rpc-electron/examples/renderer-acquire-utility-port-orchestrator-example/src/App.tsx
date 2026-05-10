@@ -1,21 +1,10 @@
-import {
-  createPageChannel,
-  createIpcPageChannel,
-} from '@x-oasis/async-call-rpc-electron/browser';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
 import OrchestratorDashboard from '@shared-ui/OrchestratorDashboard';
 import useOrchestratorDashboard from '@shared-ui/useOrchestratorDashboard';
 
-const pageChannel = createPageChannel('page↔preload');
-const ipcPageChannel = createIpcPageChannel('page↔preload:ipc');
+const client = createOrchestratorClient();
 
-const utilityDirectClient = clientHost
-  .registerClient('utility-direct', { channel: pageChannel })
-  .createProxy();
-
-const orchestratorClient = clientHost
-  .registerClient('orchestrator', { channel: ipcPageChannel })
-  .createProxy();
+const utilityService = client.getService<any>('utility');
 
 function App(): JSX.Element {
   const dashboard = useOrchestratorDashboard({
@@ -23,9 +12,9 @@ function App(): JSX.Element {
       { id: 'renderer', type: 'renderer' },
       { id: 'utility', type: 'utility' },
     ],
-    api: orchestratorClient as any,
+    api: client as any,
     sendRpc: async (message) => {
-      return (utilityDirectClient as any).ping(message);
+      return utilityService.ping(message);
     },
   });
 
