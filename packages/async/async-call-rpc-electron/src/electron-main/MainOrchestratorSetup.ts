@@ -136,7 +136,7 @@ function createMainParticipantChannel(
   return {
     makeRequest(requestPath: string, methodName: string, port: any) {
       if (methodName === 'activateConnection' && port) {
-        directChannel.bindPort(port);
+        directChannel.bindPort(port, { rebind: true });
       }
       return { promise: Promise.resolve(), seqId: 0 };
     },
