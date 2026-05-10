@@ -5,10 +5,6 @@ interface AliasMap {
   [key: string]: string;
 }
 
-/**
- * 动态解析 @x-oasis/* 包的源文件路径
- * 为开发环境总是使用源文件，以支持热刷新
- */
 export function resolveXOasisAliases(): AliasMap {
   const aliases: AliasMap = {};
   const packagesRoot = resolve(__dirname, '../../../..');
@@ -30,9 +26,21 @@ export function resolveXOasisAliases(): AliasMap {
 
     for (const pkg of packages) {
       const pkgPath = resolve(categoryPath, pkg);
-      const srcPath = resolve(pkgPath, 'src/index.ts');
+      const srcDir = resolve(pkgPath, 'src');
 
-      // 只要 src 存在，就使用源文件（用于开发环境的热刷新）
+      if (fs.existsSync(srcDir)) {
+        const subDirs = fs
+          .readdirSync(srcDir)
+          .filter((name) => fs.statSync(resolve(srcDir, name)).isDirectory());
+        for (const sub of subDirs) {
+          const subIndexPath = resolve(srcDir, sub, 'index.ts');
+          if (fs.existsSync(subIndexPath)) {
+            aliases[`@x-oasis/${pkg}/${sub}`] = subIndexPath;
+          }
+        }
+      }
+
+      const srcPath = resolve(pkgPath, 'src/index.ts');
       if (fs.existsSync(srcPath)) {
         aliases[`@x-oasis/${pkg}`] = srcPath;
       }
