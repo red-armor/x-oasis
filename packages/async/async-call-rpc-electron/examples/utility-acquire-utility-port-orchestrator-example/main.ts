@@ -2,9 +2,9 @@ import { app, BrowserWindow, utilityProcess } from 'electron';
 import {
   IPCMainChannel,
   ElectronUtilityProcessChannel,
-  ElectronConnectionOrchestrator,
+  setupMainOrchestrator,
 } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { clientHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;
@@ -54,96 +54,26 @@ app.whenReady().then(async () => {
     description: 'main→utility-b IPC channel',
   });
 
-  const orchestrator = new ElectronConnectionOrchestrator({
-    logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
-    enableStats: true,
-  });
-
-  orchestrator.registerParticipant('utility-a', utilityAChannel, 'utility');
-  orchestrator.registerParticipant('utility-b', utilityBChannel, 'utility');
-
-  const utilityARelayClient = clientHost
-    .registerClient('utility-a-relay', { channel: utilityAChannel })
-    .createProxy();
-
-  serviceHost.registerService('orchestrator', {
-    channel: ipcChannel,
-    serviceHost,
+  const { orchestrator } = await setupMainOrchestrator({
+    ipcChannel,
+    fromId: 'utility-a',
+    toId: 'utility-b',
+    registerMain: false,
+    orchestratorConfig: {
+      logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
+      enableStats: true,
+    },
     handlers: {
-      async connect(): Promise<any> {
-        try {
-          const info = await orchestrator.connect('utility-a', 'utility-b');
-          return {
-            connectionId: info.connectionId,
-            fromId: info.fromId,
-            toId: info.toId,
-            state: info.state,
-            lastStateChangedAt: info.lastStateChangedAt,
-            error: info.error?.message,
-          };
-        } catch (err: any) {
-          return { error: err.message };
-        }
-      },
-      async disconnect(): Promise<void> {
-        const info = orchestrator.getConnectionInfo('utility-a', 'utility-b');
-        if (info) {
-          await orchestrator.disconnect(info.connectionId);
-        }
-      },
-      simulateLost(): void {
-        orchestrator.handleParticipantLost(
-          'utility-b',
-          'simulated process exit'
-        );
-      },
-      async getStatus(): Promise<any> {
-        const info = orchestrator.getConnectionInfo('utility-a', 'utility-b');
-        if (!info) return null;
-        const stats = orchestrator.getConnectionStats(info.connectionId);
-        return {
-          connectionId: info.connectionId,
-          fromId: info.fromId,
-          toId: info.toId,
-          state: info.state,
-          lastStateChangedAt: info.lastStateChangedAt,
-          error: info.error?.message,
-          isReady: info.isReady,
-          stats: stats
-            ? {
-                totalRpcCalls: stats.totalRpcCalls,
-                successfulCalls: stats.successfulCalls,
-                failedCalls: stats.failedCalls,
-                avgLatencyMs: stats.avgLatencyMs,
-                totalReconnects: stats.totalReconnects,
-              }
-            : null,
-        };
-      },
-      onStateChange(remoteCallback: (event: any) => void) {
-        orchestrator.onStateChange((event) => remoteCallback(event));
-      },
-      onReady(remoteCallback: (event: any) => void) {
-        orchestrator.onReady((event) => remoteCallback(event));
-      },
-      onDisconnected(remoteCallback: (event: any) => void) {
-        orchestrator.onDisconnected((event) => remoteCallback(event));
-      },
-      onReconnecting(remoteCallback: (event: any) => void) {
-        orchestrator.onReconnecting((event) => remoteCallback(event));
-      },
-      onReconnected(remoteCallback: (event: any) => void) {
-        orchestrator.onReconnected((event) => remoteCallback(event));
-      },
-      onReconnectFailed(remoteCallback: (event: any) => void) {
-        orchestrator.onReconnectFailed((event) => remoteCallback(event));
-      },
-      onClosed(remoteCallback: (event: any) => void) {
-        orchestrator.onClosed((event) => remoteCallback(event));
-      },
       async sendRpc(message: string): Promise<string> {
+        const utilityARelayClient = clientHost
+          .registerClient('utility-a-relay', { channel: utilityAChannel })
+          .createProxy();
         return (utilityARelayClient as any).pingPong(message);
       },
+    },
+    setupParticipants: (orch) => {
+      orch.registerParticipant('utility-a', utilityAChannel, 'utility');
+      orch.registerParticipant('utility-b', utilityBChannel, 'utility');
     },
   });
 

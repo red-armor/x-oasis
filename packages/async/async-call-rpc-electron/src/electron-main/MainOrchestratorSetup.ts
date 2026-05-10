@@ -11,6 +11,14 @@ export interface MainOrchestratorSetupOptions {
   fromId?: string;
   toId?: string;
 
+  /**
+   * Whether to register main process as a participant.
+   * Set to false when main is only an orchestrator (not an endpoint),
+   * e.g. utility-a ↔ utility-b via orchestrator.
+   * Defaults to true.
+   */
+  registerMain?: boolean;
+
   /** Orchestrator configuration */
   orchestratorConfig?: {
     logger?: (level: string, msg: string) => void;
@@ -37,7 +45,7 @@ export interface MainOrchestratorSetupOptions {
 export interface MainOrchestratorSetupResult {
   orchestrator: ElectronConnectionOrchestrator;
   ipcChannel: IPCMainChannel;
-  mainDirectChannel: ElectronMessagePortMainChannel;
+  mainDirectChannel: ElectronMessagePortMainChannel | null;
   serviceHost: typeof serviceHost;
 }
 
@@ -58,18 +66,12 @@ export async function setupMainOrchestrator(
     ipcChannel,
     fromId = 'main',
     toId,
+    registerMain = true,
     orchestratorConfig,
     handlers,
     setupParticipants,
     onReady,
   } = options;
-
-  // Create main process direct channel
-  const mainDirectChannel = new ElectronMessagePortMainChannel({
-    description: orchestratorConfig?.heartbeat
-      ? 'main↔{target} direct port (with heartbeat)'
-      : 'main↔{target} direct port',
-  });
 
   // Initialize orchestrator
   const orchestrator = new ElectronConnectionOrchestrator({
@@ -80,10 +82,18 @@ export async function setupMainOrchestrator(
     heartbeat: orchestratorConfig?.heartbeat,
   });
 
-  // Register main as a participant with custom channel adapter
-  const mainParticipantChannel =
-    createMainParticipantChannel(mainDirectChannel);
-  orchestrator.registerParticipant('main', mainParticipantChannel, 'process');
+  // Optionally register main as a participant
+  let mainDirectChannel: ElectronMessagePortMainChannel | null = null;
+  if (registerMain) {
+    mainDirectChannel = new ElectronMessagePortMainChannel({
+      description: orchestratorConfig?.heartbeat
+        ? 'main↔{target} direct port (with heartbeat)'
+        : 'main↔{target} direct port',
+    });
+    const mainParticipantChannel =
+      createMainParticipantChannel(mainDirectChannel);
+    orchestrator.registerParticipant('main', mainParticipantChannel, 'process');
+  }
 
   // Create default handlers merged with custom handlers
   const defaultHandlers = createDefaultOrchestratorHandlers(
