@@ -55,16 +55,11 @@ app.whenReady().then(async () => {
       enableStats: true,
     },
     handlers: {
-      async sendRpc(_args: any, message: string): Promise<any> {
-        try {
-          const utilityDirectClient = clientHost
-            .registerClient('utility-direct', { channel: mainDirectChannel! })
-            .createProxy();
-          const result = await (utilityDirectClient as any).ping(message);
-          return { success: true, result };
-        } catch (err: any) {
-          return { success: false, error: err.message };
-        }
+      async sendRpc(message: string): Promise<string> {
+        const utilityDirectClient = clientHost
+          .registerClient('utility-direct', { channel: mainDirectChannel! })
+          .createProxy();
+        return (utilityDirectClient as any).ping(message);
       },
     },
     setupParticipants: (orch) => {
