@@ -198,25 +198,6 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@24.10.9)(jsdom@15.2.1)
 
-  packages/async/async-call-rpc-electron/examples/basic/ipc-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-
   packages/async/async-call-rpc-electron/examples/basic/renderer-acquire-main-port-example:
     dependencies:
       '@x-oasis/async-call-rpc':
@@ -383,6 +364,40 @@ importers:
       '@x-oasis/async-call-rpc-web':
         specifier: workspace:*
         version: link:../../../../async-call-rpc-web
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/orchestrator/pagelet-proxy-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../../..
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^4.3.0
@@ -9900,10 +9915,7 @@ snapshots:
       jest-runner: 25.5.4
       jest-runtime: 25.5.4
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   '@jest/transform@25.5.1':
     dependencies:
@@ -13458,7 +13470,10 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:
