@@ -8,7 +8,7 @@ const bridge = createPageBridge({
   description: 'page↔utility bridge',
 });
 
-const utilityDirectClient = clientHost
+clientHost
   .registerClient('utility-direct', { channel: bridge.channel })
   .createProxy();
 

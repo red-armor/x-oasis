@@ -1,8 +1,9 @@
 import { contextBridge } from 'electron';
 import IPCRendererChannel from './IPCRendererChannel';
 import { registerOrchestratorHandler } from './registerOrchestratorHandler';
-import { ContextBridgeAPI, ContextBridgeIPCAPI, IpcRenderer } from '../types';
+import { ContextBridgeAPI, IpcRenderer } from '../types';
 import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
+import { ORCHESTRATOR_SERVICE_PATH } from '@x-oasis/async-call-rpc';
 
 const BRIDGE_KEY = '__rpc_bridge__' as const;
 const IPC_BRIDGE_KEY = '__rpc_ipc_bridge__' as const;
@@ -11,6 +12,22 @@ export interface CreatePageBridgeOptions {
   ipcRenderer: IpcRenderer;
   channelName: string;
   description?: string;
+}
+
+function getServicePath(data: unknown): string | undefined {
+  if (typeof data === 'string') {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      return undefined;
+    }
+  }
+  // Wire format: [[type, seqId, requestPath, methodName], body]
+  // header = data[0] = [type, seqId, requestPath, methodName]
+  // requestPath is at index 2 of the header array
+  if (!Array.isArray(data) || !Array.isArray(data[0])) return undefined;
+  const header = data[0]; // [type, seqId, requestPath, methodName]
+  return typeof header[2] === 'string' ? header[2] : undefined;
 }
 
 export function createPageBridge(options: CreatePageBridgeOptions): {
@@ -71,7 +88,7 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
     },
   };
 
-  const ipcBridge: ContextBridgeIPCAPI = {
+  const ipcBridge: ContextBridgeAPI = {
     _send: (data: unknown) => {
       ipcChannel.send(data);
     },
@@ -86,9 +103,9 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
   ipcChannel.on((rawMessage: any) => {
     const data = rawMessage?.data ?? rawMessage;
     const ports = rawMessage?.ports ?? [];
-    if (ports.length === 0) {
-      ipcMessageHandlers.forEach((cb) => cb(data));
-    }
+    if (ports.length > 0) return;
+    if (getServicePath(data) === ORCHESTRATOR_SERVICE_PATH) return;
+    ipcMessageHandlers.forEach((cb) => cb(data));
   });
 
   try {

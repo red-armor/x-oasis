@@ -996,7 +996,7 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     }, hbConfig.intervalMs);
   }
 
-  protected _stopHeartbeat(mc: ManagedConnection): void {
+  protected _stopHeartbeat(mc: any): void {
     if (mc.heartbeatTimer != null) {
       clearInterval(mc.heartbeatTimer);
       mc.heartbeatTimer = undefined;

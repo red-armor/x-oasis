@@ -25,7 +25,6 @@ export type {
   IpcRendererEvent,
   ContextBridgeChannelProps,
   ContextBridgeAPI,
-  ContextBridgeIPCAPI,
 } from '../types';
 
 export type { CreatePageBridgeOptions } from './createPageBridge';

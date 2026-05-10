@@ -8,7 +8,6 @@ import {
 import { ContextBridgeAPI, ContextBridgeChannelProps } from '../types';
 
 const BRIDGE_KEY = '__rpc_bridge__' as const;
-const IPC_BRIDGE_KEY = '__rpc_ipc_bridge__' as const;
 
 export default class ContextBridgeChannel extends AbstractChannelProtocol {
   private _bridge: ContextBridgeAPI | null = null;
