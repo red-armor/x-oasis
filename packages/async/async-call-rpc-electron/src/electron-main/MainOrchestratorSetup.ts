@@ -173,10 +173,10 @@ function createDefaultOrchestratorHandlers(
       }
     },
 
-    simulateLost(participantId: string, reason?: string): void {
+    simulateLost(): void {
       orchestrator.handleParticipantLost(
-        participantId,
-        reason || 'simulated participant lost'
+        toId || 'renderer',
+        'simulated participant lost'
       );
     },
 
