@@ -19,7 +19,12 @@ export const wikiSidebar = {
   "/issue/": [
     {
       "text": "Issue 记录",
-      "items": []
+      "items": [
+        {
+          "text": "I-001 async-call-rpc-electron 心跳 ping 失败导致连接断开",
+          "link": "/issue/20260510-async-call-rpc-electron-heartbeat-ping-bug"
+        }
+      ]
     }
   ],
   "/reference/": [
@@ -40,5 +45,9 @@ export const wikiNav = [
   {
     "text": "首页",
     "link": "/INDEX"
+  },
+  {
+    "text": "Issue 记录",
+    "link": "/issue/20260510-async-call-rpc-electron-heartbeat-ping-bug"
   }
 ];
