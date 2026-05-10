@@ -13,9 +13,11 @@ export default class ContextBridgeChannel extends AbstractChannelProtocol {
   private _bridge: ContextBridgeAPI | null = null;
   private _listeners = new Set<(data: unknown) => void>();
   private _cleanupBridgeListener: (() => void) | null = null;
+  private _bridgeKey: string;
 
-  constructor(props?: ContextBridgeChannelProps) {
+  constructor(props?: ContextBridgeChannelProps & { bridgeKey?: string }) {
     super({ ...props, connected: false });
+    this._bridgeKey = props?.bridgeKey ?? BRIDGE_KEY;
   }
 
   decorateOnMessageMiddleware(
@@ -42,12 +44,12 @@ export default class ContextBridgeChannel extends AbstractChannelProtocol {
   }
 
   activate(): void {
-    const bridge = (globalThis as any)[BRIDGE_KEY] as
+    const bridge = (globalThis as any)[this._bridgeKey] as
       | ContextBridgeAPI
       | undefined;
     if (!bridge) {
       console.warn(
-        `[ContextBridgeChannel] ${BRIDGE_KEY} not found on globalThis. ` +
+        `[ContextBridgeChannel] ${this._bridgeKey} not found on globalThis. ` +
           'Ensure createPageBridge() was called in preload.'
       );
       return;

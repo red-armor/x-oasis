@@ -50,6 +50,9 @@ importers:
       vite:
         specifier: ^4.1.4
         version: 4.1.4(@types/node@16.18.14)
+      vitepress:
+        specifier: ^1.6.3
+        version: 1.6.4(@algolia/client-search@5.52.0)(@types/node@16.18.14)(postcss@8.5.13)(search-insights@2.17.3)(typescript@4.8.3)
       vitest:
         specifier: ^0.29.2
         version: 0.29.2(jsdom@15.2.1)
@@ -195,14 +198,150 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@24.10.9)(jsdom@15.2.1)
 
-  packages/async/async-call-rpc-electron/examples/ipc-example:
+  packages/async/async-call-rpc-electron/examples/basic/renderer-acquire-main-port-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
-        version: link:../../../async-call-rpc
+        version: link:../../../../async-call-rpc
       '@x-oasis/async-call-rpc-electron':
         specifier: workspace:*
-        version: link:../..
+        version: link:../../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/basic/renderer-acquire-utility-port-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/basic/utility-acquire-main-port-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/basic/utility-acquire-utility-port-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../../..
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
+      electron:
+        specifier: '>=20.0.0'
+        version: 41.4.0
+      electron-vite:
+        specifier: ^2.3.0
+        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@24.10.9)
+
+  packages/async/async-call-rpc-electron/examples/basic/utility-process-example:
+    dependencies:
+      '@x-oasis/async-call-rpc':
+        specifier: workspace:*
+        version: link:../../../../async-call-rpc
+      '@x-oasis/async-call-rpc-electron':
+        specifier: workspace:*
+        version: link:../../..
     devDependencies:
       electron:
         specifier: '>=20.0.0'
@@ -214,17 +353,17 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
-  packages/async/async-call-rpc-electron/examples/page-acquire-renderer-port-orchestrator-example:
+  packages/async/async-call-rpc-electron/examples/orchestrator/page-acquire-renderer-port-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
-        version: link:../../../async-call-rpc
+        version: link:../../../../async-call-rpc
       '@x-oasis/async-call-rpc-electron':
         specifier: workspace:*
-        version: link:../..
+        version: link:../../..
       '@x-oasis/async-call-rpc-web':
         specifier: workspace:*
-        version: link:../../../async-call-rpc-web
+        version: link:../../../../async-call-rpc-web
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^4.3.0
@@ -251,14 +390,14 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.10.9)
 
-  packages/async/async-call-rpc-electron/examples/renderer-acquire-main-port-example:
+  packages/async/async-call-rpc-electron/examples/orchestrator/pagelet-proxy-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
-        version: link:../../../async-call-rpc
+        version: link:../../../../async-call-rpc
       '@x-oasis/async-call-rpc-electron':
         specifier: workspace:*
-        version: link:../..
+        version: link:../../..
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^4.3.0
@@ -285,17 +424,17 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.10.9)
 
-  packages/async/async-call-rpc-electron/examples/renderer-acquire-main-port-orchestrator-example:
+  packages/async/async-call-rpc-electron/examples/orchestrator/renderer-acquire-main-port-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
-        version: link:../../../async-call-rpc
+        version: link:../../../../async-call-rpc
       '@x-oasis/async-call-rpc-electron':
         specifier: workspace:*
-        version: link:../..
+        version: link:../../..
       '@x-oasis/async-call-rpc-web':
         specifier: workspace:*
-        version: link:../../../async-call-rpc-web
+        version: link:../../../../async-call-rpc-web
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^4.3.0
@@ -322,51 +461,17 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.10.9)
 
-  packages/async/async-call-rpc-electron/examples/renderer-acquire-utility-port-example:
+  packages/async/async-call-rpc-electron/examples/orchestrator/renderer-acquire-utility-port-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
-        version: link:../../../async-call-rpc
+        version: link:../../../../async-call-rpc
       '@x-oasis/async-call-rpc-electron':
         specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/renderer-acquire-utility-port-orchestrator-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../..
+        version: link:../../..
       '@x-oasis/async-call-rpc-web':
         specifier: workspace:*
-        version: link:../../../async-call-rpc-web
+        version: link:../../../../async-call-rpc-web
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^4.3.0
@@ -393,14 +498,14 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.10.9)
 
-  packages/async/async-call-rpc-electron/examples/utility-acquire-main-port-example:
+  packages/async/async-call-rpc-electron/examples/orchestrator/utility-acquire-main-port-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
-        version: link:../../../async-call-rpc
+        version: link:../../../../async-call-rpc
       '@x-oasis/async-call-rpc-electron':
         specifier: workspace:*
-        version: link:../..
+        version: link:../../..
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^4.3.0
@@ -427,14 +532,14 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.10.9)
 
-  packages/async/async-call-rpc-electron/examples/utility-acquire-main-port-orchestrator-example:
+  packages/async/async-call-rpc-electron/examples/orchestrator/utility-acquire-utility-port-example:
     dependencies:
       '@x-oasis/async-call-rpc':
         specifier: workspace:*
-        version: link:../../../async-call-rpc
+        version: link:../../../../async-call-rpc
       '@x-oasis/async-call-rpc-electron':
         specifier: workspace:*
-        version: link:../..
+        version: link:../../..
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^4.3.0
@@ -460,93 +565,6 @@ importers:
       vite:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/utility-acquire-utility-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/utility-acquire-utility-port-orchestrator-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/utility-process-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
 
   packages/async/async-call-rpc-node:
     dependencies:
@@ -8439,7 +8457,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.21.0
       '@babel/helper-compilation-targets': 7.20.7(@babel/core@7.21.0)
-      '@babel/helper-plugin-utils': 7.20.2
+      '@babel/helper-plugin-utils': 7.28.6
       debug: 4.3.4
       lodash.debounce: 4.0.8
       resolve: 1.22.1
@@ -9871,10 +9889,7 @@ snapshots:
       jest-runner: 25.5.4
       jest-runtime: 25.5.4
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   '@jest/transform@25.5.1':
     dependencies:
@@ -10640,6 +10655,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@vitejs/plugin-vue@5.2.4(vite@5.4.21(@types/node@16.18.14))(vue@3.5.33(typescript@4.8.3))':
+    dependencies:
+      vite: 5.4.21(@types/node@16.18.14)
+      vue: 3.5.33(typescript@4.8.3)
+
   '@vitejs/plugin-vue@5.2.4(vite@5.4.21(@types/node@20.19.39))(vue@3.5.33(typescript@5.9.3))':
     dependencies:
       vite: 5.4.21(@types/node@20.19.39)
@@ -10778,6 +10798,12 @@ snapshots:
       '@vue/shared': 3.5.33
       csstype: 3.2.3
 
+  '@vue/server-renderer@3.5.33(vue@3.5.33(typescript@4.8.3))':
+    dependencies:
+      '@vue/compiler-ssr': 3.5.33
+      '@vue/shared': 3.5.33
+      vue: 3.5.33(typescript@4.8.3)
+
   '@vue/server-renderer@3.5.33(vue@3.5.33(typescript@5.9.3))':
     dependencies:
       '@vue/compiler-ssr': 3.5.33
@@ -10788,12 +10814,31 @@ snapshots:
 
   '@vue/shared@3.5.33': {}
 
+  '@vueuse/core@12.8.2(typescript@4.8.3)':
+    dependencies:
+      '@types/web-bluetooth': 0.0.21
+      '@vueuse/metadata': 12.8.2
+      '@vueuse/shared': 12.8.2(typescript@4.8.3)
+      vue: 3.5.33(typescript@4.8.3)
+    transitivePeerDependencies:
+      - typescript
+
   '@vueuse/core@12.8.2(typescript@5.9.3)':
     dependencies:
       '@types/web-bluetooth': 0.0.21
       '@vueuse/metadata': 12.8.2
       '@vueuse/shared': 12.8.2(typescript@5.9.3)
       vue: 3.5.33(typescript@5.9.3)
+    transitivePeerDependencies:
+      - typescript
+
+  '@vueuse/integrations@12.8.2(focus-trap@7.8.0)(typescript@4.8.3)':
+    dependencies:
+      '@vueuse/core': 12.8.2(typescript@4.8.3)
+      '@vueuse/shared': 12.8.2(typescript@4.8.3)
+      vue: 3.5.33(typescript@4.8.3)
+    optionalDependencies:
+      focus-trap: 7.8.0
     transitivePeerDependencies:
       - typescript
 
@@ -10808,6 +10853,12 @@ snapshots:
       - typescript
 
   '@vueuse/metadata@12.8.2': {}
+
+  '@vueuse/shared@12.8.2(typescript@4.8.3)':
+    dependencies:
+      vue: 3.5.33(typescript@4.8.3)
+    transitivePeerDependencies:
+      - typescript
 
   '@vueuse/shared@12.8.2(typescript@5.9.3)':
     dependencies:
@@ -15843,6 +15894,15 @@ snapshots:
       '@types/node': 24.10.9
       fsevents: 2.3.2
 
+  vite@5.4.21(@types/node@16.18.14):
+    dependencies:
+      esbuild: 0.21.5
+      postcss: 8.5.13
+      rollup: 4.60.2
+    optionalDependencies:
+      '@types/node': 16.18.14
+      fsevents: 2.3.3
+
   vite@5.4.21(@types/node@20.19.39):
     dependencies:
       esbuild: 0.21.5
@@ -15860,6 +15920,55 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.10.9
       fsevents: 2.3.3
+
+  vitepress@1.6.4(@algolia/client-search@5.52.0)(@types/node@16.18.14)(postcss@8.5.13)(search-insights@2.17.3)(typescript@4.8.3):
+    dependencies:
+      '@docsearch/css': 3.8.2
+      '@docsearch/js': 3.8.2(@algolia/client-search@5.52.0)(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)
+      '@iconify-json/simple-icons': 1.2.80
+      '@shikijs/core': 2.5.0
+      '@shikijs/transformers': 2.5.0
+      '@shikijs/types': 2.5.0
+      '@types/markdown-it': 14.1.2
+      '@vitejs/plugin-vue': 5.2.4(vite@5.4.21(@types/node@16.18.14))(vue@3.5.33(typescript@4.8.3))
+      '@vue/devtools-api': 7.7.9
+      '@vue/shared': 3.5.27
+      '@vueuse/core': 12.8.2(typescript@4.8.3)
+      '@vueuse/integrations': 12.8.2(focus-trap@7.8.0)(typescript@4.8.3)
+      focus-trap: 7.8.0
+      mark.js: 8.11.1
+      minisearch: 7.2.0
+      shiki: 2.5.0
+      vite: 5.4.21(@types/node@16.18.14)
+      vue: 3.5.33(typescript@4.8.3)
+    optionalDependencies:
+      postcss: 8.5.13
+    transitivePeerDependencies:
+      - '@algolia/client-search'
+      - '@types/node'
+      - '@types/react'
+      - async-validator
+      - axios
+      - change-case
+      - drauu
+      - fuse.js
+      - idb-keyval
+      - jwt-decode
+      - less
+      - lightningcss
+      - nprogress
+      - qrcode
+      - react
+      - react-dom
+      - sass
+      - sass-embedded
+      - search-insights
+      - sortablejs
+      - stylus
+      - sugarss
+      - terser
+      - typescript
+      - universal-cookie
 
   vitepress@1.6.4(@algolia/client-search@5.52.0)(@types/node@20.19.39)(@types/react@18.3.27)(postcss@8.5.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)(typescript@5.9.3):
     dependencies:
@@ -15980,6 +16089,16 @@ snapshots:
       - sugarss
       - supports-color
       - terser
+
+  vue@3.5.33(typescript@4.8.3):
+    dependencies:
+      '@vue/compiler-dom': 3.5.33
+      '@vue/compiler-sfc': 3.5.33
+      '@vue/runtime-dom': 3.5.33
+      '@vue/server-renderer': 3.5.33(vue@3.5.33(typescript@4.8.3))
+      '@vue/shared': 3.5.33
+    optionalDependencies:
+      typescript: 4.8.3
 
   vue@3.5.33(typescript@5.9.3):
     dependencies:
