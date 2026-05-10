@@ -198,374 +198,6 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@24.10.9)(jsdom@15.2.1)
 
-  packages/async/async-call-rpc-electron/examples/basic/renderer-acquire-main-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/basic/renderer-acquire-utility-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/basic/utility-acquire-main-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/basic/utility-acquire-utility-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/basic/utility-process-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-
-  packages/async/async-call-rpc-electron/examples/orchestrator/page-acquire-renderer-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc-web
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/orchestrator/pagelet-proxy-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/orchestrator/renderer-acquire-main-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc-web
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/orchestrator/renderer-acquire-utility-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc-web
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/orchestrator/utility-acquire-main-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-electron/examples/orchestrator/utility-acquire-utility-port-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../../async-call-rpc
-      '@x-oasis/async-call-rpc-electron':
-        specifier: workspace:*
-        version: link:../../..
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^4.3.0
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      electron:
-        specifier: '>=20.0.0'
-        version: 41.4.0
-      electron-vite:
-        specifier: ^2.3.0
-        version: 2.3.0(vite@5.4.21(@types/node@24.10.9))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.11
-        version: 5.4.21(@types/node@24.10.9)
-
   packages/async/async-call-rpc-node:
     dependencies:
       '@x-oasis/async-call-rpc':
@@ -578,22 +210,6 @@ importers:
       vitest:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@24.10.9)(jsdom@15.2.1)
-
-  packages/async/async-call-rpc-node/examples/fork-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc
-      '@x-oasis/async-call-rpc-node':
-        specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
 
   packages/async/async-call-rpc-react:
     dependencies:
@@ -614,55 +230,6 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@24.10.9)(jsdom@15.2.1)
 
-  packages/async/async-call-rpc-react/examples/react-query-app:
-    dependencies:
-      '@tanstack/react-query':
-        specifier: ^5.0.0
-        version: 5.100.6(react@18.3.1)
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc
-      '@x-oasis/async-call-rpc-react':
-        specifier: workspace:*
-        version: link:../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc-web
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-      ws:
-        specifier: ^8.13.0
-        version: 8.19.0
-    devDependencies:
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.19.39
-      '@types/react':
-        specifier: ^18.0.0
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.0.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@types/ws':
-        specifier: ^8.5.0
-        version: 8.18.1
-      '@vitejs/plugin-react':
-        specifier: ^4.0.0
-        version: 4.7.0(vite@4.1.4(@types/node@20.19.39))
-      tsx:
-        specifier: ^4.0.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.3
-      vite:
-        specifier: ^4.0.0
-        version: 4.1.4(@types/node@20.19.39)
-
   packages/async/async-call-rpc-web:
     dependencies:
       '@x-oasis/async-call-rpc':
@@ -675,259 +242,6 @@ importers:
       vitest:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@24.10.9)(jsdom@15.2.1)
-
-  packages/async/async-call-rpc-web/examples/websocket-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../..
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      ws:
-        specifier: ^8.19.0
-        version: 8.19.0
-    devDependencies:
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@types/ws':
-        specifier: ^8.5.13
-        version: 8.18.1
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.1.0
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc-web/examples/worker-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../..
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.1.0
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc/examples/react-full-app:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc-web
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      ws:
-        specifier: ^8.19.0
-        version: 8.19.0
-    devDependencies:
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@types/ws':
-        specifier: ^8.5.13
-        version: 8.18.1
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.1.0
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc/examples/react-pingpong-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc-web
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.1.0
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc/examples/react-streaming-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc-web
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      ws:
-        specifier: ^8.19.0
-        version: 8.19.0
-    devDependencies:
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@types/ws':
-        specifier: ^8.5.13
-        version: 8.18.1
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.1.0
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc/examples/react-websocket-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc-web
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      ws:
-        specifier: ^8.19.0
-        version: 8.19.0
-    devDependencies:
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@types/ws':
-        specifier: ^8.5.13
-        version: 8.18.1
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.1.0
-        version: 5.4.21(@types/node@24.10.9)
-
-  packages/async/async-call-rpc/examples/react-worker-example:
-    dependencies:
-      '@x-oasis/async-call-rpc':
-        specifier: workspace:*
-        version: link:../..
-      '@x-oasis/async-call-rpc-web':
-        specifier: workspace:*
-        version: link:../../../async-call-rpc-web
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@5.4.21(@types/node@24.10.9))
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.1.0
-        version: 5.4.21(@types/node@24.10.9)
 
   packages/async/node-fetch-json:
     dependencies:
@@ -998,40 +312,6 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
 
-  packages/diff/diff-match-patch/examples:
-    dependencies:
-      '@git-diff-view/file':
-        specifier: latest
-        version: 0.0.36
-      '@git-diff-view/react':
-        specifier: latest
-        version: 0.0.36(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      diff-match-patch:
-        specifier: ^1.0.5
-        version: 1.0.5
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@4.1.4(@types/node@24.10.9))
-      typescript:
-        specifier: ^4.8.3
-        version: 4.8.3
-      vite:
-        specifier: ^4.1.4
-        version: 4.1.4(@types/node@24.10.9)
-
   packages/diff/html-fragment-diff:
     dependencies:
       parse5:
@@ -1042,34 +322,6 @@ importers:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
 
-  packages/diff/html-fragment-diff/examples:
-    dependencies:
-      '@x-oasis/html-fragment-diff':
-        specifier: workspace:*
-        version: link:..
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@4.1.4(@types/node@24.10.9))
-      typescript:
-        specifier: ^4.8.3
-        version: 4.8.3
-      vite:
-        specifier: ^4.1.4
-        version: 4.1.4(@types/node@24.10.9)
-
   packages/diff/map-diff-range:
     dependencies:
       diff-match-patch:
@@ -1079,40 +331,6 @@ importers:
       tsdx:
         specifier: ^0.14.1
         version: 0.14.1(@types/babel__core@7.20.5)(@types/node@24.10.9)
-
-  packages/diff/map-diff-range/examples:
-    dependencies:
-      '@git-diff-view/file':
-        specifier: latest
-        version: 0.0.36
-      '@git-diff-view/react':
-        specifier: latest
-        version: 0.0.36(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      diff-match-patch:
-        specifier: ^1.0.5
-        version: 1.0.5
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.7(@types/react@18.3.27)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.7.0(vite@4.1.4(@types/node@24.10.9))
-      typescript:
-        specifier: ^4.8.3
-        version: 4.8.3
-      vite:
-        specifier: ^4.1.4
-        version: 4.1.4(@types/node@24.10.9)
 
   packages/dimension/layout-equal:
     devDependencies:
@@ -1995,12 +1213,6 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
-  '@babel/plugin-transform-arrow-functions@7.27.1':
-    resolution: {integrity: sha512-8Z4TGic6xW70FKThA5HYEKKyBpOOsucTOD1DjU3fZxDg+K3zBJcXMFnt/4yQiZnf5+MiOMSXQ9PaEK/Ilh1DeA==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-
   '@babel/plugin-transform-async-to-generator@7.20.7':
     resolution: {integrity: sha512-Uo5gwHPT9vgnSXQxqGtpdufUiWp96gk7yiP4Mp5bm1QMkEmLXBO7PAGYbKoJ6DhAwiNkcHFBol/x5zZZkL/t0Q==}
     engines: {node: '>=6.9.0'}
@@ -2779,21 +1991,6 @@ packages:
     resolution: {integrity: sha512-lxJ9R5ygVm8ZWgYdUweoq5ownDlJ4upvoWmO4eLxBYHdMo+vZ/Rx0EN6MbKWDJOSUGrqJy2Gt+Dyv/VKml0fjg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  '@git-diff-view/core@0.0.36':
-    resolution: {integrity: sha512-A3mN21C/ZdIJz0J9/PSZvLR1dLBu8BG13tVE+w4A9v8dLS5omkoQVjHM9K5GaoJideMhK/11y6V7CMbMXCPQoQ==}
-
-  '@git-diff-view/file@0.0.36':
-    resolution: {integrity: sha512-3I5GMpZzdTwSurzbz8ZT9HL2xo74W5/o/SgWhUpEWjn2Z6pCZrHLAEzWeYyqewv30YM25PuK/JMODT4S5zhvzw==}
-
-  '@git-diff-view/lowlight@0.0.36':
-    resolution: {integrity: sha512-8H3fUfnW+jw8EEbhEOr0vq5jXxZfbhNgvf9ruY6GljQdymj8j2R69k83gwMB/GltWEMt5o5624d8MxD21vqsZA==}
-
-  '@git-diff-view/react@0.0.36':
-    resolution: {integrity: sha512-RqM4vkU2uoiav8di5LavR8UDkSP+fNDftlNOfAMQmcuLDFpDnLhtqcgot4+Q5rflkwK04UlYL6G72ps9XSGgDw==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   '@humanwhocodes/config-array@0.11.8':
     resolution: {integrity: sha512-UybHIJzJnR5Qc/MsD9Kr+RpO2h+/P1GhOwdiLPXK5TWk5sgTdu88bTD9UP+CKbPPh5Rni1u0GjAdYQLemG8g+g==}
     engines: {node: '>=10.10.0'}
@@ -3082,131 +2279,157 @@ packages:
     resolution: {integrity: sha512-2QxQrM+KQ7DAW4o22j+XZ6RKdxjLD7BOWTP0Bv0tmjdyhXSsr2Ul1oJDQqh9Zf5qOwTuTc7Ek83mOFaKnodPjg==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-gnueabihf@4.60.3':
     resolution: {integrity: sha512-DV6fJoxEYWJOvaZIsok7KrYl0tPvga5OZ2yvKHNNYyk/2roMLqQAbGhr78EQ5YhHpnhLKJD3S1WFusAkmUuV5g==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.60.2':
     resolution: {integrity: sha512-TbziEu2DVsTEOPif2mKWkMeDMLoYjx95oESa9fkQQK7r/Orta0gnkcDpzwufEcAO2BLBsD7mZkXGFqEdMRRwfw==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm-musleabihf@4.60.3':
     resolution: {integrity: sha512-mQKoJAzvuOs6F+TZybQO4GOTSMUu7v0WdxEk24krQ/uUxXoPTtHjuaUuPmFhtBcM4K0ons8nrE3JyhTuCFtT/w==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.60.2':
     resolution: {integrity: sha512-bO/rVDiDUuM2YfuCUwZ1t1cP+/yqjqz+Xf2VtkdppefuOFS2OSeAfgafaHNkFn0t02hEyXngZkxtGqXcXwO8Rg==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-gnu@4.60.3':
     resolution: {integrity: sha512-Whjj2qoiJ6+OOJMGptTYazaJvjOJm+iKHpXQM1P3LzGjt7Ff++Tp7nH4N8J/BUA7R9IHfDyx4DJIflifwnbmIA==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.60.2':
     resolution: {integrity: sha512-hr26p7e93Rl0Za+JwW7EAnwAvKkehh12BU1Llm9Ykiibg4uIr2rbpxG9WCf56GuvidlTG9KiiQT/TXT1yAWxTA==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-musl@4.60.3':
     resolution: {integrity: sha512-4YTNHKqGng5+yiZt3mg77nmyuCfmNfX4fPmyUapBcIk+BdwSwmCWGXOUxhXbBEkFHtoN5boLj/5NON+u5QC9tg==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-loong64-gnu@4.60.2':
     resolution: {integrity: sha512-pOjB/uSIyDt+ow3k/RcLvUAOGpysT2phDn7TTUB3n75SlIgZzM6NKAqlErPhoFU+npgY3/n+2HYIQVbF70P9/A==}
     cpu: [loong64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-loong64-gnu@4.60.3':
     resolution: {integrity: sha512-SU3kNlhkpI4UqlUc2VXPGK9o886ZsSeGfMAX2ba2b8DKmMXq4AL7KUrkSWVbb7koVqx41Yczx6dx5PNargIrEA==}
     cpu: [loong64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-loong64-musl@4.60.2':
     resolution: {integrity: sha512-2/w+q8jszv9Ww1c+6uJT3OwqhdmGP2/4T17cu8WuwyUuuaCDDJ2ojdyYwZzCxx0GcsZBhzi3HmH+J5pZNXnd+Q==}
     cpu: [loong64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-loong64-musl@4.60.3':
     resolution: {integrity: sha512-6lDLl5h4TXpB1mTf2rQWnAk/LcXrx9vBfu/DT5TIPhvMhRWaZ5MxkIc8u4lJAmBo6klTe1ywXIUHFjylW505sg==}
     cpu: [loong64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-ppc64-gnu@4.60.2':
     resolution: {integrity: sha512-11+aL5vKheYgczxtPVVRhdptAM2H7fcDR5Gw4/bTcteuZBlH4oP9f5s9zYO9aGZvoGeBpqXI/9TZZihZ609wKw==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-gnu@4.60.3':
     resolution: {integrity: sha512-BMo8bOw8evlup/8G+cj5xWtPyp93xPdyoSN16Zy90Q2QZ0ZYRhCt6ZJSwbrRzG9HApFabjwj2p25TUPDWrhzqQ==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-musl@4.60.2':
     resolution: {integrity: sha512-i16fokAGK46IVZuV8LIIwMdtqhin9hfYkCh8pf8iC3QU3LpwL+1FSFGej+O7l3E/AoknL6Dclh2oTdnRMpTzFQ==}
     cpu: [ppc64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-ppc64-musl@4.60.3':
     resolution: {integrity: sha512-E0L8X1dZN1/Rph+5VPF6Xj2G7JJvMACVXtamTJIDrVI44Y3K+G8gQaMEAavbqCGTa16InptiVrX6eM6pmJ+7qA==}
     cpu: [ppc64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-riscv64-gnu@4.60.2':
     resolution: {integrity: sha512-49FkKS6RGQoriDSK/6E2GkAsAuU5kETFCh7pG4yD/ylj9rKhTmO3elsnmBvRD4PgJPds5W2PkhC82aVwmUcJ7A==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-gnu@4.60.3':
     resolution: {integrity: sha512-oZJ/WHaVfHUiRAtmTAeo3DcevNsVvH8mbvodjZy7D5QKvCefO371SiKRpxoDcCxB3PTRTLayWBkvmDQKTcX/sw==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.60.2':
     resolution: {integrity: sha512-mjYNkHPfGpUR00DuM1ZZIgs64Hpf4bWcz9Z41+4Q+pgDx73UwWdAYyf6EG/lRFldmdHHzgrYyge5akFUW0D3mQ==}
     cpu: [riscv64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-riscv64-musl@4.60.3':
     resolution: {integrity: sha512-Dhbyh7j9FybM3YaTgaHmVALwA8AkUwTPccyCQ79TG9AJUsMQqgN1DDEZNr4+QUfwiWvLDumW5vdwzoeUF+TNxQ==}
     cpu: [riscv64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.60.2':
     resolution: {integrity: sha512-ALyvJz965BQk8E9Al/JDKKDLH2kfKFLTGMlgkAbbYtZuJt9LU8DW3ZoDMCtQpXAltZxwBHevXz5u+gf0yA0YoA==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-s390x-gnu@4.60.3':
     resolution: {integrity: sha512-cJd1X5XhHHlltkaypz1UcWLA8AcoIi1aWhsvaWDskD1oz2eKCypnqvTQ8ykMNI0RSmm7NkTdSqSSD7zM0xa6Ig==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.60.2':
     resolution: {integrity: sha512-UQjrkIdWrKI626Du8lCQ6MJp/6V1LAo2bOK9OTu4mSn8GGXIkPXk/Vsp4bLHCd9Z9Iz2OTEaokUE90VweJgIYQ==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.60.3':
     resolution: {integrity: sha512-DAZDBHQfG2oQuhY7mc6I3/qB4LU2fQCjRvxbDwd/Jdvb9fypP4IJ4qmtu6lNjes6B531AI8cg1aKC2di97bUxA==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.60.2':
     resolution: {integrity: sha512-bTsRGj6VlSdn/XD4CGyzMnzaBs9bsRxy79eTqTCBsA8TMIEky7qg48aPkvJvFe1HyzQ5oMZdg7AnVlWQSKLTnw==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-x64-musl@4.60.3':
     resolution: {integrity: sha512-cRxsE8c13mZOh3vP+wLDxpQBRrOHDIGOWyDL93Sy0Ga8y515fBcC2pjUfFwUe5T7tqvTvWbCpg1URM/AXdWIXA==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-openbsd-x64@4.60.2':
     resolution: {integrity: sha512-6d4Z3534xitaA1FcMWP7mQPq5zGwBmGbhphh2DwaA1aNIXUu3KTOfwrWpbwI4/Gr0uANo7NTtaykFyO2hPuFLg==}
@@ -3467,9 +2690,6 @@ packages:
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
 
-  '@types/ws@8.18.1':
-    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
-
   '@types/yargs-parser@21.0.0':
     resolution: {integrity: sha512-iO9ZQHkZxHn4mSakYV0vFHAVDyEOIJQrV2uZ06HxEPcx+mt8swXoZHIbaaJ2crJYFfErySgktuTZ3BeLz+XmFA==}
 
@@ -3644,9 +2864,6 @@ packages:
 
   '@vue/devtools-shared@7.7.9':
     resolution: {integrity: sha512-iWAb0v2WYf0QWmxCGy0seZNDPdO3Sp5+u78ORnyeonS6MT4PC7VPrryX2BpMJrwlDeaZ6BD4vP4XKjK0SZqaeA==}
-
-  '@vue/reactivity@3.5.27':
-    resolution: {integrity: sha512-vvorxn2KXfJ0nBEnj4GYshSgsyMNFnIQah/wczXlsNXt+ijhugmW+PpJ2cNPe4V6jpnBcs0MhCODKllWG+nvoQ==}
 
   '@vue/reactivity@3.5.33':
     resolution: {integrity: sha512-p8UfIqyIhb0rYGlSgSBV+lPhF2iUSBcRy7enhTmPqKWadHy9kcOFYF1AejYBP9P+avnd3OBbD49DU4pLWX/94A==}
@@ -4558,10 +3775,6 @@ packages:
     resolution: {integrity: sha512-D+mk+qE8VC/PAUrlAU34N+VfXev0ghe5ywmpqrawphmVZc1bEfn56uo9qpyGp1p4xpzOHkSW4ztBd6L7Xx4ACw==}
     engines: {node: '>=0.3.1'}
 
-  diff@8.0.3:
-    resolution: {integrity: sha512-qejHi7bcSD4hQAZE0tNAawRK1ZtafHDmMTMkrrIGgSLl7hTnQHmKCeB45xAcbfTqK2zowkM3j3bHt/4b/ARbYQ==}
-    engines: {node: '>=0.3.1'}
-
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
@@ -4600,17 +3813,6 @@ packages:
 
   electron-to-chromium@1.5.278:
     resolution: {integrity: sha512-dQ0tM1svDRQOwxnXxm+twlGTjr9Upvt8UFWAgmLsxEzFQxhbti4VwxmMjsDxVC51Zo84swW7FVCXEV+VAkhuPw==}
-
-  electron-vite@2.3.0:
-    resolution: {integrity: sha512-lsN2FymgJlp4k6MrcsphGqZQ9fKRdJKasoaiwIrAewN1tapYI/KINLdfEL7n10LuF0pPSNf/IqjzZbB5VINctg==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
-    peerDependencies:
-      '@swc/core': ^1.0.0
-      vite: ^4.0.0 || ^5.0.0
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
 
   electron@41.4.0:
     resolution: {integrity: sha512-1afmxJGyrZ4bve+PDCs8YtNjjVu4cPwUtSjx36o6gyJWI0NvhebMKtIzzKNOScRyXntH2hX0i350Xgm3BKiEYQ==}
@@ -5005,9 +4207,6 @@ packages:
   fast-diff@1.2.0:
     resolution: {integrity: sha512-xJuoT5+L99XlZ8twedaRf6Ax2TgQVxvgZOYoPKqZufmJib0tL2tegPBOZb1pVNgIhlqDlA0eO0c3wBvQcmzx4w==}
 
-  fast-diff@1.3.0:
-    resolution: {integrity: sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==}
-
   fast-glob@3.2.12:
     resolution: {integrity: sha512-DVj4CQIYYow0BlaelwK1pHl5n5cRSJfM60UA0zK891sVInoPri2Ekj7+e1CT3/3qxXenpI+nBBmQAcJPJgaj4w==}
     engines: {node: '>=8.6.0'}
@@ -5387,10 +4586,6 @@ packages:
 
   hast-util-whitespace@3.0.0:
     resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
-
-  highlight.js@11.11.1:
-    resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
-    engines: {node: '>=12.0.0'}
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
@@ -6150,9 +5345,6 @@ packages:
     resolution: {integrity: sha512-tqNXrS78oMOE73NMxK4EMLQsQowWf8jKooH9g7xPavRT706R6bkQJ6DY2Te7QukaZsulxa30wQ7bk0pm4XiHmA==}
     engines: {node: '>=8'}
 
-  lowlight@3.3.0:
-    resolution: {integrity: sha512-0JNhgFoPvP6U6lE/UdVsSq99tn6DhjjpAj5MxG49ewd2mOBVtwWYIT8ClyABhq198aXXODMU6Ox8DrGy/CpTZQ==}
-
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
@@ -6844,11 +6036,6 @@ packages:
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
-
-  reactivity-store@0.3.12:
-    resolution: {integrity: sha512-Idz9EL4dFUtQbHySZQzckWOTUfqjdYpUtNW0iOysC32mG7IjiUGB77QrsyR5eAWBkRiS9JscF6A3fuQAIy+LrQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   read-pkg-up@3.0.0:
     resolution: {integrity: sha512-YFzFrVvpC6frF1sz8psoHDBGF7fLPc+llq/8NB43oagqWkx8ar5zYtsTORtOjw9W2RHLpWP+zTWwBvf1bCmcSw==}
@@ -7849,11 +7036,6 @@ packages:
   urix@0.1.0:
     resolution: {integrity: sha512-Am1ousAhSLBeB9cG/7k7r2R0zj50uDRlZHPGbazid5s9rlF1F/QKYObEKSIunSjIOkJZqwRRLpvewjEkM7pSqg==}
     deprecated: Please see https://github.com/lydell/urix#deprecated
-
-  use-sync-external-store@1.6.0:
-    resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   use@3.1.1:
     resolution: {integrity: sha512-cwESVXlO3url9YWlFW/TA9cshCEhtu7IKJ/p5soJ/gGpj7vbvFrAY/eIioQ6Dw23KjZhYgiIo8HOs1nQ2vr/oQ==}
@@ -8868,11 +8050,6 @@ snapshots:
       '@babel/core': 7.21.0
       '@babel/helper-plugin-utils': 7.20.2
 
-  '@babel/plugin-transform-arrow-functions@7.27.1(@babel/core@7.28.6)':
-    dependencies:
-      '@babel/core': 7.28.6
-      '@babel/helper-plugin-utils': 7.28.6
-
   '@babel/plugin-transform-async-to-generator@7.20.7(@babel/core@7.21.0)':
     dependencies:
       '@babel/core': 7.21.0
@@ -9670,39 +8847,6 @@ snapshots:
 
   '@eslint/js@8.36.0': {}
 
-  '@git-diff-view/core@0.0.36':
-    dependencies:
-      '@git-diff-view/lowlight': 0.0.36
-      fast-diff: 1.3.0
-      highlight.js: 11.11.1
-      lowlight: 3.3.0
-
-  '@git-diff-view/file@0.0.36':
-    dependencies:
-      '@git-diff-view/core': 0.0.36
-      diff: 8.0.3
-      fast-diff: 1.3.0
-      highlight.js: 11.11.1
-      lowlight: 3.3.0
-
-  '@git-diff-view/lowlight@0.0.36':
-    dependencies:
-      '@types/hast': 3.0.4
-      highlight.js: 11.11.1
-      lowlight: 3.3.0
-
-  '@git-diff-view/react@0.0.36(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@git-diff-view/core': 0.0.36
-      '@types/hast': 3.0.4
-      fast-diff: 1.3.0
-      highlight.js: 11.11.1
-      lowlight: 3.3.0
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      reactivity-store: 0.3.12(react@18.3.1)
-      use-sync-external-store: 1.6.0(react@18.3.1)
-
   '@humanwhocodes/config-array@0.11.8':
     dependencies:
       '@humanwhocodes/object-schema': 1.2.1
@@ -9889,7 +9033,10 @@ snapshots:
       jest-runner: 25.5.4
       jest-runtime: 25.5.4
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   '@jest/transform@25.5.1':
     dependencies:
@@ -10452,10 +9599,6 @@ snapshots:
 
   '@types/web-bluetooth@0.0.21': {}
 
-  '@types/ws@8.18.1':
-    dependencies:
-      '@types/node': 20.19.39
-
   '@types/yargs-parser@21.0.0': {}
 
   '@types/yargs@15.0.15':
@@ -10607,30 +9750,6 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@vitejs/plugin-react@4.7.0(vite@4.1.4(@types/node@20.19.39))':
-    dependencies:
-      '@babel/core': 7.28.6
-      '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.6)
-      '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.28.6)
-      '@rolldown/pluginutils': 1.0.0-beta.27
-      '@types/babel__core': 7.20.5
-      react-refresh: 0.17.0
-      vite: 4.1.4(@types/node@20.19.39)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitejs/plugin-react@4.7.0(vite@4.1.4(@types/node@24.10.9))':
-    dependencies:
-      '@babel/core': 7.28.6
-      '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.6)
-      '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.28.6)
-      '@rolldown/pluginutils': 1.0.0-beta.27
-      '@types/babel__core': 7.20.5
-      react-refresh: 0.17.0
-      vite: 4.1.4(@types/node@24.10.9)
-    transitivePeerDependencies:
-      - supports-color
-
   '@vitejs/plugin-react@4.7.0(vite@5.4.21(@types/node@20.19.39))':
     dependencies:
       '@babel/core': 7.28.6
@@ -10640,18 +9759,6 @@ snapshots:
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
       vite: 5.4.21(@types/node@20.19.39)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitejs/plugin-react@4.7.0(vite@5.4.21(@types/node@24.10.9))':
-    dependencies:
-      '@babel/core': 7.28.6
-      '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.6)
-      '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.28.6)
-      '@rolldown/pluginutils': 1.0.0-beta.27
-      '@types/babel__core': 7.20.5
-      react-refresh: 0.17.0
-      vite: 5.4.21(@types/node@24.10.9)
     transitivePeerDependencies:
       - supports-color
 
@@ -10777,10 +9884,6 @@ snapshots:
   '@vue/devtools-shared@7.7.9':
     dependencies:
       rfdc: 1.4.1
-
-  '@vue/reactivity@3.5.27':
-    dependencies:
-      '@vue/shared': 3.5.27
 
   '@vue/reactivity@3.5.33':
     dependencies:
@@ -11778,8 +10881,6 @@ snapshots:
 
   diff@5.1.0: {}
 
-  diff@8.0.3: {}
-
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
@@ -11818,18 +10919,6 @@ snapshots:
   electron-to-chromium@1.4.328: {}
 
   electron-to-chromium@1.5.278: {}
-
-  electron-vite@2.3.0(vite@5.4.21(@types/node@24.10.9)):
-    dependencies:
-      '@babel/core': 7.28.6
-      '@babel/plugin-transform-arrow-functions': 7.27.1(@babel/core@7.28.6)
-      cac: 6.7.14
-      esbuild: 0.21.5
-      magic-string: 0.30.21
-      picocolors: 1.1.1
-      vite: 5.4.21(@types/node@24.10.9)
-    transitivePeerDependencies:
-      - supports-color
 
   electron@41.4.0:
     dependencies:
@@ -12508,8 +11597,6 @@ snapshots:
 
   fast-diff@1.2.0: {}
 
-  fast-diff@1.3.0: {}
-
   fast-glob@3.2.12:
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -12949,8 +12036,6 @@ snapshots:
   hast-util-whitespace@3.0.0:
     dependencies:
       '@types/hast': 3.0.4
-
-  highlight.js@11.11.1: {}
 
   hookable@5.5.3: {}
 
@@ -13444,10 +12529,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:
@@ -13929,12 +13011,6 @@ snapshots:
       tslib: 2.5.0
 
   lowercase-keys@2.0.0: {}
-
-  lowlight@3.3.0:
-    dependencies:
-      '@types/hast': 3.0.4
-      devlop: 1.1.0
-      highlight.js: 11.11.1
 
   lru-cache@10.4.3: {}
 
@@ -14617,13 +13693,6 @@ snapshots:
   react@18.3.1:
     dependencies:
       loose-envify: 1.4.0
-
-  reactivity-store@0.3.12(react@18.3.1):
-    dependencies:
-      '@vue/reactivity': 3.5.27
-      '@vue/shared': 3.5.27
-      react: 18.3.1
-      use-sync-external-store: 1.6.0(react@18.3.1)
 
   read-pkg-up@3.0.0:
     dependencies:
@@ -15790,10 +14859,6 @@ snapshots:
 
   urix@0.1.0: {}
 
-  use-sync-external-store@1.6.0(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-
   use@3.1.1: {}
 
   util-deprecate@1.0.2: {}
@@ -15882,16 +14947,6 @@ snapshots:
       rollup: 3.19.1
     optionalDependencies:
       '@types/node': 20.19.39
-      fsevents: 2.3.2
-
-  vite@4.1.4(@types/node@24.10.9):
-    dependencies:
-      esbuild: 0.16.17
-      postcss: 8.4.21
-      resolve: 1.22.1
-      rollup: 3.19.1
-    optionalDependencies:
-      '@types/node': 24.10.9
       fsevents: 2.3.2
 
   vite@5.4.21(@types/node@16.18.14):
