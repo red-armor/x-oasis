@@ -1,4 +1,4 @@
-import { app, BrowserWindow, utilityProcess, ipcMain } from 'electron';
+import { app, BrowserWindow, utilityProcess } from 'electron';
 import {
   IPCMainChannel,
   ElectronUtilityProcessChannel,
@@ -177,6 +177,25 @@ app.whenReady().then(async () => {
         const pageletId = getPageletIdForPage(activePageId);
         pageletProcs.get(pageletId)?.kill();
       },
+      switchPage(pageId: string): void {
+        const page = PAGES.find((p) => p.id === pageId);
+        if (!page) return;
+
+        const oldPageletId = getPageletIdForPage(activePageId);
+        const newPageletId = getPageletIdForPage(pageId);
+
+        if (oldPageletId !== newPageletId) {
+          const oldInfo = orchestrator.getConnectionInfo(
+            RENDERER_ID,
+            oldPageletId
+          );
+          if (oldInfo) {
+            orchestrator.disconnect(oldInfo.connectionId).catch(() => {});
+          }
+        }
+
+        activePageId = pageId;
+      },
       onStateChange(remoteCallback: (event: any) => void) {
         orchestrator.onStateChange((event) => remoteCallback(event));
       },
@@ -199,24 +218,6 @@ app.whenReady().then(async () => {
         orchestrator.onClosed((event) => remoteCallback(event));
       },
     },
-  });
-
-  ipcMain.on('switch-page', (_event, pageId: string) => {
-    const page = PAGES.find((p) => p.id === pageId);
-    if (!page) return;
-
-    const oldPageletId = getPageletIdForPage(activePageId);
-    const newPageletId = getPageletIdForPage(pageId);
-
-    if (oldPageletId !== newPageletId) {
-      const oldInfo = orchestrator.getConnectionInfo(RENDERER_ID, oldPageletId);
-      if (oldInfo) {
-        orchestrator.disconnect(oldInfo.connectionId).catch(() => {});
-      }
-    }
-
-    activePageId = pageId;
-    mainWindow.webContents.send('page-switched', pageId);
   });
 
   console.log('[main] multi-page orchestrator ready (single window)');

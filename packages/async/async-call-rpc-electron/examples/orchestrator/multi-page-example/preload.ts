@@ -1,4 +1,4 @@
-import { ipcRenderer, contextBridge } from 'electron';
+import { ipcRenderer } from 'electron';
 import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
 import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
@@ -21,18 +21,5 @@ serviceHost.registerService('renderer-direct', {
     greet(msg: string): string {
       return `greeting from renderer: ${msg}`;
     },
-  },
-});
-
-contextBridge.exposeInMainWorld('pageSwitchApi', {
-  switchPage: (pageId: string) => ipcRenderer.send('switch-page', pageId),
-  onPageSwitched: (callback: (pageId: string) => void) => {
-    ipcRenderer.on('page-switched', (_event, pageId) => callback(pageId));
-    return () => {
-      ipcRenderer.removeListener(
-        'page-switched',
-        (_event: any, pageId: string) => callback(pageId)
-      );
-    };
   },
 });

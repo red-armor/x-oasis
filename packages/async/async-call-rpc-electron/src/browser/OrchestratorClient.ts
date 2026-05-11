@@ -104,6 +104,10 @@ export class OrchestratorClient {
     return this._orchestratorProxy.killUtility(...args);
   }
 
+  switchPage(...args: any[]): any {
+    return this._orchestratorProxy.switchPage(...args);
+  }
+
   async sendRpc(...args: any[]): Promise<any> {
     return this._orchestratorProxy.sendRpc(...args);
   }

@@ -1,17 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
 import useOrchestratorDashboard, {
   OrchestratorAPI,
 } from '@shared-ui/useOrchestratorDashboard';
-
-declare global {
-  interface Window {
-    pageSwitchApi: {
-      switchPage: (pageId: string) => void;
-      onPageSwitched: (callback: (pageId: string) => void) => () => void;
-    };
-  }
-}
 
 const PAGES = [
   {
@@ -188,7 +179,7 @@ function App(): JSX.Element {
         await dashboard.onDisconnect();
       }
 
-      window.pageSwitchApi.switchPage(pageId);
+      client.switchPage(pageId);
       setActivePage(pageId);
       setActiveTab('pagelet');
       setResults([]);
@@ -196,16 +187,6 @@ function App(): JSX.Element {
     },
     [activePage, isReady, switching, dashboard]
   );
-
-  useEffect(() => {
-    const unsubscribe = window.pageSwitchApi.onPageSwitched((pageId) => {
-      const page = PAGES.find((p) => p.id === pageId);
-      if (page) {
-        setActivePage(pageId as PageId);
-      }
-    });
-    return unsubscribe;
-  }, []);
 
   const handleCall = useCallback(
     (method: MethodDef) => {
