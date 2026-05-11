@@ -5,7 +5,7 @@ import {
   ActivationConfig,
   ParticipantInfo,
   ORCHESTRATOR_SERVICE_PATH,
-  RPCService,
+  RPCServiceHost,
   AbstractChannelProtocol,
 } from '@x-oasis/async-call-rpc';
 
@@ -113,27 +113,32 @@ export function registerOrchestratorHandler(
     role: 'initiator' | 'receiver';
   } | null = null;
 
-  const service = new RPCService(ORCHESTRATOR_SERVICE_PATH, {
-    handlers: {
-      activateConnection: (port: any) => {
-        if (lastContext) {
-          (onPort as (ctx: any) => void)({
-            port,
-            connectionId: lastContext.connectionId,
-            role: lastContext.role,
-          });
-          lastContext = null;
-        } else {
-          (onPort as (port: any) => void)(port);
-        }
-      },
-      activateConnectionContext: (ctx: {
-        connectionId: string;
-        role: 'initiator' | 'receiver';
-      }) => {
-        lastContext = ctx;
-      },
+  const handlers = {
+    activateConnection: (port: any) => {
+      if (lastContext) {
+        (onPort as (ctx: any) => void)({
+          port,
+          connectionId: lastContext.connectionId,
+          role: lastContext.role,
+        });
+        lastContext = null;
+      } else {
+        (onPort as (port: any) => void)(port);
+      }
     },
-  });
-  service.setChannel(channel);
+    activateConnectionContext: (ctx: {
+      connectionId: string;
+      role: 'initiator' | 'receiver';
+    }) => {
+      lastContext = ctx;
+    },
+    ping: () => 'pong',
+  };
+
+  let serviceHost = channel.serviceHost;
+  if (!serviceHost) {
+    serviceHost = new RPCServiceHost();
+    channel.setServiceHost(serviceHost);
+  }
+  serviceHost.registerServiceHandler(ORCHESTRATOR_SERVICE_PATH, handlers);
 }

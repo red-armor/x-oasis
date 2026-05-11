@@ -71,9 +71,9 @@ export default class NodeProcessChannel extends AbstractChannelProtocol {
   }
 
   on(listener: (data: unknown) => void): void | (() => void) {
-    const handler = (message: unknown): void => {
-      // Wrap in a MessageEvent-like shape for normalize middleware
-      listener({ data: message } as any);
+    const handler = (message: unknown, port: any): void => {
+      const ports = port ? [port] : [];
+      listener({ data: message, ports } as any);
     };
 
     this._process.on('message', handler);
@@ -82,10 +82,14 @@ export default class NodeProcessChannel extends AbstractChannelProtocol {
     };
   }
 
-  send(data: unknown): void {
+  send(data: unknown, transfer?: any[]): void {
     const proc = this._process as any;
     if (typeof proc.send === 'function') {
-      proc.send(data);
+      if (transfer && transfer.length > 0) {
+        proc.send(data, transfer);
+      } else {
+        proc.send(data);
+      }
     } else {
       console.warn(
         '[NodeProcessChannel] Cannot send: process.send is not available. ' +

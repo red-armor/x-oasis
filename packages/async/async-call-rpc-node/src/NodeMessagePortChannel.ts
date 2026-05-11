@@ -4,58 +4,44 @@ import {
 } from '@x-oasis/async-call-rpc';
 import { MessagePort } from 'worker_threads';
 
-/**
- * Props for {@link NodeMessagePortChannel}.
- */
+const TRANSFERABLE_TYPES = new Set(['tar', 'taar', 'ps', 'pas']);
+
+function isMessagePort(value: unknown): value is MessagePort {
+  if (value == null || typeof value !== 'object') return false;
+  return typeof (value as any).postMessage === 'function';
+}
+
+function extractPortsFromBody(body: any[]): {
+  ports: MessagePort[];
+  cleaned: any[];
+} {
+  const ports: MessagePort[] = [];
+  const cleaned = body.map((item) => {
+    if (isMessagePort(item)) {
+      ports.push(item);
+      return null;
+    }
+    if (Array.isArray(item)) {
+      const subPorts: MessagePort[] = [];
+      const subCleaned = item.map((sub) => {
+        if (isMessagePort(sub)) {
+          subPorts.push(sub);
+          return null;
+        }
+        return sub;
+      });
+      ports.push(...subPorts);
+      return subCleaned;
+    }
+    return item;
+  });
+  return { ports, cleaned };
+}
+
 export type NodeMessagePortChannelProps = {
-  /**
-   * The `MessagePort` instance from `worker_threads.MessageChannel`.
-   *
-   * May be omitted to construct a disconnected channel that queues
-   * sends; bind the port later via {@link NodeMessagePortChannel.bindPort}.
-   */
   port?: MessagePort;
 } & AbstractChannelProtocolProps;
 
-/**
- * RPC channel protocol for Node.js `worker_threads.MessagePort`.
- *
- * Wraps a `MessagePort` (from `new require('worker_threads').MessageChannel()`)
- * for bidirectional RPC communication between Node.js workers.
- *
- * ## Late port binding
- *
- * The `port` may be supplied at construction time, or attached later via
- * {@link bindPort}. The "construct now, bind later" pattern is useful when
- * the port arrives as a transferred object from a parent worker. While
- * unbound, the channel is in the disconnected state — sends queue and flush
- * automatically when {@link bindPort} is called.
- *
- * ## Usage
- *
- * ```ts
- * import { Worker, MessageChannel } from 'worker_threads';
- * import { NodeMessagePortChannel } from '@x-oasis/async-call-rpc-node';
- *
- * const { port1, port2 } = new MessageChannel();
- *
- * // Use port1 in the main thread
- * const channel = new NodeMessagePortChannel({ port: port1 });
- *
- * // Transfer port2 to worker
- * const worker = new Worker('./worker.js', { workerData: { port: port2 }, transferList: [port2] });
- * ```
- *
- * **In worker.js:**
- * ```ts
- * import { workerData } from 'worker_threads';
- * import { NodeMessagePortChannel } from '@x-oasis/async-call-rpc-node';
- *
- * const channel = new NodeMessagePortChannel({ port: workerData.port });
- * ```
- *
- * @see https://nodejs.org/api/worker_threads.html#class-messagechannel
- */
 export class NodeMessagePortChannel extends AbstractChannelProtocol {
   private _port: MessagePort | null;
   private _detachListener: (() => void) | null;
@@ -63,7 +49,6 @@ export class NodeMessagePortChannel extends AbstractChannelProtocol {
 
   constructor(props: NodeMessagePortChannelProps = {}) {
     const { port, ...protocolOptions } = props;
-    // When no port is supplied, start disconnected so sends queue.
     super(port ? protocolOptions : { ...protocolOptions, connected: false });
     this._port = null;
     this._detachListener = null;
@@ -74,13 +59,6 @@ export class NodeMessagePortChannel extends AbstractChannelProtocol {
     }
   }
 
-  /**
-   * Attach a `MessagePort` to a previously-unbound channel and activate it.
-   * Queued sends will flush via the framework's `resumePendingEntry` on the
-   * `onDidConnected` event.
-   *
-   * No-op if a port is already bound.
-   */
   bindPort(port: MessagePort): void {
     if (this._port) return;
     this._attachPort(port);
@@ -89,7 +67,6 @@ export class NodeMessagePortChannel extends AbstractChannelProtocol {
 
   on(listener: (data: unknown) => void): void | (() => void) {
     if (!this._port) {
-      // Defer: wire listener once bindPort attaches a port.
       this._pendingListener = listener;
       return () => {
         if (this._pendingListener === listener) {
@@ -111,7 +88,18 @@ export class NodeMessagePortChannel extends AbstractChannelProtocol {
       );
       return;
     }
+
     if (transfer && transfer.length > 0) {
+      try {
+        const parsed = JSON.parse(data as string);
+        const header = parsed?.[0];
+        const msgType = header?.[0];
+        if (TRANSFERABLE_TYPES.has(msgType)) {
+          parsed[1] = transfer.length === 1 ? [transfer[0]] : [...transfer];
+          this._port.postMessage(parsed, transfer);
+          return;
+        }
+      } catch {}
       this._port.postMessage(data, transfer);
     } else {
       this._port.postMessage(data);
@@ -127,7 +115,6 @@ export class NodeMessagePortChannel extends AbstractChannelProtocol {
 
   private _attachPort(port: MessagePort): void {
     this._port = port;
-    // MessagePort must be started to receive messages.
     port.start?.();
     port.on('close', () => this.disconnect());
     if (this._pendingListener) {
@@ -140,11 +127,34 @@ export class NodeMessagePortChannel extends AbstractChannelProtocol {
     port: MessagePort,
     listener: (data: unknown) => void
   ): () => void {
-    // worker_threads MessagePort emits the message value directly (not wrapped
-    // in a MessageEvent), unlike the Web MessagePort API.
     const handler = (value: unknown): void => {
-      // Normalise to a MessageEvent-like shape for the framework middleware.
-      listener({ data: value } as any);
+      let ports: MessagePort[] = [];
+      let normalizedData: unknown = value;
+
+      if (typeof value === 'object' && value !== null) {
+        const parsed = value as any[];
+        if (Array.isArray(parsed)) {
+          const header = parsed[0];
+          const msgType = header?.[0];
+          if (TRANSFERABLE_TYPES.has(msgType)) {
+            const body = parsed[1] || [];
+            const extracted = extractPortsFromBody(
+              Array.isArray(body) ? body : [body]
+            );
+            if (extracted.ports.length > 0) {
+              ports = extracted.ports;
+              parsed[1] = [];
+              normalizedData = JSON.stringify(parsed);
+            }
+          } else {
+            normalizedData = JSON.stringify(value);
+          }
+        } else {
+          normalizedData = JSON.stringify(value);
+        }
+      }
+
+      listener({ data: normalizedData, ports } as any);
     };
     port.on('message', handler);
     return () => {
