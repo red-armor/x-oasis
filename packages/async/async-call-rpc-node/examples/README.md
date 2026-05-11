@@ -75,3 +75,86 @@ npx tsx parent.ts
 | `worker.ts`     | 子进程，注册计算服务并调用父进程方法   |
 | `package.json`  | 项目配置，使用 workspace 引用本地包    |
 | `tsconfig.json` | TypeScript 配置                        |
+
+## pagelet-proxy-example
+
+一个完整的 Orchestrator + ParticipantProxy 多线程 RPC 示例，演示 Node.js 版本的 pagelet-proxy 架构。
+
+> **注意**：本示例使用 `worker_threads`（而非 `child_process.fork`），因为 `MessagePort` transfer 仅在 `worker_threads` 中受支持。`child_process` IPC 无法传输 `MessagePort` 对象。
+
+### 架构
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                    Host 线程 (host.ts) — Orchestrator              │
+│                                                                   │
+│   NodeConnectionOrchestrator                                      │
+│     ├─ registerParticipant('client',   clientChannel,   'node')   │
+│     ├─ registerParticipant('pagelet',  pageletChannel,  'worker') │
+│     ├─ registerParticipant('shared',   sharedChannel,   'worker') │
+│     └─ registerParticipant('daemon',   daemonChannel,   'worker') │
+│                                                                   │
+│   orchestrator.connect('pagelet','client')  ← 数据面直连          │
+│   orchestrator.connect('pagelet','shared')  ← 数据面直连          │
+│   orchestrator.connect('pagelet','daemon')  ← 数据面直连          │
+└───────────────────────────────────────────────────────────────────┘
+
+控制面：Host ←→ 每个 Worker 的 NodeMessagePortChannel（初始 MessagePort）
+数据面直连（MessagePort transfer，经 Orchestrator 协商后建立）:
+
+  client ──── NodeMessagePortChannel ──── pagelet
+  pagelet ─── NodeMessagePortChannel ──── shared
+  pagelet ─── NodeMessagePortChannel ──── daemon
+```
+
+- **Host**：中央编排线程，使用 `Worker` 创建 worker 线程，为每个 worker 创建 `MessageChannel` 作为控制面，通过 Orchestrator 创建数据面 `MessagePort` 对并 transfer 给各 participant
+- **Pagelet**：通过 `createParticipantProxy` 自主连接其他 worker，充当 RPC 代理
+- **Shared / Daemon**：通过 `createWorkerParticipant` 注册为被动 worker
+- **Client**：消费端线程，通过 `registerOrchestratorHandler` 接收数据面 port，调用 pagelet 代理的 API
+
+### 启动方式
+
+```bash
+cd packages/async/async-call-rpc-node/examples/pagelet-proxy-example
+pnpm start
+```
+
+### 预期输出
+
+```
+[host] Starting pagelet-proxy example...
+
+[shared-worker] Initialized
+[daemon-worker] Initialized
+[host] Orchestrator ready. Pagelet will self-connect...
+
+[client] Waiting for system to initialize...
+[pagelet-worker] connected: client=..., shared=..., daemon=...
+[pagelet-worker] Initialized
+
+[client] Requesting orchestrator to connect pagelet→client...
+[client] Connect result: { "connectionId": "...", "state": "READY" }
+
+[client] === RPC Calls via pagelet proxy ===
+
+[client] pagelet.info()                    = "pagelet ready (pid=...)"
+[client] pagelet.callSharedEcho(...)       = "shared echo: hello from client"
+[client] pagelet.callSharedGetConfig(...)  = "config[theme] = value-v1"
+[client] pagelet.callDaemonEcho(...)       = "daemon echo: ping daemon"
+[client] pagelet.callDaemonSystemStatus()  = "system OK (#1), uptime=...s"
+[client] pagelet.callHostPing(...)         = "pong from host (#1): hello host"
+
+[client] === All RPC calls completed ===
+```
+
+### 文件说明
+
+| 文件                | 说明                                                            |
+| ------------------- | --------------------------------------------------------------- |
+| `host.ts`           | Orchestrator 进程，fork 所有子进程并编排连接                    |
+| `pagelet-worker.ts` | Pagelet 进程，通过 `createParticipantProxy` 自主连接其他 worker |
+| `shared-worker.ts`  | Shared 配置服务进程，通过 `createWorkerParticipant` 注册        |
+| `daemon-worker.ts`  | Daemon 监控服务进程，通过 `createWorkerParticipant` 注册        |
+| `client.ts`         | 消费端进程，通过数据面 port 调用 pagelet 代理的 API             |
+| `package.json`      | 项目配置                                                        |
+| `tsconfig.json`     | TypeScript 配置                                                 |

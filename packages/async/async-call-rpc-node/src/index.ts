@@ -10,3 +10,16 @@ export {
   NodeConnectionOrchestrator,
   registerOrchestratorHandler,
 } from './NodeConnectionOrchestrator';
+
+// Orchestrator helpers (participant proxy & worker participant)
+export {
+  NodeParticipantOrchestratorProxy,
+  createParticipantProxy,
+  NodeWorkerParticipant,
+  createWorkerParticipant,
+} from './NodeOrchestratorHelpers';
+export type {
+  NodeParticipantConnection,
+  NodeParticipantProxyOptions,
+  NodeWorkerParticipantOptions,
+} from './NodeOrchestratorHelpers';

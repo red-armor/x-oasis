@@ -8,7 +8,7 @@
 - **WebSocketChannel** — 基于 WebSocket 的 RPC 通信
 - **RPCMessageChannel** — 基于 MessagePort 的 RPC 通信
 
-下面展示 Worker 和 WebSocket 两个完整示例。
+下面展示 Worker、WebSocket 和 Pagelet Proxy 三个完整示例。
 
 ---
 
@@ -67,13 +67,53 @@ pnpm dev
 
 ---
 
+## 3. pagelet-proxy-example — Pagelet Proxy Orchestrator
+
+使用 `WebConnectionOrchestrator` 在主页面中运行编排器，管理多个 Web Worker 之间的 RPC 连接。pagelet-worker 通过 `ParticipantOrchestratorProxy` 模式自连接到 shared/daemon worker，建立直接 MessagePort 数据通道。
+
+这是 Electron `pagelet-proxy-example` 在 Web 平台的等价实现，展示了多 Worker 间的编排器路由能力。
+
+### 启动方式
+
+```bash
+cd pagelet-proxy-example
+pnpm install
+pnpm dev
+# 打开 http://localhost:5182
+```
+
+### 架构
+
+```
+Main Page (Orchestrator)
+  ├── WorkerChannel → pagelet-worker (控制面)
+  ├── WorkerChannel → shared-worker  (控制面)
+  └── WorkerChannel → daemon-worker  (控制面)
+
+点击 Connect 后：
+  pagelet ←MessagePort→ shared  (直接数据面)
+  pagelet ←MessagePort→ daemon  (直接数据面)
+
+主页面 ↔ pagelet: 通过控制面 WorkerChannel (RPC)
+```
+
+### 功能
+
+- 通过编排器建立 Worker 间的直接 MessagePort 通道
+- pagelet 自连接 shared/daemon（ParticipantOrchestratorProxy 模式）
+- 主页面通过 pagelet 代理调用 shared/daemon 的 RPC 服务
+- 连接状态和事件日志展示
+
+---
+
 ## 端口分配
 
-| 项目              | 服务             | 端口 |
-| ----------------- | ---------------- | ---- |
-| worker-example    | Vite Dev Server  | 5180 |
-| websocket-example | Vite Dev Server  | 5181 |
-| websocket-example | WebSocket Server | 3460 |
+| 项目                  | 服务             | 端口 |
+| --------------------- | ---------------- | ---- |
+| worker-example        | Vite Dev Server  | 5180 |
+| websocket-example     | Vite Dev Server  | 5181 |
+| pagelet-proxy-example | Vite Dev Server  | 5182 |
+| websocket-example     | WebSocket Server | 3460 |
 
 ---
 

@@ -52,7 +52,9 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
   let bridgePort: MessagePort | null = null;
   let bridgePortListener: (() => void) | null = null;
 
-  registerOrchestratorHandler(ipcChannel, (port: any) => {
+  registerOrchestratorHandler(ipcChannel, (ctx: any) => {
+    const port =
+      ctx && typeof ctx === 'object' && 'port' in ctx ? ctx.port : ctx;
     if (bridgePortListener) {
       bridgePortListener();
       bridgePortListener = null;

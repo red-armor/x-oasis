@@ -51,6 +51,7 @@ export class UtilityOrchestratorParticipant {
       activateConnection: (port: any) => {
         this._directChannel.bindPort(port, { rebind: this._rebind });
       },
+      activateConnectionContext: (_ctx: any) => {},
       ping: () => 'pong',
     });
   }

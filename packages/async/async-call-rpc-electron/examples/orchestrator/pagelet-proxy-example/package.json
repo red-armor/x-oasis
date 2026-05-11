@@ -1,5 +1,5 @@
 {
-  "name": "pagelet-proxy-example",
+  "name": "@x-oasis-example/orchestrator-pagelet-proxy",
   "private": true,
   "version": "0.1.0",
   "main": "./out/main/main-process.js",

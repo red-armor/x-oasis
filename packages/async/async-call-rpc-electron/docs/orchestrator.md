@@ -360,7 +360,9 @@ forwarder.dispose(); // Clean up
 
 ### `registerOrchestratorHandler`
 
-Helper function to register a handler for receiving the direct MessagePort.
+Helper function to register a handler for receiving the direct MessagePort from the orchestrator.
+
+#### Legacy Signature (raw port)
 
 ```typescript
 function registerOrchestratorHandler(
@@ -369,10 +371,49 @@ function registerOrchestratorHandler(
 ): void;
 ```
 
-**Usage:**
+#### Context Signature (recommended)
 
 ```typescript
-registerOrchestratorHandler(ipcChannel, (port) => {
+function registerOrchestratorHandler(
+  channel: AbstractChannelProtocol,
+  onPort: (ctx: ActivationContext) => void
+): void;
+```
+
+The framework inspects the callback signature at runtime: if it declares a single parameter typed as `ActivationContext`, the context form is used; otherwise the raw port is passed for backward compatibility.
+
+##### `ActivationContext`
+
+```typescript
+interface ActivationContext {
+  port: any; // The direct MessagePort
+  connectionId: string; // Format: "fromId--toId"
+  role: 'initiator' | 'receiver'; // This participant's role in the connection
+}
+```
+
+From `connectionId` and `role`, you can extract the peer identity:
+
+```typescript
+registerOrchestratorHandler(channel, (ctx) => {
+  const { port, connectionId, role } = ctx;
+  const idx = connectionId.indexOf('--');
+  const from = connectionId.substring(0, idx);
+  const to = connectionId.substring(idx + 2);
+  const peerId = role === 'initiator' ? to : from;
+
+  // Route port to the correct channel based on peerId
+  getChannelFor(peerId).bindPort(port, { rebind: true });
+});
+```
+
+This is critical for **multi-pagelet routing** scenarios where a single participant (e.g., renderer) receives ports from multiple pagelets and needs to distinguish them. See the [Pagelet Proxy pattern](/packages/async/async-call-rpc-electron/scenario-orchestration) for a complete example.
+
+##### Backward Compatibility
+
+```typescript
+// Old code still works — receives raw port
+registerOrchestratorHandler(channel, (port) => {
   directChannel.bindPort(port);
 });
 ```
@@ -582,6 +623,244 @@ registerOrchestratorHandler(channel, (port) => {
 await orchestrator.connect('a', 'b');
 await orchestrator.connect('a', 'b'); // Returns existing connection info
 ```
+
+## Participant-Side APIs
+
+While the `ElectronConnectionOrchestrator` runs in the main process, participants (utility processes) need APIs to self-connect and manage their data-plane channels.
+
+### `ParticipantOrchestratorProxy`
+
+Enables a utility process to autonomously request connections to other participants through the orchestrator, and obtain the resulting data-plane channel directly.
+
+```typescript
+import { createParticipantProxy } from '@x-oasis/async-call-rpc-electron';
+
+const proxy = createParticipantProxy({
+  selfId: 'pagelet',
+  controlChannel: mainChannel,
+});
+
+// Self-connect to another participant
+const conn = await proxy.connect('renderer');
+
+// Get the data-plane channel for direct RPC
+const rendererChannel = conn.getChannel();
+```
+
+#### `ParticipantOrchestratorProxyOptions`
+
+| Option           | Type                                               | Description                                       |
+| ---------------- | -------------------------------------------------- | ------------------------------------------------- |
+| `selfId`         | `string`                                           | This participant's unique ID                      |
+| `controlChannel` | `AbstractChannelProtocol`                          | Control-plane channel already connected to main   |
+| `channelFactory` | `(desc: string) => ElectronMessagePortMainChannel` | Optional factory for creating data-plane channels |
+
+#### `ParticipantConnection`
+
+The object returned by `connect()`:
+
+| Property       | Type                                   | Description                                  |
+| -------------- | -------------------------------------- | -------------------------------------------- |
+| `connectionId` | `string`                               | Connection ID (format: `fromId--toId`)       |
+| `peerId`       | `string`                               | The remote participant's ID                  |
+| `role`         | `'initiator' \| 'receiver'`            | This participant's role in the connection    |
+| `getChannel()` | `() => ElectronMessagePortMainChannel` | Returns the data-plane channel for this peer |
+
+#### Methods
+
+##### `connect(toId, config?, options?)`
+
+Request a connection to another participant. Returns a `ParticipantConnection` whose `getChannel()` provides the data-plane channel.
+
+```typescript
+const conn = await proxy.connect('shared');
+const sharedChannel = conn.getChannel();
+```
+
+If already connected, returns the existing connection immediately.
+
+##### `disconnect(connectionId)`
+
+Disconnect an established connection.
+
+##### `listParticipants()` / `listConnections()`
+
+Query the orchestrator's topology from the participant side.
+
+##### `getChannelFor(peerId)`
+
+Retrieve the cached data-plane channel for a previously connected peer.
+
+### `UtilityOrchestratorParticipant`
+
+A convenience wrapper for utility processes that need both control-plane and data-plane channel management. It auto-handles `activateConnection` by binding received ports to an internal `ElectronMessagePortMainChannel`.
+
+```typescript
+import { createUtilityParticipant } from '@x-oasis/async-call-rpc-electron';
+
+const participant = createUtilityParticipant({
+  parentPort: process.parentPort!,
+  mainChannelDescription: 'worker→main IPC channel',
+  directChannelDescription: 'worker↔peer direct port',
+});
+
+// Register services on the direct (data-plane) channel
+participant.registerService('my-api', {
+  info: () => `worker ready (pid=${process.pid})`,
+  echo: (msg: string) => `echo: ${msg}`,
+});
+
+// Register services on the control-plane channel (e.g., for main process calls)
+participant.registerControlService('my-control-api', {
+  getStatus: () => ({ pid: process.pid, uptime: process.uptime() }),
+});
+
+// Access channels if needed
+participant.mainChannel; // ElectronUtilityProcessChannel
+participant.directChannel; // ElectronMessagePortMainChannel
+```
+
+#### `UtilityParticipantOptions`
+
+| Option                     | Type         | Default      | Description                                |
+| -------------------------- | ------------ | ------------ | ------------------------------------------ |
+| `parentPort`               | `ParentPort` | — (required) | The utility process's `process.parentPort` |
+| `mainChannelDescription`   | `string`     | `undefined`  | Description for the control-plane channel  |
+| `directChannelDescription` | `string`     | `undefined`  | Description for the data-plane channel     |
+| `rebind`                   | `boolean`    | `true`       | Whether to rebind on reconnection          |
+
+#### Methods
+
+##### `registerService(serviceId, handlers)`
+
+Register RPC handlers on the **data-plane** channel. These are accessible by any peer that has a direct port connection.
+
+##### `registerControlService(serviceId, handlers)`
+
+Register RPC handlers on the **control-plane** channel (the `parentPort` channel to main). These are accessible from the main process.
+
+##### `getService<T>(servicePath)`
+
+Get or create a typed proxy client on the data-plane channel for calling peer services.
+
+---
+
+## Subscription Patterns
+
+`async-call-rpc` supports two subscription patterns for real-time data push from server to client. Both work seamlessly across the orchestrator's data-plane channels.
+
+### Pattern A: Event Method (Ping-Pong Callback)
+
+Methods starting with `on` (e.g., `onStatusChange`) are automatically treated as event methods. The handler receives a `remoteCallback` that it can call to push data to the client.
+
+**Server (utility process):**
+
+```typescript
+const handlers = {
+  onStatusChange(callback: (status: any) => void) {
+    const interval = setInterval(() => {
+      callback({ timestamp: Date.now(), cpu: Math.random() * 100 });
+    }, 1000);
+
+    // Optional cleanup — called when client unsubscribes
+    return () => clearInterval(interval);
+  },
+};
+
+participant.registerService('monitor-api', handlers);
+```
+
+**Client (renderer via pagelet proxy):**
+
+```typescript
+// Client-side proxy auto-detects "on*" as event method
+const unsub = monitorClient.onStatusChange((data) => {
+  console.log('Status update:', data);
+});
+
+// Stop listening
+unsub.unsubscribe();
+```
+
+### Pattern B: Observable Subscribe (Streaming)
+
+For high-frequency data streams, the handler returns an object with a `subscribe()` method. The client uses `clientHost.subscribe()` to attach observers.
+
+**Server (utility process):**
+
+```typescript
+const handlers = {
+  watchCpuUsage() {
+    return {
+      subscribe(observer: {
+        next?: (value: any) => void;
+        error?: (err: Error) => void;
+        complete?: () => void;
+      }) {
+        let tick = 0;
+        const interval = setInterval(() => {
+          tick++;
+          observer.next?.({ tick, cpu: Math.random() * 100 });
+
+          if (tick >= 100) {
+            clearInterval(interval);
+            observer.complete?.();
+          }
+        }, 500);
+
+        return { unsubscribe: () => clearInterval(interval) };
+      },
+    };
+  },
+};
+
+participant.registerService('monitor-api', handlers);
+```
+
+**Client with ProxyRPCClient (must use `on*` naming for cross-process):**
+
+Since callbacks cannot be serialized across process boundaries, when forwarding an observable subscription through a proxy layer, expose it as an `on*` event method:
+
+```typescript
+// Pagelet proxy layer — bridges observable to event method
+serviceHost.registerService('pagelet-api', {
+  channel: rendererChannel,
+  serviceHost,
+  handlers: {
+    onCpuUsage(callback: (data: any) => void) {
+      const sub = daemonSubscriptionClient.subscribe('watchCpuUsage', [], {
+        onData: (value) => callback(value),
+        onError: (err) => console.error('Subscription error:', err),
+        onComplete: () => console.log('Stream completed'),
+      });
+      return { unsubscribe: () => sub.unsubscribe() };
+    },
+  },
+});
+```
+
+**Renderer:**
+
+```typescript
+const unsub = pageletClient.onCpuUsage((data) => {
+  console.log('CPU:', data.cpu);
+});
+```
+
+### Choosing Between Patterns
+
+| Aspect              | Event Method (`on*`)                 | Observable Subscribe                      |
+| ------------------- | ------------------------------------ | ----------------------------------------- |
+| Client API          | `client.onFoo(cb)`                   | `client.subscribe('foo', args, observer)` |
+| Auto-detection      | Yes (by `on` prefix)                 | No (explicit API)                         |
+| Cross-process proxy | ✅ Callbacks auto-serialized         | ⚠️ Must wrap in `on*` method              |
+| Completion signal   | No (infinite until unsub)            | Yes (`onComplete`)                        |
+| Error handling      | Limited                              | Full (`onError`)                          |
+| Best for            | Status updates, config changes, logs | High-frequency streams, finite sequences  |
+
+> **Key insight:** When forwarding subscriptions through a proxy (e.g., renderer → pagelet → daemon), always expose them as `on*` event methods to the outer client. The proxy layer internally uses `subscribe()` for observable sources and converts them to callback-based event methods.
+
+---
 
 ## Examples
 

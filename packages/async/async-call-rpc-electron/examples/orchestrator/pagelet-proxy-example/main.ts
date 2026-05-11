@@ -4,7 +4,7 @@ import {
   ElectronUtilityProcessChannel,
   ElectronConnectionOrchestrator,
 } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;
@@ -62,32 +62,16 @@ app.whenReady().then(async () => {
     description: 'main→main-pagelet IPC channel',
   });
 
-  const sharedClient = clientHost
-    .registerClient('shared-rpc', { channel: sharedChannel })
-    .createProxy();
-
-  const daemonClient = clientHost
-    .registerClient('daemon-rpc', { channel: daemonChannel })
-    .createProxy();
-
   let mainCallCount = 0;
 
-  serviceHost.registerService('main-rpc', {
-    channel: pageletChannel,
-    serviceHost,
-    handlers: {
-      mainPing(msg: string): string {
-        mainCallCount++;
-        return `pong from main (#${mainCallCount}): ${msg}`;
-      },
-      async relayToShared(method: string, ...args: any[]): Promise<any> {
-        return (sharedClient as any)[method](...args);
-      },
-      async relayToDaemon(method: string, ...args: any[]): Promise<any> {
-        return (daemonClient as any)[method](...args);
-      },
+  serviceHost.registerServiceHandler('main-rpc', {
+    mainPing(msg: string): string {
+      mainCallCount++;
+      return `pong from main (#${mainCallCount}): ${msg}`;
     },
   });
+
+  pageletChannel.setServiceHost(serviceHost);
 
   const orchestrator = new ElectronConnectionOrchestrator({
     logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
@@ -101,6 +85,10 @@ app.whenReady().then(async () => {
 
   orchestrator.registerParticipant('renderer', ipcChannel, 'renderer');
   orchestrator.registerParticipant('main-pagelet', pageletChannel, 'utility');
+  orchestrator.registerParticipant('shared', sharedChannel, 'utility');
+  orchestrator.registerParticipant('daemon', daemonChannel, 'utility');
+
+  orchestrator.registerProxyService(serviceHost);
 
   serviceHost.registerService('orchestrator', {
     channel: ipcChannel,
@@ -183,8 +171,7 @@ app.whenReady().then(async () => {
     },
   });
 
-  await orchestrator.connect('main-pagelet', 'renderer');
-  console.log('[main] main-pagelet ↔ renderer connected');
+  console.log('[main] orchestrator ready, pagelet will self-connect');
 });
 
 app.on('window-all-closed', () => {

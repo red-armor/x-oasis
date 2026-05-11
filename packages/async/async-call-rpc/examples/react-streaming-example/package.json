@@ -1,5 +1,5 @@
 {
-  "name": "react-streaming-rpc-example",
+  "name": "@x-oasis-example/react-streaming-rpc",
   "private": true,
   "version": "0.1.0",
   "type": "module",

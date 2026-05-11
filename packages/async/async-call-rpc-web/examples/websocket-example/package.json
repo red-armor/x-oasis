@@ -1,5 +1,5 @@
 {
-  "name": "web-websocket-rpc-example",
+  "name": "@x-oasis-example/web-websocket-rpc",
   "private": true,
   "version": "0.1.0",
   "type": "module",

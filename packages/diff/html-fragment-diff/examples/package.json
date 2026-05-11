@@ -1,5 +1,5 @@
 {
-  "name": "html-fragment-diff-example",
+  "name": "@x-oasis-example/html-fragment-diff",
   "version": "0.2.5",
   "private": true,
   "type": "module",

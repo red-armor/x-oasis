@@ -5,6 +5,13 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "module": "dist/async-call-rpc-node.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/async-call-rpc-node.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
   "files": [
     "dist",
     "src"

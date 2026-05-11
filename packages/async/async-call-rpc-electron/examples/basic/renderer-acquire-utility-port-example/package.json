@@ -1,5 +1,5 @@
 {
-  "name": "renderer-acquire-utility-port-example",
+  "name": "@x-oasis-example/basic-renderer-acquire-utility-port",
   "private": true,
   "version": "0.1.0",
   "main": "./out/main/main-process.js",

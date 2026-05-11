@@ -1,5 +1,5 @@
 {
-  "name": "diff-match-patch-example",
+  "name": "@x-oasis-example/diff-match-patch",
   "version": "0.2.5",
   "private": true,
   "type": "module",

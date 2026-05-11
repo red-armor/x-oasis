@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "turbo clean",
     "clean:modules": "rimraf **/node_modules",
-    "build": "turbo build",
+    "build": "turbo build --filter='!@x-oasis-example/*'",
     "test": "CI=true pnpm run -r test",
     "alpha": "bump --branch",
     "lint": "eslint --ext js,ts,tsx .",

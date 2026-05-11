@@ -1,5 +1,5 @@
 {
-  "name": "node-fork-rpc-example",
+  "name": "@x-oasis-example/node-fork-rpc",
   "private": true,
   "version": "0.1.0",
   "scripts": {

@@ -18,6 +18,7 @@ npm install @x-oasis/async-call-rpc-web
 ## Quick Links
 
 - [Connection Orchestrator](/packages/async/async-call-rpc-web/orchestrator) - Automated port connection management
+- [Scenario Orchestration Best Practices](/packages/async/async-call-rpc-web/scenario-orchestration) - Patterns for every Web Worker topology
 - [API Reference](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-web/src)
 - [Examples](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-web/examples)
 

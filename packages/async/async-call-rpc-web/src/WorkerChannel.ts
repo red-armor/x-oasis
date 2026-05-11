@@ -51,7 +51,11 @@ export default class WorkerChannel extends AbstractChannelProtocol {
     return () => this.worker.removeEventListener('message', f);
   }
 
-  send(data: unknown): void {
-    this.worker.postMessage(data);
+  send(data: unknown, transfer?: Transferable[]): void {
+    if (transfer && transfer.length > 0) {
+      this.worker.postMessage(data, transfer);
+    } else {
+      this.worker.postMessage(data);
+    }
   }
 }

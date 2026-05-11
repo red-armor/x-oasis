@@ -13,7 +13,16 @@ export const wikiSidebar = {
   "/discussion/": [
     {
       "text": "技术讨论",
-      "items": []
+      "items": [
+        {
+          "text": "D-001 Orchestrator connect 去中心化设计讨论",
+          "link": "/discussion/20260510-orchestrator-decentralized-connect"
+        },
+        {
+          "text": "D-002 多 Page 到多 Pagelet 的 RPC 路由问题",
+          "link": "/discussion/20260511-multi-page-routing-pagelet-proxy"
+        }
+      ]
     }
   ],
   "/issue/": [
@@ -45,6 +54,10 @@ export const wikiNav = [
   {
     "text": "首页",
     "link": "/INDEX"
+  },
+  {
+    "text": "技术讨论",
+    "link": "/discussion/20260510-orchestrator-decentralized-connect"
   },
   {
     "text": "Issue 记录",

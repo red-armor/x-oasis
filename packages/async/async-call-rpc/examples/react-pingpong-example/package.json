@@ -1,5 +1,5 @@
 {
-  "name": "react-pingpong-rpc-example",
+  "name": "@x-oasis-example/react-pingpong-rpc",
   "private": true,
   "version": "0.1.0",
   "type": "module",

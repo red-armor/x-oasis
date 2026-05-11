@@ -11,7 +11,7 @@ const client = createOrchestratorClient({
 
 const pageletClient = client.getService<any>('pagelet-api');
 
-type TabId = 'shared' | 'daemon' | 'main' | 'pagelet';
+type TabId = 'shared' | 'daemon' | 'main' | 'pagelet' | 'subscriptions';
 type PanelId = 'dashboard' | 'rpc';
 
 interface MethodDef {
@@ -19,6 +19,7 @@ interface MethodDef {
   description: string;
   params?: { key: string; label: string; defaultValue: string }[];
   invoke: (params: Record<string, string>) => Promise<any>;
+  isSubscription?: boolean;
 }
 
 interface TabDef {
@@ -91,6 +92,46 @@ const TABS: TabDef[] = [
       },
     ],
   },
+  {
+    id: 'subscriptions',
+    label: 'Subs',
+    color: '#ec4899',
+    methods: [
+      {
+        name: 'onDaemonStatusChange',
+        description: 'Subscribe to daemon system status updates (event method)',
+        isSubscription: true,
+        invoke: () => {
+          throw new Error('Use subscription UI');
+        },
+      },
+      {
+        name: 'onDaemonLog',
+        description: 'Subscribe to daemon log events (event method)',
+        isSubscription: true,
+        invoke: () => {
+          throw new Error('Use subscription UI');
+        },
+      },
+      {
+        name: 'onSharedConfigChange',
+        description: 'Subscribe to shared config changes (event method)',
+        isSubscription: true,
+        invoke: () => {
+          throw new Error('Use subscription UI');
+        },
+      },
+      {
+        name: 'onDaemonCpuUsage',
+        description:
+          'Stream daemon CPU usage (observable → event method proxy)',
+        isSubscription: true,
+        invoke: () => {
+          throw new Error('Use subscription UI');
+        },
+      },
+    ],
+  },
 ];
 
 interface CallResult {
@@ -101,6 +142,21 @@ interface CallResult {
   latencyMs: number;
   timestamp: number;
   error?: string;
+}
+
+interface SubEvent {
+  id: number;
+  source: string;
+  data: any;
+  timestamp: number;
+}
+
+interface ActiveSub {
+  methodName: string;
+  source: string;
+  unsub: { unsubscribe: () => void };
+  eventCount: number;
+  startedAt: number;
 }
 
 interface LogItem {
@@ -522,6 +578,11 @@ function App(): JSX.Element {
   const [results, setResults] = useState<CallResult[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
+  const [activeSubs, setActiveSubs] = useState<Map<string, ActiveSub>>(
+    new Map()
+  );
+  const [subEvents, setSubEvents] = useState<SubEvent[]>([]);
+  const subEventIdRef = useRef(0);
 
   const dashboard = useOrchestratorDashboard({
     participants: [
@@ -547,6 +608,60 @@ function App(): JSX.Element {
     if (!isReady || !dashboardRpcMessage.trim()) return;
     dashboard.onSendRpc(dashboardRpcMessage.trim());
   }, [isReady, dashboardRpcMessage, dashboard]);
+
+  const handleSubscribe = useCallback(
+    (methodName: string, source: string) => {
+      if (!isReady || activeSubs.has(methodName)) return;
+
+      const callback = (data: any) => {
+        subEventIdRef.current++;
+        setSubEvents((prev) => [
+          {
+            id: subEventIdRef.current,
+            source,
+            data,
+            timestamp: Date.now(),
+          },
+          ...prev.slice(0, 199),
+        ]);
+        setActiveSubs((prev: Map<string, ActiveSub>) => {
+          const next = new Map(prev);
+          const entry = next.get(methodName);
+          if (entry) {
+            next.set(methodName, {
+              ...entry,
+              eventCount: entry.eventCount + 1,
+            });
+          }
+          return next;
+        });
+      };
+
+      const unsub = (pageletClient as any)[methodName](callback);
+      setActiveSubs((prev: Map<string, ActiveSub>) => {
+        const next = new Map(prev);
+        next.set(methodName, {
+          methodName,
+          source,
+          unsub,
+          eventCount: 0,
+          startedAt: Date.now(),
+        });
+        return next;
+      });
+    },
+    [isReady, activeSubs]
+  );
+
+  const handleUnsubscribe = useCallback((methodName: string) => {
+    setActiveSubs((prev) => {
+      const entry = prev.get(methodName);
+      entry?.unsub.unsubscribe();
+      const next = new Map(prev);
+      next.delete(methodName);
+      return next;
+    });
+  }, []);
 
   const handleCall = useCallback(
     (method: MethodDef) => {
@@ -817,6 +932,131 @@ function App(): JSX.Element {
                 }}
               >
                 {currentTab.methods.map((method) => {
+                  const isActive = activeSubs.has(method.name);
+                  const subInfo = activeSubs.get(method.name);
+
+                  if (method.isSubscription) {
+                    return (
+                      <div
+                        key={method.name}
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: 10,
+                          border: `1px solid ${
+                            isActive ? '#10b981' : '#e2e8f0'
+                          }`,
+                          padding: 16,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: 8,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: isActive ? '50%' : 3,
+                                backgroundColor: isActive
+                                  ? '#10b981'
+                                  : currentTab.color,
+                                display: 'inline-block',
+                                boxShadow: isActive
+                                  ? '0 0 6px #10b981'
+                                  : 'none',
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontFamily: 'monospace',
+                                fontSize: 14,
+                                fontWeight: 600,
+                                color: '#1e293b',
+                              }}
+                            >
+                              {method.name}()
+                            </span>
+                          </div>
+                          <button
+                            onClick={() =>
+                              isActive
+                                ? handleUnsubscribe(method.name)
+                                : handleSubscribe(method.name, currentTab.label)
+                            }
+                            disabled={!isReady}
+                            style={{
+                              padding: '5px 14px',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              border: 'none',
+                              borderRadius: 6,
+                              backgroundColor: isActive
+                                ? '#ef4444'
+                                : isReady
+                                ? '#10b981'
+                                : '#d1d5db',
+                              color: '#fff',
+                              cursor: isReady ? 'pointer' : 'not-allowed',
+                            }}
+                          >
+                            {isActive ? 'Unsub' : 'Subscribe'}
+                          </button>
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: '#94a3b8',
+                            marginBottom: 8,
+                          }}
+                        >
+                          {method.description}
+                        </div>
+
+                        {isActive && subInfo && (
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: 8,
+                              fontSize: 11,
+                            }}
+                          >
+                            <span
+                              style={{
+                                padding: '2px 8px',
+                                backgroundColor: '#f0fdf4',
+                                border: '1px solid #bbf7d0',
+                                borderRadius: 4,
+                                color: '#166534',
+                                fontWeight: 600,
+                              }}
+                            >
+                              LIVE
+                            </span>
+                            <span style={{ color: '#64748b' }}>
+                              Events: {subInfo.eventCount}
+                            </span>
+                            <span style={{ color: '#94a3b8' }}>
+                              Since:{' '}
+                              {new Date(subInfo.startedAt).toLocaleTimeString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
                   const latest = latestForMethod(method.name);
                   return (
                     <div
@@ -1003,6 +1243,91 @@ function App(): JSX.Element {
                   );
                 })}
               </div>
+
+              {activeTab === 'subscriptions' && subEvents.length > 0 && (
+                <div
+                  style={{
+                    marginTop: 16,
+                    backgroundColor: '#111827',
+                    borderRadius: 10,
+                    padding: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#94a3b8',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Subscription Events ({subEvents.length})
+                    </span>
+                    <button
+                      onClick={() => setSubEvents([])}
+                      style={{
+                        fontSize: 10,
+                        border: '1px solid #374151',
+                        borderRadius: 3,
+                        backgroundColor: 'transparent',
+                        color: '#6b7280',
+                        cursor: 'pointer',
+                        padding: '0 6px',
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      lineHeight: 1.6,
+                      maxHeight: 300,
+                      overflow: 'auto',
+                    }}
+                  >
+                    {subEvents.slice(0, 50).map((evt) => (
+                      <div
+                        key={evt.id}
+                        style={{ display: 'flex', gap: 8, color: '#d1d5db' }}
+                      >
+                        <span style={{ color: '#4b5563', flexShrink: 0 }}>
+                          {new Date(evt.timestamp).toLocaleTimeString('en-US', {
+                            hour12: false,
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                          })}
+                        </span>
+                        <span style={{ color: '#10b981', flexShrink: 0 }}>
+                          [{evt.source}]
+                        </span>
+                        <span
+                          style={{
+                            color: '#9ca3af',
+                            flex: 1,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {typeof evt.data === 'object'
+                            ? JSON.stringify(evt.data)
+                            : String(evt.data)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {results.length > 0 && (
                 <div
