@@ -1,5 +1,5 @@
 {
-  "name": "utility-acquire-utility-port-example",
+  "name": "@x-oasis-example/orchestrator-utility-acquire-utility-port",
   "private": true,
   "version": "0.1.0",
   "main": "./out/main/main-process.js",

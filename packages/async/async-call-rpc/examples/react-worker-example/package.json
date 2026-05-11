@@ -1,5 +1,5 @@
 {
-  "name": "react-worker-rpc-example",
+  "name": "@x-oasis-example/react-worker-rpc",
   "private": true,
   "version": "0.1.0",
   "type": "module",

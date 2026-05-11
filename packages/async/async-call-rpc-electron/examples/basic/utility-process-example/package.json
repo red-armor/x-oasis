@@ -1,5 +1,5 @@
 {
-  "name": "electron-utility-process-rpc-example",
+  "name": "@x-oasis-example/basic-utility-process-rpc",
   "private": true,
   "version": "0.1.0",
   "main": "main-process.ts",

@@ -1,5 +1,5 @@
 {
-  "name": "page-acquire-renderer-port-example",
+  "name": "@x-oasis-example/orchestrator-page-acquire-renderer-port",
   "private": true,
   "version": "0.1.0",
   "main": "./out/main/main-process.js",
