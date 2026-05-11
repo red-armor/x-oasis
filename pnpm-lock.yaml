@@ -52,7 +52,7 @@ importers:
         version: 4.1.4(@types/node@16.18.14)
       vitepress:
         specifier: ^1.6.3
-        version: 1.6.4(@algolia/client-search@5.52.0)(@types/node@16.18.14)(@types/react@18.3.27)(postcss@8.5.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)(typescript@4.8.3)
+        version: 1.6.4(@algolia/client-search@5.52.0)(@types/node@16.18.14)(postcss@8.5.13)(search-insights@2.17.3)(typescript@4.8.3)
       vitest:
         specifier: ^0.29.2
         version: 0.29.2(jsdom@15.2.1)
@@ -13285,10 +13285,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-leak-detector@25.5.0:
     dependencies:
@@ -15731,7 +15728,7 @@ snapshots:
       '@types/node': 24.10.9
       fsevents: 2.3.3
 
-  vitepress@1.6.4(@algolia/client-search@5.52.0)(@types/node@16.18.14)(@types/react@18.3.27)(postcss@8.5.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)(typescript@4.8.3):
+  vitepress@1.6.4(@algolia/client-search@5.52.0)(@types/node@16.18.14)(postcss@8.5.13)(search-insights@2.17.3)(typescript@4.8.3):
     dependencies:
       '@docsearch/css': 3.8.2
       '@docsearch/js': 3.8.2(@algolia/client-search@5.52.0)(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)

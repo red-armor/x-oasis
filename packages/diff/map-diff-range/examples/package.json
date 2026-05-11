@@ -1,5 +1,5 @@
 {
-  "name": "map-diff-range-example",
+  "name": "@x-oasis-example/map-diff-range",
   "version": "0.2.5",
   "private": true,
   "type": "module",

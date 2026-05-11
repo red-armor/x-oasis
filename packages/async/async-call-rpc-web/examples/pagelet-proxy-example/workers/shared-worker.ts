@@ -3,7 +3,7 @@ import {
   RPCMessageChannel,
   registerOrchestratorHandler,
 } from '@x-oasis/async-call-rpc-web';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost, ActivationContext } from '@x-oasis/async-call-rpc';
 
 const controlChannel = new WorkerChannel(self, {
   name: 'shared-control',
@@ -28,7 +28,7 @@ serviceHost.registerServiceHandler('shared-rpc', sharedHandlers);
 
 const directChannels = new Map<string, RPCMessageChannel>();
 
-registerOrchestratorHandler(controlChannel, (ctx) => {
+registerOrchestratorHandler(controlChannel, (ctx: ActivationContext) => {
   const { port, connectionId, role } = ctx;
   const idx = connectionId.indexOf('--');
   const from = connectionId.substring(0, idx);
