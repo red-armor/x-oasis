@@ -64,20 +64,47 @@ export class ParticipantOrchestratorProxy {
     role: 'initiator' | 'receiver';
   } | null = null;
 
+  private _pendingContexts = new Map<
+    string,
+    { connectionId: string; role: 'initiator' | 'receiver' }
+  >();
+
+  private _contextQueue: {
+    connectionId: string;
+    role: 'initiator' | 'receiver';
+  }[] = [];
+
   private _setupOrchestratorHandler(): void {
     const service = new RPCService(ORCHESTRATOR_SERVICE_PATH, {
       handlers: {
-        activateConnection: (port: any) => {
-          const ctx = this._lastContext;
-          this._lastContext = null;
+        activateConnection: (port: any, connectionId?: string) => {
+          let ctx: {
+            connectionId: string;
+            role: 'initiator' | 'receiver';
+          } | null = null;
+
+          if (connectionId) {
+            ctx = this._pendingContexts.get(connectionId) ?? null;
+            this._pendingContexts.delete(connectionId);
+            const qIdx = this._contextQueue.findIndex(
+              (c) => c.connectionId === connectionId
+            );
+            if (qIdx !== -1) this._contextQueue.splice(qIdx, 1);
+          } else if (this._contextQueue.length > 0) {
+            ctx = this._contextQueue.shift()!;
+            this._pendingContexts.delete(ctx.connectionId);
+          } else {
+            ctx = this._lastContext;
+            this._lastContext = null;
+          }
 
           if (!ctx) return;
 
-          const { connectionId, role } = ctx;
-          const idx = connectionId.indexOf('--');
-          const from = connectionId.substring(0, idx);
-          const to = connectionId.substring(idx + 2);
-          const peerId = role === 'initiator' ? to : from;
+          const { connectionId: cid, role } = ctx;
+          const idx = cid.indexOf('--');
+          const from = cid.substring(0, idx);
+          const to = cid.substring(idx + 2);
+          const peerId = from === this._selfId ? to : from;
 
           let channel = this._peerChannels.get(peerId);
           if (!channel) {
@@ -86,18 +113,18 @@ export class ParticipantOrchestratorProxy {
           }
           channel.bindPort(port, { rebind: true });
 
-          const pending = this._pendingConnects.get(connectionId);
+          const pending = this._pendingConnects.get(cid);
           if (pending) {
-            this._pendingConnects.delete(connectionId);
+            this._pendingConnects.delete(cid);
             pending.resolve({
-              connectionId,
+              connectionId: cid,
               peerId,
               role,
               getChannel: () => this._peerChannels.get(peerId)!,
             });
           } else if (this._onConnection) {
             this._onConnection({
-              connectionId,
+              connectionId: cid,
               peerId,
               role,
               getChannel: () => this._peerChannels.get(peerId)!,
@@ -108,6 +135,8 @@ export class ParticipantOrchestratorProxy {
           connectionId: string;
           role: 'initiator' | 'receiver';
         }) => {
+          this._pendingContexts.set(ctx.connectionId, ctx);
+          this._contextQueue.push(ctx);
           this._lastContext = ctx;
         },
         ping: () => 'pong',

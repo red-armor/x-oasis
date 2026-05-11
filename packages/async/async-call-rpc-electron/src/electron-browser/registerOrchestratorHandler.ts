@@ -56,16 +56,45 @@ export function registerOrchestratorHandler(
     role: 'initiator' | 'receiver';
   } | null = null;
 
+  const pendingContexts = new Map<
+    string,
+    { connectionId: string; role: 'initiator' | 'receiver' }
+  >();
+
+  const contextQueue: {
+    connectionId: string;
+    role: 'initiator' | 'receiver';
+  }[] = [];
+
   const service = new RPCService(ORCHESTRATOR_SERVICE_PATH, {
     handlers: {
-      activateConnection: (port: any) => {
-        if (lastContext) {
+      activateConnection: (port: any, connectionId?: string) => {
+        let ctx: {
+          connectionId: string;
+          role: 'initiator' | 'receiver';
+        } | null = null;
+
+        if (connectionId) {
+          ctx = pendingContexts.get(connectionId) ?? null;
+          pendingContexts.delete(connectionId);
+          const qIdx = contextQueue.findIndex(
+            (c) => c.connectionId === connectionId
+          );
+          if (qIdx !== -1) contextQueue.splice(qIdx, 1);
+        } else if (contextQueue.length > 0) {
+          ctx = contextQueue.shift()!;
+          pendingContexts.delete(ctx.connectionId);
+        } else {
+          ctx = lastContext;
+          lastContext = null;
+        }
+
+        if (ctx) {
           onPort({
             port,
-            connectionId: lastContext.connectionId,
-            role: lastContext.role,
+            connectionId: ctx.connectionId,
+            role: ctx.role,
           } as ActivationContext);
-          lastContext = null;
         } else {
           (onPort as (port: any) => void)(port);
         }
@@ -74,6 +103,8 @@ export function registerOrchestratorHandler(
         connectionId: string;
         role: 'initiator' | 'receiver';
       }) => {
+        pendingContexts.set(ctx.connectionId, ctx);
+        contextQueue.push(ctx);
         lastContext = ctx;
       },
       ping: () => 'pong',
