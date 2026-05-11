@@ -397,6 +397,16 @@ const status = await pageletClient.callDaemonSystemStatus();
 const echo = await pageletClient.callSharedEcho('hello');
 ```
 
+### Lazy Participant Registration
+
+In multi-window apps, secondary windows (e.g. settings, inspector) are created on demand. The pagelet cannot `proxy.connect('renderer')` at boot time because the renderer hasn't been registered yet. Instead:
+
+1. The main page registers the renderer participant when the window is created
+2. The main page initiates `orchestrator.connect('pagelet', 'renderer')`
+3. The pagelet receives the port via its orchestrator handler's `activateConnection` callback
+
+This pattern is covered in detail in Pitfall #7 below.
+
 ---
 
 ## Control Plane vs Data Plane
@@ -711,6 +721,56 @@ daemonChannel.setServiceHost(serviceHost);
 ```
 
 Without this, `ORCHESTRATOR_PROXY_SERVICE_PATH` requests from Workers to the orchestrator cannot be routed.
+
+### 7. Connecting to a Participant That Hasn't Been Registered Yet
+
+When a pagelet self-connects at boot time but a peer (e.g. a lazily-created renderer window) hasn't been registered yet, `proxy.connect('renderer')` will throw "Unknown participant". This happens in multi-window scenarios where secondary windows are created on demand.
+
+```typescript
+// ❌ Wrong: pagelet boots and immediately connects to all peers,
+// but 'renderer' hasn't been registered yet (window not created yet)
+async function boot() {
+  await proxy.connect('shared');
+  await proxy.connect('daemon');
+  await proxy.connect('renderer'); // Error: Unknown participant!
+}
+```
+
+The correct approach depends on who initiates the connection:
+
+**Option A: Main page initiates the connection** — the main page calls `orchestrator.connect()` after registering the renderer participant (which it controls). The pagelet receives the port via its orchestrator handler.
+
+**Option B: Pagelet initiates the connection** — defer the `proxy.connect('renderer')` call until the renderer is known to be registered. The pagelet can listen for a signal from the main page, or use an `onConnection` callback (in Electron's `createParticipantProxy`) to handle peer-initiated connections lazily.
+
+```typescript
+// ✅ Correct (Option A): Main page connects when renderer is ready
+function createRendererWindow() {
+  const ipcChannel = createRendererIPC();
+  orchestrator.registerParticipant('renderer', ipcChannel, 'renderer');
+  ipcChannel.setServiceHost(serviceHost);
+  // Now connect — pagelet will receive the port via its handler
+  orchestrator.connect('pagelet', 'renderer');
+}
+
+// ✅ Correct (Option B): Pagelet uses onConnection for lazy peers
+const proxy = createParticipantProxy({
+  selfId: 'pagelet',
+  controlChannel,
+  onConnection: (conn) => {
+    // Handle peer-initiated connections (e.g. renderer just came online)
+    if (conn.peerId === 'renderer') {
+      registerProxyApi(conn.getChannel());
+    }
+  },
+});
+
+async function boot() {
+  // Only connect to peers that exist at boot time
+  await proxy.connect('shared');
+  await proxy.connect('daemon');
+  // Don't connect to 'renderer' here — it will connect to us later
+}
+```
 
 ---
 

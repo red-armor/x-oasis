@@ -17,23 +17,25 @@ interface LogEntry {
   timestamp: number;
 }
 
+type ConnectionState =
+  | 'IDLE'
+  | 'CONNECTING'
+  | 'READY'
+  | 'TRANSIENT_FAILURE'
+  | 'DISCONNECTING'
+  | 'CLOSED';
+
 let logIdCounter = 0;
 
 function SettingApp() {
   const [selectedTheme, setSelectedTheme] = useState<string>('light');
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
-  const [connected, setConnected] = useState(false);
+  const [connectionState, setConnectionState] =
+    useState<ConnectionState>('IDLE');
+  const [statusInfo, setStatusInfo] = useState<any>(null);
 
-  useEffect(() => {
-    client
-      .connect()
-      .then(() => setConnected(true))
-      .catch((err: any) => {
-        console.error('[setting] connect failed:', err);
-        addLog('connect', null, 0, err.message);
-      });
-  }, []);
+  const isReady = connectionState === 'READY';
 
   const addLog = useCallback(
     (method: string, result: any, latencyMs: number, error?: string) => {
@@ -55,8 +57,100 @@ function SettingApp() {
     []
   );
 
+  useEffect(() => {
+    const subs: { unsubscribe: () => void }[] = [];
+
+    subs.push(
+      client.onStateChange((event: any) => {
+        setConnectionState(event.state || 'IDLE');
+      })
+    );
+    subs.push(
+      client.onReady(() => {
+        setConnectionState('READY');
+      })
+    );
+    subs.push(
+      client.onDisconnected(() => {
+        setConnectionState('CLOSED');
+      })
+    );
+    subs.push(
+      client.onReconnecting(() => {
+        setConnectionState('TRANSIENT_FAILURE');
+      })
+    );
+    subs.push(
+      client.onReconnected(() => {
+        setConnectionState('READY');
+      })
+    );
+    subs.push(
+      client.onReconnectFailed(() => {
+        setConnectionState('CLOSED');
+      })
+    );
+    subs.push(
+      client.onClosed(() => {
+        setConnectionState('CLOSED');
+      })
+    );
+
+    client
+      .connect()
+      .then(() => setConnectionState('READY'))
+      .catch((err: any) => {
+        setConnectionState('IDLE');
+        addLog('connect', null, 0, err.message);
+      });
+
+    const pollStatus = setInterval(() => {
+      client
+        .getStatus()
+        .then((info: any) => {
+          if (info) setStatusInfo(info);
+        })
+        .catch(() => {});
+    }, 2000);
+
+    return () => {
+      subs.forEach((s) => s.unsubscribe());
+      clearInterval(pollStatus);
+    };
+  }, []);
+
+  const handleConnect = useCallback(async () => {
+    setConnectionState('CONNECTING');
+    try {
+      await client.connect();
+      setConnectionState('READY');
+    } catch (err: any) {
+      setConnectionState('IDLE');
+      addLog('connect', null, 0, err.message);
+    }
+  }, [addLog]);
+
+  const handleDisconnect = useCallback(async () => {
+    setConnectionState('DISCONNECTING');
+    try {
+      await client.disconnect();
+      setConnectionState('CLOSED');
+    } catch (err: any) {
+      addLog('disconnect', null, 0, err.message);
+    }
+  }, [addLog]);
+
+  const handleSimulateLost = useCallback(() => {
+    client.simulateLost();
+  }, []);
+
+  const handleKillUtility = useCallback(() => {
+    client.killUtility();
+  }, []);
+
   const callMethod = useCallback(
     async (method: string, ...args: any[]) => {
+      if (!isReady) return;
       setLoading(method);
       const start = performance.now();
       try {
@@ -74,7 +168,7 @@ function SettingApp() {
         setLoading(null);
       }
     },
-    [addLog]
+    [isReady, addLog]
   );
 
   const handleSetTheme = useCallback(
@@ -84,6 +178,18 @@ function SettingApp() {
     },
     [callMethod]
   );
+
+  const stateColor: Record<string, string> = {
+    IDLE: '#6b7280',
+    CONNECTING: '#f59e0b',
+    READY: '#10b981',
+    TRANSIENT_FAILURE: '#ef4444',
+    DISCONNECTING: '#8b5cf6',
+    CLOSED: '#374151',
+  };
+  const sc = stateColor[connectionState] || '#6b7280';
+
+  const stats = statusInfo?.stats;
 
   return (
     <div
@@ -123,25 +229,31 @@ function SettingApp() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
-            padding: '4px 12px',
-            borderRadius: 20,
-            backgroundColor: 'rgba(255,255,255,0.15)',
+            gap: 12,
           }}
         >
-          <span
+          <div
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              backgroundColor: connected ? '#10b981' : '#f59e0b',
-              display: 'inline-block',
-              boxShadow: connected ? '0 0 6px #10b981' : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '4px 12px',
+              borderRadius: 20,
+              backgroundColor: 'rgba(255,255,255,0.15)',
             }}
-          />
-          <span style={{ fontSize: 11 }}>
-            {connected ? 'Connected' : 'Connecting...'}
-          </span>
+          >
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: sc,
+                display: 'inline-block',
+                boxShadow: isReady ? `0 0 6px ${sc}` : 'none',
+              }}
+            />
+            <span style={{ fontSize: 11 }}>{connectionState}</span>
+          </div>
         </div>
       </div>
 
@@ -155,6 +267,232 @@ function SettingApp() {
           gap: 12,
         }}
       >
+        <div
+          style={{
+            display: 'flex',
+            gap: 12,
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              backgroundColor: '#fff',
+              borderRadius: 10,
+              border: '1px solid #e2e8f0',
+              padding: 14,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                marginBottom: 8,
+              }}
+            >
+              Connection
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: sc,
+                  display: 'inline-block',
+                  boxShadow: isReady ? `0 0 6px ${sc}` : 'none',
+                }}
+              />
+              <span style={{ fontWeight: 600, color: sc, fontSize: 13 }}>
+                {connectionState}
+              </span>
+            </div>
+            {statusInfo && (
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: 11,
+                  color: '#94a3b8',
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 1fr',
+                  gap: '2px 8px',
+                }}
+              >
+                <span>From:</span>
+                <span style={{ fontFamily: 'monospace', color: '#334155' }}>
+                  {statusInfo.fromId}
+                </span>
+                <span>To:</span>
+                <span style={{ fontFamily: 'monospace', color: '#334155' }}>
+                  {statusInfo.toId}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              backgroundColor: '#fff',
+              borderRadius: 10,
+              border: '1px solid #e2e8f0',
+              padding: 14,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                marginBottom: 8,
+              }}
+            >
+              Stats
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr 1fr',
+                gap: 6,
+              }}
+            >
+              {[
+                { l: 'Calls', v: stats?.totalRpcCalls ?? 0 },
+                { l: 'Success', v: stats?.successfulCalls ?? 0 },
+                { l: 'Failed', v: stats?.failedCalls ?? 0 },
+                {
+                  l: 'Latency',
+                  v: `${(stats?.avgLatencyMs ?? 0).toFixed(0)}ms`,
+                },
+                { l: 'Reconnects', v: stats?.totalReconnects ?? 0 },
+                {
+                  l: 'Rate',
+                  v:
+                    stats && stats.totalRpcCalls > 0
+                      ? `${(
+                          (stats.successfulCalls / stats.totalRpcCalls) *
+                          100
+                        ).toFixed(0)}%`
+                      : '-',
+                },
+              ].map((s) => (
+                <div
+                  key={s.l}
+                  style={{
+                    backgroundColor: '#f8fafc',
+                    borderRadius: 4,
+                    padding: '4px 6px',
+                  }}
+                >
+                  <div style={{ fontSize: 9, color: '#94a3b8' }}>{s.l}</div>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontFamily: 'monospace',
+                      color: '#334155',
+                    }}
+                  >
+                    {s.v}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div
+            style={{
+              flex: 0,
+              backgroundColor: '#fff',
+              borderRadius: 10,
+              border: '1px solid #e2e8f0',
+              padding: 14,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                marginBottom: 2,
+              }}
+            >
+              Actions
+            </div>
+            <button
+              onClick={handleConnect}
+              disabled={isReady}
+              style={{
+                padding: '5px 14px',
+                fontSize: 12,
+                fontWeight: 600,
+                border: 'none',
+                borderRadius: 6,
+                backgroundColor: isReady ? '#d1d5db' : '#3b82f6',
+                color: '#fff',
+                cursor: isReady ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Connect
+            </button>
+            <button
+              onClick={handleDisconnect}
+              disabled={!isReady}
+              style={{
+                padding: '5px 14px',
+                fontSize: 12,
+                fontWeight: 600,
+                border: 'none',
+                borderRadius: 6,
+                backgroundColor: isReady ? '#ef4444' : '#d1d5db',
+                color: '#fff',
+                cursor: isReady ? 'pointer' : 'not-allowed',
+              }}
+            >
+              Disconnect
+            </button>
+            <button
+              onClick={handleSimulateLost}
+              disabled={!isReady}
+              style={{
+                padding: '5px 14px',
+                fontSize: 12,
+                fontWeight: 600,
+                border: isReady ? '1px solid #f59e0b' : '1px solid #d1d5db',
+                borderRadius: 6,
+                backgroundColor: isReady ? '#fffbeb' : '#f9fafb',
+                color: isReady ? '#b45309' : '#9ca3af',
+                cursor: isReady ? 'pointer' : 'not-allowed',
+              }}
+            >
+              Sim Lost
+            </button>
+            <button
+              onClick={handleKillUtility}
+              disabled={!isReady}
+              style={{
+                padding: '5px 14px',
+                fontSize: 12,
+                fontWeight: 600,
+                border: isReady ? '1px solid #ef4444' : '1px solid #d1d5db',
+                borderRadius: 6,
+                backgroundColor: isReady ? '#fef2f2' : '#f9fafb',
+                color: isReady ? '#991b1b' : '#9ca3af',
+                cursor: isReady ? 'pointer' : 'not-allowed',
+              }}
+            >
+              Kill Proc
+            </button>
+          </div>
+        </div>
+
         <div
           style={{
             backgroundColor: '#fff',
@@ -178,7 +516,7 @@ function SettingApp() {
               <button
                 key={t}
                 onClick={() => handleSetTheme(t)}
-                disabled={loading !== null}
+                disabled={loading !== null || !isReady}
                 style={{
                   flex: 1,
                   padding: '12px',
@@ -203,7 +541,8 @@ function SettingApp() {
                       : selectedTheme === t
                       ? '#fff'
                       : '#334155',
-                  cursor: loading !== null ? 'not-allowed' : 'pointer',
+                  cursor:
+                    loading !== null || !isReady ? 'not-allowed' : 'pointer',
                 }}
               >
                 {t === 'dark' ? '🌙 Dark' : '☀️ Light'}
@@ -234,21 +573,25 @@ function SettingApp() {
             <ActionBtn
               label="Get Theme"
               loading={loading === 'getTheme'}
+              disabled={!isReady}
               onClick={() => callMethod('getTheme')}
             />
             <ActionBtn
               label="Get Config"
               loading={loading === 'getSharedConfig'}
+              disabled={!isReady}
               onClick={() => callMethod('getSharedConfig', 'theme')}
             />
             <ActionBtn
               label="Get State"
               loading={loading === 'getSharedState'}
+              disabled={!isReady}
               onClick={() => callMethod('getSharedState')}
             />
             <ActionBtn
               label="Echo"
               loading={loading === 'echoShared'}
+              disabled={!isReady}
               onClick={() => callMethod('echoShared', 'hello from setting')}
             />
           </div>
@@ -276,16 +619,19 @@ function SettingApp() {
             <ActionBtn
               label="System Status"
               loading={loading === 'getSystemStatus'}
+              disabled={!isReady}
               onClick={() => callMethod('getSystemStatus')}
             />
             <ActionBtn
               label="Daemon Info"
               loading={loading === 'getDaemonInfo'}
+              disabled={!isReady}
               onClick={() => callMethod('getDaemonInfo')}
             />
             <ActionBtn
               label="Echo"
               loading={loading === 'echoDaemon'}
+              disabled={!isReady}
               onClick={() => callMethod('echoDaemon', 'hello from setting')}
             />
           </div>
@@ -312,6 +658,7 @@ function SettingApp() {
           <ActionBtn
             label="Pagelet Info"
             loading={loading === 'info'}
+            disabled={!isReady}
             onClick={() => callMethod('info')}
           />
         </div>
@@ -412,25 +759,27 @@ function SettingApp() {
 function ActionBtn({
   label,
   loading,
+  disabled,
   onClick,
 }: {
   label: string;
   loading: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      disabled={loading}
+      disabled={loading || disabled}
       style={{
         padding: '6px 14px',
         fontSize: 12,
         fontWeight: 600,
         border: '1px solid #e2e8f0',
         borderRadius: 6,
-        backgroundColor: loading ? '#f1f5f9' : '#fff',
-        color: loading ? '#94a3b8' : '#334155',
-        cursor: loading ? 'not-allowed' : 'pointer',
+        backgroundColor: loading ? '#f1f5f9' : disabled ? '#f9fafb' : '#fff',
+        color: loading ? '#94a3b8' : disabled ? '#d1d5db' : '#334155',
+        cursor: loading || disabled ? 'not-allowed' : 'pointer',
       }}
     >
       {loading ? '...' : label}

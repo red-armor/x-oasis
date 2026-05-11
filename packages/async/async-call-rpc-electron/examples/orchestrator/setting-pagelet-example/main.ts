@@ -4,7 +4,7 @@ import {
   ElectronUtilityProcessChannel,
   ElectronConnectionOrchestrator,
 } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;
@@ -115,36 +115,20 @@ app.whenReady().then(async () => {
     description: 'main→setting-pagelet IPC channel',
   });
 
-  const sharedClient = clientHost
-    .registerClient('shared-rpc', { channel: sharedChannel })
-    .createProxy();
-
-  const daemonClient = clientHost
-    .registerClient('daemon-rpc', { channel: daemonChannel })
-    .createProxy();
-
-  serviceHost.registerService('main-rpc', {
-    channel: pageletChannel,
-    serviceHost,
-    handlers: {
-      async relayToShared(method: string, ...args: any[]): Promise<any> {
-        return (sharedClient as any)[method](...args);
-      },
-      async relayToDaemon(method: string, ...args: any[]): Promise<any> {
-        return (daemonClient as any)[method](...args);
-      },
-      changeMainWindowTheme(theme: string): string {
-        currentTheme = theme;
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('theme-change', theme);
-        }
-        return `theme changed to ${theme}`;
-      },
-      getCurrentTheme(): string {
-        return currentTheme;
-      },
+  serviceHost.registerServiceHandler('main-rpc', {
+    changeMainWindowTheme(theme: string): string {
+      currentTheme = theme;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('theme-change', theme);
+      }
+      return `theme changed to ${theme}`;
+    },
+    getCurrentTheme(): string {
+      return currentTheme;
     },
   });
+
+  pageletChannel.setServiceHost(serviceHost);
 
   orchestrator = new ElectronConnectionOrchestrator({
     logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
@@ -161,13 +145,20 @@ app.whenReady().then(async () => {
     pageletChannel,
     'utility'
   );
+  orchestrator.registerParticipant('shared', sharedChannel, 'utility');
+  orchestrator.registerParticipant('daemon', daemonChannel, 'utility');
+
+  orchestrator.registerProxyService(serviceHost);
+
+  sharedChannel.setServiceHost(serviceHost);
+  daemonChannel.setServiceHost(serviceHost);
 
   ipcMain.handle('open-setting-window', () => {
     createSettingWindow();
   });
 
   console.log(
-    '[main] initialized with shared, daemon, setting-pagelet processes'
+    '[main] orchestrator ready, setting-pagelet will self-connect to shared/daemon/renderer'
   );
 });
 
@@ -175,6 +166,8 @@ function setupSettingOrchestrator(settingIpc: IPCMainChannel): void {
   if (!orchestrator) return;
 
   orchestrator.registerParticipant('setting-renderer', settingIpc, 'renderer');
+
+  settingIpc.setServiceHost(serviceHost);
 
   serviceHost.registerService('orchestrator', {
     channel: settingIpc,
@@ -206,6 +199,12 @@ function setupSettingOrchestrator(settingIpc: IPCMainChannel): void {
         if (info) {
           await orchestrator!.disconnect(info.connectionId);
         }
+      },
+      simulateLost(): void {
+        orchestrator!.handleParticipantLost(
+          'setting-pagelet',
+          'simulated process exit'
+        );
       },
       async getStatus(): Promise<any> {
         const info = orchestrator!.getConnectionInfo(
@@ -258,10 +257,6 @@ function setupSettingOrchestrator(settingIpc: IPCMainChannel): void {
         orchestrator!.onClosed((event) => remoteCallback(event));
       },
     },
-  });
-
-  orchestrator.connect('setting-pagelet', 'setting-renderer').then(() => {
-    console.log('[main] setting-pagelet ↔ setting-renderer connected');
   });
 }
 

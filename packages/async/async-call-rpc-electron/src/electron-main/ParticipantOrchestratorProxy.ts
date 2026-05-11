@@ -20,6 +20,7 @@ export interface ParticipantOrchestratorProxyOptions {
   selfId: string;
   controlChannel: AbstractChannelProtocol;
   channelFactory?: (description: string) => ElectronMessagePortMainChannel;
+  onConnection?: (conn: ParticipantConnection) => void;
 }
 
 export class ParticipantOrchestratorProxy {
@@ -38,6 +39,7 @@ export class ParticipantOrchestratorProxy {
     }
   >();
   private _orchestratorClient: any;
+  private _onConnection?: (conn: ParticipantConnection) => void;
 
   constructor(options: ParticipantOrchestratorProxyOptions) {
     this._selfId = options.selfId;
@@ -46,6 +48,7 @@ export class ParticipantOrchestratorProxy {
       options.channelFactory ??
       ((desc: string) =>
         new ElectronMessagePortMainChannel({ description: desc }));
+    this._onConnection = options.onConnection;
 
     this._orchestratorClient = clientHost
       .registerClient(ORCHESTRATOR_PROXY_SERVICE_PATH, {
@@ -87,6 +90,13 @@ export class ParticipantOrchestratorProxy {
           if (pending) {
             this._pendingConnects.delete(connectionId);
             pending.resolve({
+              connectionId,
+              peerId,
+              role,
+              getChannel: () => this._peerChannels.get(peerId)!,
+            });
+          } else if (this._onConnection) {
+            this._onConnection({
               connectionId,
               peerId,
               role,
