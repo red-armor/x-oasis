@@ -12,6 +12,8 @@ npm install @x-oasis/async-call-rpc-electron
 
 - **IPC Channels**: Pre-built channels for `ipcMain`/`ipcRenderer`, `utilityProcess`, and `MessagePortMain`
 - **Connection Orchestrator**: Automated direct MessagePort connection management between Electron processes
+- **Participant Proxy**: Self-connect API for utility processes (`createParticipantProxy`, `createUtilityParticipant`)
+- **Subscription Support**: Real-time data push via event methods (`on*`) and observable streaming
 - **Full TypeScript Support**: Complete type definitions for all APIs
 - **Zero External Dependencies**: Self-contained package
 
@@ -38,6 +40,8 @@ src/
 ## Quick Links
 
 - [Connection Orchestrator](/packages/async/async-call-rpc-electron/orchestrator) - Automated port connection management
+- [Scenario Orchestration Best Practices](/packages/async/async-call-rpc-electron/scenario-orchestration) - Patterns for all Electron IPC topologies
+- [ContextBridge Channel](/packages/async/async-call-rpc-electron/context-bridge-channel) - Renderer RPC via contextBridge
 - [API Reference](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-electron/src)
 - [Examples](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-electron/examples)
 
@@ -83,17 +87,7 @@ See the [Orchestrator Documentation](/packages/async/async-call-rpc-electron/orc
 
 ## Usage Examples
 
-### Basic Example
-
-```typescript
-// See package documentation for detailed examples
-```
-
-### Advanced Usage
-
-```typescript
-// Advanced patterns and use cases
-```
+See the [Scenario Orchestration Best Practices](/packages/async/async-call-rpc-electron/scenario-orchestration) guide for complete examples covering all Electron IPC topologies.
 
 ## TypeScript Support
 
@@ -120,38 +114,38 @@ This package is optimized for:
 
 ✅ **Do:**
 
-- Use according to documentation
-- Check types before use
-- Handle edge cases
+- Use `createParticipantProxy` for utility processes that need to self-connect
+- Use `createUtilityParticipant` for workers that only expose services
+- Use `on*` naming for event methods to enable cross-process callback serialization
+- Wrap observable subscriptions in `on*` methods at proxy layers
+- Return cleanup functions from event method handlers
 
 ❌ **Don't:**
 
-- Misuse the API
-- Ignore error handling
-- Forget null checks
+- Use non-`on*` names for subscription methods that need to cross process boundaries
+- Expose `subscribe()` directly to remote clients — callbacks are not serializable
+- Forget to return cleanup from event handlers (causes memory leaks)
+- Use the root barrel import in renderer bundles — prefer `@x-oasis/async-call-rpc-electron/browser`
 
 ## Common Pitfalls
 
-1. **Pitfall** - Description and solution
-2. **Pitfall** - Description and solution
+1. **Non-`on*` subscription name** — `watchDaemonCpu(callback)` fails with `TypeError: callback is not a function` because the framework treats it as a regular RPC call, not an event method. Rename to `onDaemonCpuUsage`.
+2. **Unwrapped observable across proxy** — `daemonSubscriptionClient.subscribe()` works locally but the callback cannot be forwarded to another process. Wrap in an `on*` event method at the proxy layer.
+3. **Missing cleanup in event handlers** — `setInterval` without a returned cleanup function leaks when clients unsubscribe.
 
 ## Troubleshooting
 
-**Problem**: Issue description
+**TypeError: callback is not a function** — Your subscription method name doesn't start with `on`. The framework only auto-serializes callbacks for `on*` methods. Rename your method (e.g., `watchCpu` → `onCpuUpdate`) or wrap observable `subscribe()` in an `on*` method at the proxy layer.
 
-**Solution**: How to fix it
+**Subscription events stop after reconnect** — Make sure `registerOrchestratorHandler` uses `bindPort(port, { rebind: true })` so the data-plane channel is re-bound after reconnection.
+
+**Memory leak in utility process** — Event method handlers that create intervals/listeners must return a cleanup function. Without it, resources leak when clients unsubscribe.
 
 ## Related Packages
 
-- Other packages in [async](/packages/async/)
-- Similar functionality in other categories
-
-## See Also
-
-- [Package Category](/packages/async/)
-- [All Packages](/packages/)
-- [GitHub Issues](https://github.com/red-armor/x-oasis/issues)
-- [Discussions](https://github.com/red-armor/x-oasis/discussions)
+- [`@x-oasis/async-call-rpc`](/packages/async/async-call-rpc/) - Core RPC framework
+- [`@x-oasis/async-call-rpc-web`](/packages/async/async-call-rpc-web/) - Web/Worker channel implementations
+- [`@x-oasis/async-call-rpc-node`](/packages/async/async-call-rpc-node/) - Node.js channel implementations
 
 ## License
 

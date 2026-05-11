@@ -10,14 +10,15 @@ This guide distills patterns from `@x-oasis/async-call-rpc-electron`'s example s
 
 ## Scenario Matrix
 
-| Scenario                  | Topology    | Control Plane                           | Data Plane                       | Recommended Approach |
-| ------------------------- | ----------- | --------------------------------------- | -------------------------------- | -------------------- |
-| Main ↔ Renderer           | Two-party   | `IPCMainChannel` + `IPCRendererChannel` | —                                | Direct IPC           |
-| Main ↔ Utility            | Two-party   | `ElectronUtilityProcessChannel`         | —                                | Direct Utility       |
-| Renderer ↔ Main (Port)    | Two-party   | IPC                                     | `ElectronMessagePortMainChannel` | Orchestrator         |
-| Renderer ↔ Utility (Port) | Three-party | IPC + Utility                           | `ElectronMessagePortMainChannel` | Orchestrator         |
-| Utility ↔ Main (Port)     | Two-party   | Utility                                 | `ElectronMessagePortMainChannel` | Orchestrator         |
-| Utility ↔ Utility (Port)  | Three-party | Utility × 2                             | `ElectronMessagePortMainChannel` | Orchestrator         |
+| Scenario                  | Topology    | Control Plane                           | Data Plane                       | Recommended Approach            |
+| ------------------------- | ----------- | --------------------------------------- | -------------------------------- | ------------------------------- |
+| Main ↔ Renderer           | Two-party   | `IPCMainChannel` + `IPCRendererChannel` | —                                | Direct IPC                      |
+| Main ↔ Utility            | Two-party   | `ElectronUtilityProcessChannel`         | —                                | Direct Utility                  |
+| Renderer ↔ Main (Port)    | Two-party   | IPC                                     | `ElectronMessagePortMainChannel` | Orchestrator                    |
+| Renderer ↔ Utility (Port) | Three-party | IPC + Utility                           | `ElectronMessagePortMainChannel` | Orchestrator                    |
+| Utility ↔ Main (Port)     | Two-party   | Utility                                 | `ElectronMessagePortMainChannel` | Orchestrator                    |
+| Utility ↔ Utility (Port)  | Three-party | Utility × 2                             | `ElectronMessagePortMainChannel` | Orchestrator                    |
+| Renderer ↔ Multi-Utility  | Multi-party | IPC + Utility × N                       | `ElectronMessagePortMainChannel` | Orchestrator + ParticipantProxy |
 
 ---
 
@@ -451,6 +452,331 @@ registerOrchestratorHandler(mainChannel, (port: any) => {
   directChannel.bindPort(port);
 });
 ```
+
+---
+
+## Pattern 5: Pagelet Proxy — Renderer ↔ Multi-Utility via Proxy
+
+**When to use:** A renderer needs to call services on multiple utility processes (pagelet, daemon, shared), but doesn't want direct connections to each. Instead, a "pagelet" utility process acts as a proxy, forwarding renderer calls to other utilities.
+
+```
+Renderer Process                    Main Process                    Utility Processes
+┌──────────┐   IPC    ┌───────────┐  Orchestrator  ┌──────────┐
+│          │◄────────►│           │◄──────────────►│ pagelet  │
+│ renderer │          │   main    │                │ (proxy)  │
+│          │          │ (broker)  │                └────┬─────┘
+└──────────┘          └───────────┘                     │
+                                              direct    │  direct
+                                              ports     │  ports
+                                                        ▼
+                                               ┌──────────────┐
+                                               │ shared/daemon│
+                                               │ (workers)    │
+                                               └──────────────┘
+```
+
+### Architecture: Control Plane + Data Plane
+
+The pagelet connects to the renderer, shared, and daemon through the orchestrator, obtaining direct `MessagePort` channels to each:
+
+- **Control plane**: All participants registered with the orchestrator via their IPC/UtilityProcess channels
+- **Data plane**: Direct `MessagePort` pairs between pagelet ↔ renderer, pagelet ↔ shared, pagelet ↔ daemon
+
+The renderer never directly connects to shared/daemon — it only talks to pagelet, which forwards the calls.
+
+### Main Process: Orchestrator Setup
+
+```typescript
+import { app, BrowserWindow, utilityProcess } from 'electron';
+import {
+  IPCMainChannel,
+  ElectronUtilityProcessChannel,
+  ElectronConnectionOrchestrator,
+} from '@x-oasis/async-call-rpc-electron';
+import { serviceHost } from '@x-oasis/async-call-rpc';
+
+app.whenReady().then(async () => {
+  const mainWindow = new BrowserWindow({
+    webPreferences: {
+      preload: join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  const ipcChannel = new IPCMainChannel({
+    channelName: 'app-rpc',
+    webContents: mainWindow.webContents,
+  });
+
+  const pageletProc = utilityProcess.fork(join(__dirname, 'pagelet-worker.js'));
+  const pageletChannel = new ElectronUtilityProcessChannel({
+    process: pageletProc,
+  });
+
+  const sharedProc = utilityProcess.fork(join(__dirname, 'shared-worker.js'));
+  const sharedChannel = new ElectronUtilityProcessChannel({
+    process: sharedProc,
+  });
+
+  const daemonProc = utilityProcess.fork(join(__dirname, 'daemon-worker.js'));
+  const daemonChannel = new ElectronUtilityProcessChannel({
+    process: daemonProc,
+  });
+
+  const orchestrator = new ElectronConnectionOrchestrator({
+    enableStats: true,
+    heartbeat: { enabled: true, intervalMs: 10_000, timeoutMs: 5_000 },
+  });
+
+  orchestrator.registerParticipant('renderer', ipcChannel, 'renderer');
+  orchestrator.registerParticipant('pagelet', pageletChannel, 'utility');
+  orchestrator.registerParticipant('shared', sharedChannel, 'utility');
+  orchestrator.registerParticipant('daemon', daemonChannel, 'utility');
+
+  // The pagelet will self-connect via ParticipantOrchestratorProxy
+  console.log('[main] orchestrator ready');
+});
+```
+
+### Pagelet Worker: Self-Connect + Proxy Services
+
+The pagelet uses `createParticipantProxy` to self-connect to all peers, then exposes proxy handlers that forward renderer calls to shared/daemon:
+
+```typescript
+import {
+  ElectronUtilityProcessChannel,
+  createParticipantProxy,
+} from '@x-oasis/async-call-rpc-electron';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+
+const mainChannel = new ElectronUtilityProcessChannel({
+  parentPort: process.parentPort as any,
+});
+
+const proxy = createParticipantProxy({
+  selfId: 'pagelet',
+  controlChannel: mainChannel,
+});
+
+async function boot() {
+  const rendererConn = await proxy.connect('renderer');
+  const sharedConn = await proxy.connect('shared');
+  const daemonConn = await proxy.connect('daemon');
+
+  const rendererChannel = rendererConn.getChannel();
+  const sharedChannel = sharedConn.getChannel();
+  const daemonChannel = daemonConn.getChannel();
+
+  const sharedClient = clientHost
+    .registerClient('shared-rpc', { channel: sharedChannel })
+    .createProxy<{
+      echo(msg: string): Promise<string>;
+      getConfig(key: string): Promise<string>;
+    }>();
+
+  const daemonClient = clientHost
+    .registerClient('daemon-rpc', { channel: daemonChannel })
+    .createProxy<{
+      echo(msg: string): Promise<string>;
+      systemStatus(): Promise<string>;
+    }>();
+
+  // Expose proxy API to renderer
+  serviceHost.registerService('pagelet-api', {
+    channel: rendererChannel,
+    serviceHost,
+    handlers: {
+      info(): string {
+        return `pagelet ready (pid=${process.pid})`;
+      },
+      async callSharedEcho(msg: string): Promise<string> {
+        return sharedClient.echo(msg);
+      },
+      async callDaemonSystemStatus(): Promise<string> {
+        return daemonClient.systemStatus();
+      },
+    },
+  });
+}
+
+boot().catch(console.error);
+```
+
+### Shared/Daemon Workers: `createUtilityParticipant`
+
+Workers that only need to expose services (not initiate connections) use the simpler `createUtilityParticipant`:
+
+```typescript
+import { createUtilityParticipant } from '@x-oasis/async-call-rpc-electron';
+
+const participant = createUtilityParticipant({
+  parentPort: process.parentPort as any,
+  mainChannelDescription: 'daemon→main IPC channel',
+  directChannelDescription: 'daemon↔pagelet direct port',
+});
+
+const handlers = {
+  systemStatus(): string {
+    return `system OK, uptime=${Math.floor(process.uptime())}s`;
+  },
+  echo(msg: string): string {
+    return `daemon echo: ${msg}`;
+  },
+};
+
+participant.registerControlService('daemon-rpc', handlers);
+participant.registerService('daemon-rpc', handlers);
+```
+
+- `registerControlService` — accessible from the main process via the control-plane channel
+- `registerService` — accessible from any peer via the data-plane channel
+
+### Renderer: Call Pagelet API
+
+The renderer only knows about `pagelet-api`. It doesn't need to know about shared/daemon:
+
+```typescript
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
+
+const client = createOrchestratorClient({
+  directChannelDescription: 'page↔preload',
+  ipcChannelDescription: 'page↔preload:ipc',
+});
+
+const pageletClient = client.getService<any>('pagelet-api');
+
+// Call through the proxy chain
+const status = await pageletClient.callDaemonSystemStatus();
+const echo = await pageletClient.callSharedEcho('hello');
+```
+
+---
+
+## Pattern 6: Subscription — Real-Time Data Push
+
+**When to use:** When a utility process needs to push real-time data (status updates, logs, metrics) to the renderer through the pagelet proxy.
+
+`async-call-rpc` supports two subscription patterns. Both work across orchestrator data-plane channels.
+
+### Event Method (Ping-Pong Callback)
+
+Best for status updates, config changes, and event notifications. Methods named `on*` are automatically treated as event methods by the framework.
+
+**Daemon worker:**
+
+```typescript
+const handlers = {
+  onSystemStatusChange(callback: (status: any) => void) {
+    const interval = setInterval(() => {
+      callback({
+        timestamp: Date.now(),
+        uptime: process.uptime(),
+        memoryUsage: process.memoryUsage(),
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  },
+};
+
+participant.registerService('daemon-rpc', handlers);
+```
+
+**Pagelet proxy (forwarding):**
+
+```typescript
+serviceHost.registerService('pagelet-api', {
+  channel: rendererChannel,
+  serviceHost,
+  handlers: {
+    onDaemonStatusChange(callback: (status: any) => void) {
+      return daemonClient.onSystemStatusChange(callback);
+    },
+  },
+});
+```
+
+**Renderer:**
+
+```typescript
+const unsub = pageletClient.onDaemonStatusChange((data) => {
+  console.log('Status:', data);
+});
+// Later: unsub.unsubscribe();
+```
+
+The `on*` naming convention enables the framework to automatically serialize the callback across process boundaries — the renderer's callback is stored client-side, and a `remoteCallback` is injected server-side.
+
+### Observable Subscribe (Streaming)
+
+Best for high-frequency data streams (CPU metrics, file watchers). The handler returns an object with `subscribe()`. Use `clientHost.subscribe()` on the client.
+
+**Daemon worker:**
+
+```typescript
+const handlers = {
+  watchCpuUsage() {
+    return {
+      subscribe(observer: {
+        next?: (value: any) => void;
+        error?: (err: Error) => void;
+        complete?: () => void;
+      }) {
+        let tick = 0;
+        const interval = setInterval(() => {
+          observer.next?.({ tick: ++tick, cpu: Math.random() * 100 });
+        }, 1000);
+        return { unsubscribe: () => clearInterval(interval) };
+      },
+    };
+  },
+};
+
+participant.registerService('daemon-rpc', handlers);
+```
+
+**Pagelet proxy — bridge observable to event method:**
+
+> ⚠️ Observable subscriptions **cannot** be forwarded as-is across process boundaries because callbacks are not serializable. Wrap them in an `on*` event method:
+
+```typescript
+const daemonSubClient = clientHost.registerClient('daemon-rpc', {
+  channel: daemonChannel,
+});
+
+serviceHost.registerService('pagelet-api', {
+  channel: rendererChannel,
+  serviceHost,
+  handlers: {
+    onDaemonCpuUsage(callback: (data: any) => void) {
+      const sub = daemonSubClient.subscribe('watchCpuUsage', [], {
+        onData: (value) => callback(value),
+        onError: (err) => console.error(err),
+        onComplete: () => console.log('Stream ended'),
+      });
+      return { unsubscribe: () => sub.unsubscribe() };
+    },
+  },
+});
+```
+
+**Renderer:**
+
+```typescript
+const unsub = pageletClient.onDaemonCpuUsage((data) => {
+  console.log('CPU:', data.cpu);
+});
+```
+
+### Subscription Pattern Comparison
+
+| Aspect              | Event Method (`on*`)            | Observable Subscribe                     |
+| ------------------- | ------------------------------- | ---------------------------------------- |
+| Auto-detection      | Yes (by `on` prefix convention) | No (explicit `subscribe()` API)          |
+| Cross-process proxy | ✅ Callbacks auto-serialized    | ⚠️ Must wrap in `on*` method             |
+| Completion signal   | No (infinite until unsubscribe) | Yes (`onComplete`)                       |
+| Error handling      | Limited                         | Full (`onError`)                         |
+| Best for            | Status, config, log events      | High-frequency streams, finite sequences |
 
 ---
 
@@ -1143,6 +1469,69 @@ Without this handler, a permanently dead connection goes unnoticed.
 
 `connect()` is idempotent for the same participant pair — calling it again returns the existing `ConnectionInfo`.
 
+### 7. Using Non-`on*` Names for Cross-Process Event Methods
+
+When a renderer calls a subscription method through a proxy (renderer → pagelet → daemon), the method name **must** start with `on` (e.g., `onDaemonStatusChange`, not `watchDaemonStatus`). The framework uses the `on*` prefix to detect event methods and automatically serialize the callback across process boundaries.
+
+```typescript
+// ❌ Wrong: 'watchDaemonCpu' is treated as a regular method — callback cannot be serialized
+handlers: {
+  watchDaemonCpu(callback) { ... }
+}
+
+// TypeError: l is not a function
+// (callback arrives as a non-function value after serialization)
+```
+
+```typescript
+// ✅ Correct: 'onDaemonCpuUsage' triggers event method handling
+handlers: {
+  onDaemonCpuUsage(callback) { ... }
+}
+```
+
+### 8. Not Wrapping Observable Subscriptions in `on*` Methods
+
+Observable subscriptions (`clientHost.subscribe()`) work within a single process boundary. To expose them across the proxy chain, you **must** wrap the subscription in an `on*` event method at the proxy layer:
+
+```typescript
+// ❌ Wrong: Directly exposing subscribe — callback cannot cross process boundary
+handlers: {
+  watchDaemonCpu(callback) {
+    return daemonSubClient.subscribe('watchCpuUsage', [], {
+      onData: (value) => callback(value),
+    });
+  }
+}
+
+// ✅ Correct: Rename to on* and the framework handles callback serialization
+handlers: {
+  onDaemonCpuUsage(callback) {
+    const sub = daemonSubClient.subscribe('watchCpuUsage', [], {
+      onData: (value) => callback(value),
+    });
+    return { unsubscribe: () => sub.unsubscribe() };
+  }
+}
+```
+
+### 9. Not Returning Cleanup from Event Method Handlers
+
+Event method handlers that set up intervals or listeners should return a cleanup function. Without it, the interval continues running even after the client unsubscribes:
+
+```typescript
+// ❌ Wrong: Memory leak — interval keeps running after unsubscribe
+onStatusChange(callback) {
+  setInterval(() => callback(getStatus()), 1000);
+}
+
+// ✅ Correct: Return cleanup function
+onStatusChange(callback) {
+  const id = setInterval(() => callback(getStatus()), 1000);
+  return () => clearInterval(id);
+}
+```
+
 ---
 
 ## Decision Flowchart: Manual vs Orchestrator
@@ -1172,18 +1561,19 @@ Need direct MessagePort?
 
 ## Example Reference
 
-| Example                                              | Pattern                   | Approach       |
-| ---------------------------------------------------- | ------------------------- | -------------- |
-| `ipc-example`                                        | Main ↔ Renderer           | Direct IPC     |
-| `utility-process-example`                            | Main ↔ Utility            | Direct Utility |
-| `renderer-acquire-main-port-example`                 | Renderer ↔ Main (Port)    | Manual         |
-| `renderer-acquire-main-port-orchestrator-example`    | Renderer ↔ Main (Port)    | Orchestrator   |
-| `renderer-acquire-utility-port-example`              | Renderer ↔ Utility (Port) | Manual         |
-| `renderer-acquire-utility-port-orchestrator-example` | Renderer ↔ Utility (Port) | Orchestrator   |
-| `utility-acquire-main-port-example`                  | Utility ↔ Main (Port)     | Manual         |
-| `utility-acquire-main-port-orchestrator-example`     | Utility ↔ Main (Port)     | Orchestrator   |
-| `utility-acquire-utility-port-example`               | Utility ↔ Utility (Port)  | Manual         |
-| `utility-acquire-utility-port-orchestrator-example`  | Utility ↔ Utility (Port)  | Orchestrator   |
+| Example                                              | Pattern                   | Approach                        | Subscription              |
+| ---------------------------------------------------- | ------------------------- | ------------------------------- | ------------------------- |
+| `ipc-example`                                        | Main ↔ Renderer           | Direct IPC                      | —                         |
+| `utility-process-example`                            | Main ↔ Utility            | Direct Utility                  | —                         |
+| `renderer-acquire-main-port-example`                 | Renderer ↔ Main (Port)    | Manual                          | —                         |
+| `renderer-acquire-main-port-orchestrator-example`    | Renderer ↔ Main (Port)    | Orchestrator                    | —                         |
+| `renderer-acquire-utility-port-example`              | Renderer ↔ Utility (Port) | Manual                          | —                         |
+| `renderer-acquire-utility-port-orchestrator-example` | Renderer ↔ Utility (Port) | Orchestrator                    | —                         |
+| `utility-acquire-main-port-example`                  | Utility ↔ Main (Port)     | Manual                          | —                         |
+| `utility-acquire-main-port-orchestrator-example`     | Utility ↔ Main (Port)     | Orchestrator                    | —                         |
+| `utility-acquire-utility-port-example`               | Utility ↔ Utility (Port)  | Manual                          | —                         |
+| `utility-acquire-utility-port-orchestrator-example`  | Utility ↔ Utility (Port)  | Orchestrator                    | —                         |
+| `pagelet-proxy-example`                              | Renderer ↔ Multi-Utility  | Orchestrator + ParticipantProxy | Event method + Observable |
 
 ---
 
