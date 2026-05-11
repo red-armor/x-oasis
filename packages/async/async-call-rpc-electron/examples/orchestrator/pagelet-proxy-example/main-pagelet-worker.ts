@@ -40,6 +40,10 @@ async function boot() {
     .createProxy<{
       echo(msg: string): Promise<string>;
       getConfig(key: string): Promise<string>;
+      setConfig(key: string, value: string): Promise<string>;
+      onConfigChange(callback: (event: any) => void): {
+        unsubscribe: () => void;
+      };
     }>();
 
   const daemonClient = clientHost
@@ -47,7 +51,16 @@ async function boot() {
     .createProxy<{
       echo(msg: string): Promise<string>;
       systemStatus(): Promise<string>;
+      onSystemStatusChange(callback: (status: any) => void): {
+        unsubscribe: () => void;
+      };
+      onLogEvent(callback: (log: any) => void): { unsubscribe: () => void };
+      watchCpuUsage(): any;
     }>();
+
+  const daemonSubscriptionClient = clientHost.registerClient('daemon-rpc', {
+    channel: daemonChannel,
+  });
 
   serviceHost.registerService('pagelet-api', {
     channel: rendererChannel,
@@ -62,6 +75,9 @@ async function boot() {
       async callSharedGetConfig(key: string): Promise<string> {
         return sharedClient.getConfig(key);
       },
+      async callSharedSetConfig(key: string, value: string): Promise<string> {
+        return sharedClient.setConfig(key, value);
+      },
       async callDaemonEcho(msg: string): Promise<string> {
         return daemonClient.echo(msg);
       },
@@ -71,10 +87,31 @@ async function boot() {
       async callMainPing(msg: string): Promise<string> {
         return mainClient.mainPing(msg);
       },
+      onDaemonStatusChange(callback: (status: any) => void) {
+        return daemonClient.onSystemStatusChange(callback);
+      },
+      onDaemonLog(callback: (log: any) => void) {
+        return daemonClient.onLogEvent(callback);
+      },
+      onSharedConfigChange(callback: (event: any) => void) {
+        return sharedClient.onConfigChange(callback);
+      },
+      onDaemonCpuUsage(callback: (data: any) => void) {
+        const sub = daemonSubscriptionClient.subscribe('watchCpuUsage', [], {
+          onData: (value: any) => callback(value),
+          onError: (err: Error) => {
+            console.error('[main-pagelet-worker] watchCpuUsage error:', err);
+          },
+          onComplete: () => {
+            console.log('[main-pagelet-worker] watchCpuUsage completed');
+          },
+        });
+        return { unsubscribe: () => sub.unsubscribe() };
+      },
     },
   });
 
-  console.log('[main-pagelet-worker] initialized');
+  console.log('[main-pagelet-worker] initialized with subscription support');
 }
 
 boot().catch((err) => {
