@@ -17,6 +17,16 @@ import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
  */
 export const ORCHESTRATOR_SERVICE_PATH = '__x_oasis_orchestrator__' as const;
 
+/**
+ * The RPC service path used by `ParticipantOrchestratorProxy` to expose
+ * orchestrator operations (requestConnect, listParticipants, etc.) over
+ * the participant's control-plane channel.
+ *
+ * @internal
+ */
+export const ORCHESTRATOR_PROXY_SERVICE_PATH =
+  '__x_oasis_orchestrator_proxy__' as const;
+
 // ─── Participant ──────────────────────────────────────────────────────────────
 
 /** The role a participant plays in the application topology. */
@@ -370,4 +380,20 @@ export interface ActivationConfig {
   peerServices?: Record<string, (...args: any[]) => any>;
   /** Service handlers this participant should expose to its peer. */
   myServices?: Record<string, (...args: any[]) => any>;
+}
+
+/**
+ * Context delivered to a participant's `activateConnection` handler.
+ *
+ * Extends the raw `(port: any) => void` callback with metadata that lets
+ * the participant identify **which peer** the port connects to, enabling
+ * correct routing in multi-pagelet topologies.
+ */
+export interface ActivationContext {
+  /** The MessagePort this participant should bind to. */
+  port: any;
+  /** Canonical connection ID in the form `"fromId--toId"`. */
+  connectionId: string;
+  /** Whether this participant is the initiator (from-side) or receiver (to-side). */
+  role: 'initiator' | 'receiver';
 }

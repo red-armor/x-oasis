@@ -23,8 +23,10 @@ import {
   ListParticipantEntry,
   ListConnectionEntry,
   OrchestratorEvent,
+  ORCHESTRATOR_PROXY_SERVICE_PATH,
 } from './types';
 import AbstractChannelProtocol from '../protocol/AbstractChannelProtocol';
+import RPCServiceHost from '../endpoint/RPCServiceHost';
 
 // ─── Internal managed-connection record ──────────────────────────────────────
 
@@ -1081,6 +1083,60 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
         reason ? ` (${reason})` : ''
       }`
     );
+  }
+
+  // ── Proxy service (participant-facing RPC) ──────────────────────────────
+
+  /**
+   * Register proxy RPC handlers on a `serviceHost` so that participants
+   * can call `requestConnect`, `requestDisconnect`, `listParticipants`, and
+   * `listConnections` over their control-plane channel.
+   *
+   * This is the server-side counterpart of `ParticipantOrchestratorProxy`.
+   * Uses `registerServiceHandler` (multi-service-per-channel mode) to avoid
+   * overwriting other services already bound to the same channel.
+   *
+   * ```ts
+   * // main process
+   * orchestrator.registerProxyService(serviceHost);
+   * pageletChannel.setServiceHost(serviceHost);
+   * ```
+   */
+  registerProxyService(serviceHost: RPCServiceHost): void {
+    const self = this;
+    serviceHost.registerServiceHandler(ORCHESTRATOR_PROXY_SERVICE_PATH, {
+      async requestConnect(
+        fromId: string,
+        toId: string,
+        config?: ConnectionConfig | null,
+        options?: ConnectOptions | null
+      ): Promise<any> {
+        const info = await self.connect(
+          fromId,
+          toId,
+          config ?? undefined,
+          options ?? undefined
+        );
+        return {
+          connectionId: info.connectionId,
+          fromId: info.fromId,
+          toId: info.toId,
+          state: info.state,
+        };
+      },
+
+      async requestDisconnect(connectionId: string): Promise<void> {
+        await self.disconnect(connectionId);
+      },
+
+      listParticipants(): ListParticipantEntry[] {
+        return self.listParticipants();
+      },
+
+      listConnections(): ListConnectionEntry[] {
+        return self.listConnections();
+      },
+    });
   }
 
   // ── Internal: ConnectionInfo builder ─────────────────────────────────────

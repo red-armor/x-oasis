@@ -78,45 +78,61 @@ export class NodeConnectionOrchestrator extends BaseConnectionOrchestrator {
     info: ParticipantInfo,
     config: ActivationConfig
   ): Promise<void> {
-    const { port } = config;
+    const { port, connectionId, role } = config;
 
-    const deferred = info.channel.makeRequest(
+    const metaDeferred = info.channel.makeRequest(
+      ORCHESTRATOR_SERVICE_PATH,
+      'activateConnectionContext',
+      { connectionId, role }
+    );
+
+    if (metaDeferred && typeof (metaDeferred as any).promise === 'object') {
+      await (metaDeferred as any).promise;
+    }
+
+    const portDeferred = info.channel.makeRequest(
       ORCHESTRATOR_SERVICE_PATH,
       'activateConnection',
       port
     );
 
-    if (deferred && typeof (deferred as any).promise === 'object') {
-      await (deferred as any).promise;
+    if (portDeferred && typeof (portDeferred as any).promise === 'object') {
+      await (portDeferred as any).promise;
     }
   }
 }
 
-/**
- * Register a handler on `channel` that receives the direct `MessagePort`
- * delivered by the orchestrator when `connect()` is called.
- *
- * This is the **only** thing participants need to do to integrate with the
- * orchestrator — no magic strings, no raw message listeners.
- *
- * ```ts
- * // worker.ts
- * registerOrchestratorHandler(mainChannel, (port) => {
- *   directChannel.bindPort(port);
- * });
- * ```
- *
- * @param channel  The control-plane channel already connected to the orchestrator.
- * @param onPort   Called with the transferred `MessagePort` once the
- *                 orchestrator activates this participant.
- */
 export function registerOrchestratorHandler(
   channel: AbstractChannelProtocol,
-  onPort: (port: any) => void
+  onPort:
+    | ((port: any) => void)
+    | ((ctx: import('@x-oasis/async-call-rpc').ActivationContext) => void)
 ): void {
+  let lastContext: {
+    connectionId: string;
+    role: 'initiator' | 'receiver';
+  } | null = null;
+
   const service = new RPCService(ORCHESTRATOR_SERVICE_PATH, {
     handlers: {
-      activateConnection: onPort,
+      activateConnection: (port: any) => {
+        if (lastContext) {
+          (onPort as (ctx: any) => void)({
+            port,
+            connectionId: lastContext.connectionId,
+            role: lastContext.role,
+          });
+          lastContext = null;
+        } else {
+          (onPort as (port: any) => void)(port);
+        }
+      },
+      activateConnectionContext: (ctx: {
+        connectionId: string;
+        role: 'initiator' | 'receiver';
+      }) => {
+        lastContext = ctx;
+      },
     },
   });
   service.setChannel(channel);

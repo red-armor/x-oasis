@@ -12,6 +12,9 @@ references:
   - id: I-001
     rel: related-to
     file: ../issue/20260510-async-call-rpc-electron-heartbeat-ping-bug.md
+  - id: D-002
+    rel: derives
+    file: ./20260511-multi-page-routing-pagelet-proxy.md
 ---
 
 # Orchestrator connect 去中心化设计讨论

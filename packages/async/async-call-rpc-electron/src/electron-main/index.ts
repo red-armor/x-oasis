@@ -16,6 +16,14 @@ export { default as ElectronUtilityProcessChannel } from './ElectronUtilityProce
 export { ElectronConnectionOrchestrator } from './ElectronConnectionOrchestrator';
 export type { MessageChannelMainFactory } from './ElectronConnectionOrchestrator';
 export {
+  ParticipantOrchestratorProxy,
+  createParticipantProxy,
+} from './ParticipantOrchestratorProxy';
+export type {
+  ParticipantConnection,
+  ParticipantOrchestratorProxyOptions,
+} from './ParticipantOrchestratorProxy';
+export {
   UtilityOrchestratorParticipant,
   createUtilityParticipant,
 } from './UtilityOrchestratorParticipant';

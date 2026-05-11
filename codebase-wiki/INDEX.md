@@ -46,9 +46,10 @@ features:
 
 ### discussion/ — 技术讨论
 
-| #     | 文件                                                                                                          | 标题                                  | 概述                                                                                       |
-| ----- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------ |
-| D-001 | [20260510-orchestrator-decentralized-connect.md](./discussion/20260510-orchestrator-decentralized-connect.md) | Orchestrator connect 去中心化设计讨论 | 探讨将 connect 能力从 main process 中心化调度下放到 participant 本地发起的可行性与演进路径 |
+| #     | 文件                                                                                                          | 标题                                  | 概述                                                                                           |
+| ----- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| D-001 | [20260510-orchestrator-decentralized-connect.md](./discussion/20260510-orchestrator-decentralized-connect.md) | Orchestrator connect 去中心化设计讨论 | 探讨将 connect 能力从 main process 中心化调度下放到 participant 本地发起的可行性与演进路径     |
+| D-002 | [20260511-multi-page-routing-pagelet-proxy.md](./discussion/20260511-multi-page-routing-pagelet-proxy.md)     | 多 Page 到多 Pagelet 的 RPC 路由问题  | 多 page 共享 renderer 时 RPC 请求无法路由到对应 pagelet 的根因分析与 ActivationConfig 扩展方案 |
 
 ### issue/ — Issue 记录
 

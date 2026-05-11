@@ -1,5 +1,8 @@
 export { ConnectionState, isValidTransition } from './ConnectionState';
-export { ORCHESTRATOR_SERVICE_PATH } from './types';
+export {
+  ORCHESTRATOR_SERVICE_PATH,
+  ORCHESTRATOR_PROXY_SERVICE_PATH,
+} from './types';
 export {
   ExponentialBackoffPolicy,
   FixedDelayPolicy,
@@ -43,4 +46,5 @@ export type {
   ConnectionOrchestratorConfig,
   PortPair,
   ActivationConfig,
+  ActivationContext,
 } from './types';

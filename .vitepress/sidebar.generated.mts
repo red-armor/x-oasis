@@ -17,6 +17,10 @@ export const wikiSidebar = {
         {
           "text": "D-001 Orchestrator connect 去中心化设计讨论",
           "link": "/discussion/20260510-orchestrator-decentralized-connect"
+        },
+        {
+          "text": "D-002 多 Page 到多 Pagelet 的 RPC 路由问题",
+          "link": "/discussion/20260511-multi-page-routing-pagelet-proxy"
         }
       ]
     }

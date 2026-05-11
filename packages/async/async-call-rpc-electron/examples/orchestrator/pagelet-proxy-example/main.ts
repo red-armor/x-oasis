@@ -64,16 +64,14 @@ app.whenReady().then(async () => {
 
   let mainCallCount = 0;
 
-  serviceHost.registerService('main-rpc', {
-    channel: pageletChannel,
-    serviceHost,
-    handlers: {
-      mainPing(msg: string): string {
-        mainCallCount++;
-        return `pong from main (#${mainCallCount}): ${msg}`;
-      },
+  serviceHost.registerServiceHandler('main-rpc', {
+    mainPing(msg: string): string {
+      mainCallCount++;
+      return `pong from main (#${mainCallCount}): ${msg}`;
     },
   });
+
+  pageletChannel.setServiceHost(serviceHost);
 
   const orchestrator = new ElectronConnectionOrchestrator({
     logger: (level, msg) => console.log(`[orchestrator:${level}] ${msg}`),
@@ -89,6 +87,8 @@ app.whenReady().then(async () => {
   orchestrator.registerParticipant('main-pagelet', pageletChannel, 'utility');
   orchestrator.registerParticipant('shared', sharedChannel, 'utility');
   orchestrator.registerParticipant('daemon', daemonChannel, 'utility');
+
+  orchestrator.registerProxyService(serviceHost);
 
   serviceHost.registerService('orchestrator', {
     channel: ipcChannel,
@@ -171,10 +171,7 @@ app.whenReady().then(async () => {
     },
   });
 
-  await orchestrator.connect('main-pagelet', 'renderer');
-  await orchestrator.connect('main-pagelet', 'shared');
-  await orchestrator.connect('main-pagelet', 'daemon');
-  console.log('[main] all port connections established');
+  console.log('[main] orchestrator ready, pagelet will self-connect');
 });
 
 app.on('window-all-closed', () => {

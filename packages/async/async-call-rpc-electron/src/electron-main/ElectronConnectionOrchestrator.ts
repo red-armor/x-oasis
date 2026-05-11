@@ -103,16 +103,26 @@ export class ElectronConnectionOrchestrator extends BaseConnectionOrchestrator {
     info: ParticipantInfo,
     config: ActivationConfig
   ): Promise<void> {
-    const { port } = config;
+    const { port, connectionId, role } = config;
 
-    const deferred = info.channel.makeRequest(
+    const metaDeferred = info.channel.makeRequest(
+      ORCHESTRATOR_SERVICE_PATH,
+      'activateConnectionContext',
+      { connectionId, role }
+    );
+
+    if (metaDeferred && typeof (metaDeferred as any).promise === 'object') {
+      await (metaDeferred as any).promise;
+    }
+
+    const portDeferred = info.channel.makeRequest(
       ORCHESTRATOR_SERVICE_PATH,
       'activateConnection',
       port
     );
 
-    if (deferred && typeof (deferred as any).promise === 'object') {
-      await (deferred as any).promise;
+    if (portDeferred && typeof (portDeferred as any).promise === 'object') {
+      await (portDeferred as any).promise;
     }
   }
 
