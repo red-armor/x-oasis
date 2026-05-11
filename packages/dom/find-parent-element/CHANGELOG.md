@@ -1,5 +1,11 @@
 # @x-oasis/find-parent-element
 
+## 0.11.0
+
+### Minor Changes
+
+- 021c2ec: feat: electron pagelet connection
+
 ## 0.10.0
 
 ### Minor Changes

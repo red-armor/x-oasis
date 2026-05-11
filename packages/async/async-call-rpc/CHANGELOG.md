@@ -1,5 +1,23 @@
 # @x-oasis/async-call-rpc
 
+## 0.11.0
+
+### Minor Changes
+
+- 021c2ec: feat: electron pagelet connection
+
+### Patch Changes
+
+- Updated dependencies [021c2ec]
+  - @x-oasis/is-ascii@0.11.0
+  - @x-oasis/is-function@0.11.0
+  - @x-oasis/is-object@0.11.0
+  - @x-oasis/is-promise@0.11.0
+  - @x-oasis/disposable@0.11.0
+  - @x-oasis/emitter@0.11.0
+  - @x-oasis/id@0.11.0
+  - @x-oasis/deferred@0.11.0
+
 ## 0.10.0
 
 ### Minor Changes

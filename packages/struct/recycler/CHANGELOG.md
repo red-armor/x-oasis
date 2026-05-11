@@ -1,5 +1,16 @@
 # @x-oasis/recycler
 
+## 0.11.0
+
+### Minor Changes
+
+- 021c2ec: feat: electron pagelet connection
+
+### Patch Changes
+
+- Updated dependencies [021c2ec]
+  - @x-oasis/integer-buffer-set@0.11.0
+
 ## 0.10.0
 
 ### Minor Changes

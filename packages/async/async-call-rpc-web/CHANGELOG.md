@@ -1,5 +1,16 @@
 # @x-oasis/async-call-rpc-web
 
+## 0.9.0
+
+### Minor Changes
+
+- 021c2ec: feat: electron pagelet connection
+
+### Patch Changes
+
+- Updated dependencies [021c2ec]
+  - @x-oasis/async-call-rpc@0.11.0
+
 ## 0.8.0
 
 ### Minor Changes
