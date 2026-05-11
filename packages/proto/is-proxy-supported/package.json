@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/is-proxy-supported",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Check if the runtime environment supports Proxy",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

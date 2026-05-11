@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.12.0
+
+### Minor Changes
+
+- 021c2ec: feat: electron pagelet connection
+
 ## 0.11.0
 
 ### Minor Changes

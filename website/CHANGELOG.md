@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.8.0
+
+### Minor Changes
+
+- 021c2ec: feat: electron pagelet connection
+
 ## 0.7.0
 
 ### Minor Changes

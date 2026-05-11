@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/ansi-colors",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "picocolors-style ANSI terminal color formatters with a runtime on/off switch",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
