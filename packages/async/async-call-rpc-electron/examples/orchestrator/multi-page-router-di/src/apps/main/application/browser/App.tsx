@@ -1,4 +1,4 @@
-import PageView from '@/apps/main/application/browser/PageView';
+import PageView from '@/apps/connection/application/browser/PageView';
 
 import {
   CONNECTION_PAGE,

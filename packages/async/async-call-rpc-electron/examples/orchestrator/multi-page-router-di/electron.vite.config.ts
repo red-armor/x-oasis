@@ -93,7 +93,15 @@ export default defineConfig({
       rollupOptions: { input: { index: resolve(__dirname, 'index.html') } },
     },
     plugins: [react()],
-    resolve: { alias: xOasisAliases },
+    resolve: {
+      alias: {
+        ...xOasisAliases,
+        '@': resolve(__dirname, 'src'),
+      },
+    },
+    css: {
+      postcss: './postcss.config.js',
+    },
     server: { watch: { ignored: ['!**/node_modules/@x-oasis/**'] } },
   },
 });
