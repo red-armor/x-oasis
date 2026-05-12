@@ -1,36 +1,45 @@
 import { Registry } from '@x-oasis/di';
 
-import { MainCpServer, MainCpServerId } from './MainCpServer';
-import { WindowManager, WindowManagerId } from './WindowManager';
+import {
+  MainCpServer,
+  MainCpServerId,
+} from '@/apps/main/application/electron-main/MainCpServer';
+import {
+  WindowManager,
+  WindowManagerId,
+} from '@/apps/main/application/electron-main/WindowManager';
 import {
   DaemonProcess,
   DaemonProcessId,
-} from '../../../daemon/application/electron-main/DaemonProcess';
+} from '@/apps/daemon/application/electron-main/DaemonProcess';
 import {
   DaemonApplication,
   DaemonApplicationId,
-} from '../../../daemon/application/node/DaemonApplication';
+} from '@/apps/daemon/application/node/DaemonApplication';
 import {
   SharedProcess,
   SharedProcessId,
-} from '../../../shared/application/electron-main/SharedProcess';
+} from '@/apps/shared/application/electron-main/SharedProcess';
 import {
   SharedApplication,
   SharedApplicationId,
-} from '../../../shared/application/node/SharedApplication';
+} from '@/apps/shared/application/node/SharedApplication';
 import {
   PageletProcess,
   PageletProcessId,
-} from '../../../../services/pagelet-host/electron-main/PageletProcess';
+} from '@/services/pagelet-host/electron-main/PageletProcess';
 import {
   AppOrchestrator,
   AppOrchestratorId,
-} from '../../../../services/pagelet-host/electron-main/AppOrchestrator';
+} from '@/services/pagelet-host/electron-main/AppOrchestrator';
 import {
   ConnectionApplication,
   ConnectionApplicationId,
-} from '../../../connection/application/node/ConnectionApplication';
-import { AppApplication, AppApplicationId } from './AppApplication';
+} from '@/apps/connection/application/node/ConnectionApplication';
+import {
+  AppApplication,
+  AppApplicationId,
+} from '@/apps/main/application/electron-main/AppApplication';
 
 export default new Registry((bind) => {
   bind(WindowManagerId).to(WindowManager);

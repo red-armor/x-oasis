@@ -3,8 +3,8 @@ import {
   PageletWorker,
   PageletWorkerId,
   PageletWorkerConfigId,
-} from '../../../../services/pagelet-host/node/PageletWorker';
-import { CONNECTION_PARTICIPANT_ID } from '../../../../services/pagelet-host/common';
+} from '@/services/pagelet-host/node/PageletWorker';
+import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 
 const SELF_ID = CONNECTION_PARTICIPANT_ID;
 const RENDERER_ID = 'renderer';

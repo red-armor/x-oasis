@@ -3,7 +3,7 @@ import { createId, inject, injectable } from '@x-oasis/di';
 import {
   IDaemonProcess,
   DaemonProcessId,
-} from '../electron-main/DaemonProcess';
+} from '@/apps/daemon/application/electron-main/DaemonProcess';
 
 export interface IDaemonApplication {
   start(): Promise<void>;

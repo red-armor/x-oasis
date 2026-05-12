@@ -7,7 +7,7 @@ import { join } from 'path';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../apps/main/application/electron-main/MainCpServer';
+} from '@/apps/main/application/electron-main/MainCpServer';
 
 export interface IPageletProcess {
   spawn(pageletId: string, workerFileName: string): Promise<void>;

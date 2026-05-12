@@ -3,7 +3,7 @@ import { createId, inject, injectable } from '@x-oasis/di';
 import {
   ISharedProcess,
   SharedProcessId,
-} from '../electron-main/SharedProcess';
+} from '@/apps/shared/application/electron-main/SharedProcess';
 
 export interface ISharedApplication {
   start(): Promise<void>;

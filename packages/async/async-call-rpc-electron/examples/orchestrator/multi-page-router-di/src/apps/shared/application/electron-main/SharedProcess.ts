@@ -7,8 +7,8 @@ import { join } from 'path';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../main/application/electron-main/MainCpServer';
-import { SHARED_PARTICIPANT_ID } from '../common';
+} from '@/apps/main/application/electron-main/MainCpServer';
+import { SHARED_PARTICIPANT_ID } from '@/apps/shared/application/common';
 
 export interface ISharedProcess {
   spawn(): Promise<void>;

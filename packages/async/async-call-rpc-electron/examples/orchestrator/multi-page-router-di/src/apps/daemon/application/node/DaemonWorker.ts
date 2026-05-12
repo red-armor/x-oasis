@@ -5,7 +5,7 @@ import {
 } from '@x-oasis/async-call-rpc-electron';
 import { serviceHost } from '@x-oasis/async-call-rpc';
 
-import { DAEMON_SERVICE_PATH } from '../common';
+import { DAEMON_SERVICE_PATH } from '@/apps/daemon/application/common';
 
 export interface IDaemonWorker {
   boot(): void;

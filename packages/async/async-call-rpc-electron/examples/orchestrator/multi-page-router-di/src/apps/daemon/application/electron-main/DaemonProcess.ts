@@ -7,8 +7,8 @@ import { join } from 'path';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../main/application/electron-main/MainCpServer';
-import { DAEMON_PARTICIPANT_ID } from '../common';
+} from '@/apps/main/application/electron-main/MainCpServer';
+import { DAEMON_PARTICIPANT_ID } from '@/apps/daemon/application/common';
 
 export interface IDaemonProcess {
   spawn(): Promise<void>;

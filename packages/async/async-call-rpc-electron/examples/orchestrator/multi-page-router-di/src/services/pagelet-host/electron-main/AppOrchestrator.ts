@@ -4,10 +4,16 @@ import { RPCServiceHost } from '@x-oasis/async-call-rpc';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../apps/main/application/electron-main/MainCpServer';
-import { IPageletProcess, PageletProcessId } from './PageletProcess';
-import { ORCHESTRATOR_SERVICE_PATH } from '../../../apps/main/application/common/types';
-import { RENDERER_PARTICIPANT_ID, CONNECTION_PARTICIPANT_ID } from '../common';
+} from '@/apps/main/application/electron-main/MainCpServer';
+import {
+  IPageletProcess,
+  PageletProcessId,
+} from '@/services/pagelet-host/electron-main/PageletProcess';
+import { ORCHESTRATOR_SERVICE_PATH } from '@/apps/main/application/common/types';
+import {
+  RENDERER_PARTICIPANT_ID,
+  CONNECTION_PARTICIPANT_ID,
+} from '@/services/pagelet-host/common';
 
 export interface IOrchestratorService {
   connect(): Promise<any>;

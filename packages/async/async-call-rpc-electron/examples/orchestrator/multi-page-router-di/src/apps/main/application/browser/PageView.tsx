@@ -2,9 +2,12 @@ import { useState, useCallback, useMemo } from 'react';
 import useOrchestratorDashboard, {
   OrchestratorAPI,
 } from '@shared-ui/useOrchestratorDashboard';
-import { client, pageletClient } from './rpc-clients';
-import { PageConfig } from '../common/cp-config';
-import { CONNECTION_PARTICIPANT_ID } from '../../../../services/pagelet-host/common';
+import {
+  client,
+  pageletClient,
+} from '@/apps/main/application/browser/rpc-clients';
+import { PageConfig } from '@/apps/main/application/common/cp-config';
+import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 
 type TabId = 'pagelet' | 'shared' | 'daemon' | 'main';
 

@@ -1,21 +1,27 @@
 import { createId, inject, injectable } from '@x-oasis/di';
 import { serviceHost } from '@x-oasis/async-call-rpc';
 
-import { IWindowManager, WindowManagerId } from './WindowManager';
-import { IMainCpServer, MainCpServerId } from './MainCpServer';
+import {
+  IWindowManager,
+  WindowManagerId,
+} from '@/apps/main/application/electron-main/WindowManager';
+import {
+  IMainCpServer,
+  MainCpServerId,
+} from '@/apps/main/application/electron-main/MainCpServer';
 import {
   IDaemonApplication,
   DaemonApplicationId,
-} from '../../../daemon/application/node/DaemonApplication';
+} from '@/apps/daemon/application/node/DaemonApplication';
 import {
   ISharedApplication,
   SharedApplicationId,
-} from '../../../shared/application/node/SharedApplication';
+} from '@/apps/shared/application/node/SharedApplication';
 import {
   IConnectionApplication,
   ConnectionApplicationId,
-} from '../../../connection/application/node/ConnectionApplication';
-import { MAIN_RPC_SERVICE_PATH } from '../../../../services/pagelet-host/common';
+} from '@/apps/connection/application/node/ConnectionApplication';
+import { MAIN_RPC_SERVICE_PATH } from '@/services/pagelet-host/common';
 
 export interface IAppApplication {
   start(): Promise<void>;

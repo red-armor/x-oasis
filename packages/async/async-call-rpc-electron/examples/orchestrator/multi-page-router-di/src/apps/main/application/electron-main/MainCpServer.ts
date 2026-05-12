@@ -5,9 +5,12 @@ import {
 } from '@x-oasis/async-call-rpc-electron';
 import { serviceHost } from '@x-oasis/async-call-rpc';
 
-import { IWindowManager, WindowManagerId } from './WindowManager';
-import { ORCHESTRATOR_CP_CHANNEL_NAME } from '../common/cp-config';
-import { RENDERER_PARTICIPANT_ID } from '../../../../services/pagelet-host/common';
+import {
+  IWindowManager,
+  WindowManagerId,
+} from '@/apps/main/application/electron-main/WindowManager';
+import { ORCHESTRATOR_CP_CHANNEL_NAME } from '@/apps/main/application/common/cp-config';
+import { RENDERER_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 
 export interface IMainCpServer {
   start(): void;

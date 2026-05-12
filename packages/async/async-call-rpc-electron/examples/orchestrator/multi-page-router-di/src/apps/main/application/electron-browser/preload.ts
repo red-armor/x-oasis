@@ -2,8 +2,8 @@ import { ipcRenderer } from 'electron';
 import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
 import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
-import { ORCHESTRATOR_CP_CHANNEL_NAME } from '../common/cp-config';
-import { PAGELET_SERVICE_PATH } from '../../../../services/pagelet-host/common';
+import { ORCHESTRATOR_CP_CHANNEL_NAME } from '@/apps/main/application/common/cp-config';
+import { PAGELET_SERVICE_PATH } from '@/services/pagelet-host/common';
 
 const channelName = ORCHESTRATOR_CP_CHANNEL_NAME;
 

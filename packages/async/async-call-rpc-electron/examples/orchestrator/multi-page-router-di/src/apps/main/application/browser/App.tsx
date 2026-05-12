@@ -1,7 +1,10 @@
-import PageView from './PageView';
+import PageView from '@/apps/main/application/browser/PageView';
 
-import { CONNECTION_PAGE, PageConfig } from '../common/cp-config';
-import { CONNECTION_PARTICIPANT_ID } from '../../../../services/pagelet-host/common';
+import {
+  CONNECTION_PAGE,
+  PageConfig,
+} from '@/apps/main/application/common/cp-config';
+import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 
 export type { PageConfig };
 

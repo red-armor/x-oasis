@@ -3,9 +3,9 @@ import { createId, inject, injectable } from '@x-oasis/di';
 import {
   IPageletProcess,
   PageletProcessId,
-} from '../../../../services/pagelet-host/electron-main/PageletProcess';
-import { AppOrchestratorId } from '../../../../services/pagelet-host/electron-main/AppOrchestrator';
-import { CONNECTION_PARTICIPANT_ID } from '../../../../services/pagelet-host/common';
+} from '@/services/pagelet-host/electron-main/PageletProcess';
+import { AppOrchestratorId } from '@/services/pagelet-host/electron-main/AppOrchestrator';
+import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 
 export const CONNECTION_WORKER_FILE = 'connection-worker.js';
 
