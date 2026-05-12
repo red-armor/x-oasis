@@ -5,10 +5,8 @@ import {
 } from '@x-oasis/async-call-rpc-electron';
 import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
-import {
-  MONITOR_PAGELET_SERVICE_PATH,
-  RENDERER_PARTICIPANT_ID,
-} from '@/services/pagelet-host/common';
+import { RENDERER_PARTICIPANT_ID } from '@/services/pagelet-host/common';
+import { MONITOR_PAGELET_SERVICE_PATH } from '@/apps/monitor/application/common';
 import {
   DAEMON_SERVICE_PATH,
   IDaemonService,

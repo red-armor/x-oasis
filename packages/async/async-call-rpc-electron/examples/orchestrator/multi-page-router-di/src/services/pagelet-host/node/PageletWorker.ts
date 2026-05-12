@@ -7,9 +7,9 @@ import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
 import {
   IMainRpcService,
-  PAGELET_SERVICE_PATH,
   MAIN_RPC_SERVICE_PATH,
 } from '@/services/pagelet-host/common';
+import { CONNECTION_PAGELET_SERVICE_PATH } from '@/apps/connection/application/common';
 import {
   ISharedService,
   SHARED_SERVICE_PATH,
@@ -61,7 +61,7 @@ export class PageletWorker implements IPageletWorker {
         const ch = proxy.getChannelFor(conn.peerId);
 
         if (ch && conn.peerId === this.config.rendererParticipantId) {
-          serviceHost.registerService(PAGELET_SERVICE_PATH, {
+          serviceHost.registerService(CONNECTION_PAGELET_SERVICE_PATH, {
             channel: ch,
             serviceHost,
             handlers: {
@@ -91,7 +91,7 @@ export class PageletWorker implements IPageletWorker {
             },
           });
           console.log(
-            `[${this.config.selfId}-worker] ${PAGELET_SERVICE_PATH} registered on ${conn.peerId} channel`
+            `[${this.config.selfId}-worker] ${CONNECTION_PAGELET_SERVICE_PATH} registered on ${conn.peerId} channel`
           );
         }
       },

@@ -1,10 +1,12 @@
 import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
 import {
-  IPageletService,
-  PAGELET_SERVICE_PATH,
-  IMonitorPageletService,
+  CONNECTION_PAGELET_SERVICE_PATH,
+  IConnectionPageletService,
+} from '@/apps/connection/application/common';
+import {
   MONITOR_PAGELET_SERVICE_PATH,
-} from '@/services/pagelet-host/common';
+  IMonitorPageletService,
+} from '@/apps/monitor/application/common';
 
 export const client = createOrchestratorClient({
   directChannelDescription: 'renderer↔preload',
@@ -12,8 +14,8 @@ export const client = createOrchestratorClient({
 });
 
 export const connectionPageletClient = client.getService(
-  PAGELET_SERVICE_PATH
-) as IPageletService;
+  CONNECTION_PAGELET_SERVICE_PATH
+) as IConnectionPageletService;
 
 export const monitorPageletClient = client.getService(
   MONITOR_PAGELET_SERVICE_PATH

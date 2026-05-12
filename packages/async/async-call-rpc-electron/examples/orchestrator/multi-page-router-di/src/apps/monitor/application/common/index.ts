@@ -5,7 +5,10 @@ export type {
   IDiagnosticsService,
 } from '@/apps/daemon/diagnostics/common';
 
-export {
-  MONITOR_PAGELET_SERVICE_PATH,
-  IMonitorPageletService,
-} from '@/services/pagelet-host/common';
+export const MONITOR_PAGELET_SERVICE_PATH = 'monitor-pagelet-api';
+
+export interface IMonitorPageletService {
+  info(): Promise<string>;
+  getSnapshot(): Promise<any>;
+  onPerformanceUpdate(callback: (snapshot: any) => void): () => void;
+}
