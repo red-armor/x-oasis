@@ -21,6 +21,10 @@ export const wikiSidebar = {
         {
           "text": "D-002 多 Page 到多 Pagelet 的 RPC 路由问题",
           "link": "/discussion/20260511-multi-page-routing-pagelet-proxy"
+        },
+        {
+          "text": "D-003 Renderer 侧 directChannel 与 ipcChannel RPC 通道对比",
+          "link": "/discussion/20260512-direct-channel-vs-ipc-channel-comparison"
         }
       ]
     }

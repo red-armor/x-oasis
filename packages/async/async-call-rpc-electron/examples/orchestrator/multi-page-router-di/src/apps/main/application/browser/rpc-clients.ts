@@ -2,6 +2,7 @@ import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/brows
 import { clientHost } from '@x-oasis/async-call-rpc';
 import {
   IPageletService,
+  PAGELET_SERVICE_PATH,
   IMonitorPageletService,
   MONITOR_PAGELET_SERVICE_PATH,
 } from '@/services/pagelet-host/common';
@@ -12,7 +13,7 @@ export const client = createOrchestratorClient({
 });
 
 export const connectionPageletClient = client.getService(
-  'pagelet-api'
+  PAGELET_SERVICE_PATH
 ) as IPageletService;
 
 export const monitorPageletClient = clientHost
