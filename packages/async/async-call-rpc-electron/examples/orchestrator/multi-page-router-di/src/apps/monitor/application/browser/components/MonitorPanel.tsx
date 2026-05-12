@@ -19,9 +19,12 @@ export function MonitorPanel() {
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<TabId>('overview');
 
-  const cpuSeries = useMemo(() => history.map((h) => h.totals.cpu), [history]);
+  const cpuSeries = useMemo(
+    () => history.map((h) => h.totals?.cpu ?? 0),
+    [history]
+  );
   const memSeries = useMemo(
-    () => history.map((h) => h.totals.memory),
+    () => history.map((h) => h.totals?.memory ?? 0),
     [history]
   );
 
@@ -100,7 +103,9 @@ function Header({
           Monitor
         </h1>
         <span className="text-[11px] text-zinc-500">
-          {snapshot ? `${snapshot.processes.length} processes` : 'connecting…'}
+          {snapshot?.processes
+            ? `${snapshot.processes.length} processes`
+            : 'connecting…'}
         </span>
       </div>
       <div className="flex items-center gap-3">
@@ -156,7 +161,7 @@ function Overview({
 }) {
   const topCpu = useMemo(
     () =>
-      snapshot.processes
+      (snapshot.processes ?? [])
         .slice()
         .sort((a, b) => b.cpu - a.cpu)
         .slice(0, 5),
@@ -164,21 +169,21 @@ function Overview({
   );
   const topMem = useMemo(
     () =>
-      snapshot.processes
+      (snapshot.processes ?? [])
         .slice()
         .sort((a, b) => b.memory - a.memory)
         .slice(0, 5),
     [snapshot.processes]
   );
   const memMax = Math.max(1, ...memSeries);
-  const cpuColor = cpuColorClass(snapshot.totals.cpu);
+  const cpuColor = cpuColorClass(snapshot.totals?.cpu ?? 0);
 
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-3 gap-4">
         <StatCard
           label="CPU"
-          value={snapshot.totals.cpu.toFixed(1)}
+          value={(snapshot.totals?.cpu ?? 0).toFixed(1)}
           unit="%"
           accentClass={cpuColor}
         >
@@ -192,7 +197,7 @@ function Overview({
         </StatCard>
         <StatCard
           label="Memory"
-          value={snapshot.totals.memory.toFixed(0)}
+          value={(snapshot.totals?.memory ?? 0).toFixed(0)}
           unit="MB"
           accentClass="text-sky-400"
         >
@@ -202,7 +207,7 @@ function Overview({
         </StatCard>
         <StatCard
           label="Processes"
-          value={String(snapshot.processes.length)}
+          value={String((snapshot.processes ?? []).length)}
           unit="active"
           accentClass="text-zinc-100"
         >
@@ -363,15 +368,17 @@ function Footer({ snapshot }: { snapshot: MonitorSnapshot | null }) {
     <footer className="flex items-center gap-5 border-t border-zinc-800/80 bg-zinc-950/80 px-5 py-2 text-[11px] backdrop-blur">
       <FooterStat
         label="CPU"
-        value={snapshot ? `${snapshot.totals.cpu.toFixed(1)}%` : '—'}
+        value={snapshot ? `${(snapshot.totals?.cpu ?? 0).toFixed(1)}%` : '—'}
       />
       <FooterStat
         label="Mem"
-        value={snapshot ? `${snapshot.totals.memory.toFixed(0)} MB` : '—'}
+        value={
+          snapshot ? `${(snapshot.totals?.memory ?? 0).toFixed(0)} MB` : '—'
+        }
       />
       <FooterStat
         label="Procs"
-        value={snapshot ? String(snapshot.processes.length) : '—'}
+        value={snapshot ? String((snapshot.processes ?? []).length) : '—'}
       />
       <span className="ml-auto text-zinc-500">
         {snapshot
@@ -398,7 +405,7 @@ function EmptyState() {
         <div className="mx-auto mb-3 h-8 w-8 animate-pulse rounded-full bg-sky-500/20" />
         <p className="text-sm text-zinc-300">Waiting for first snapshot…</p>
         <p className="mt-1 text-[11px] text-zinc-500">
-          Go to the Connection page and click "Connect" first.
+          Waiting for monitor-pagelet connection…
         </p>
       </div>
     </div>

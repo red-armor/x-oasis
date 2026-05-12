@@ -12,6 +12,7 @@ import {
 export interface IPageletProcess {
   spawn(pageletId: string, workerFileName: string): Promise<void>;
   kill(pageletId: string): void;
+  getChannel(pageletId: string): ElectronUtilityProcessChannel | undefined;
 }
 
 export const PageletProcessId = createId('PageletProcess');
@@ -19,6 +20,7 @@ export const PageletProcessId = createId('PageletProcess');
 @injectable()
 export class PageletProcess implements IPageletProcess {
   private processes = new Map<string, Electron.UtilityProcess>();
+  private channels = new Map<string, ElectronUtilityProcessChannel>();
 
   constructor(
     @inject(MainCpServerId) private readonly cpServer: IMainCpServer
@@ -35,6 +37,7 @@ export class PageletProcess implements IPageletProcess {
     channel.setServiceHost(serviceHost);
 
     this.processes.set(pageletId, proc);
+    this.channels.set(pageletId, channel);
     this.cpServer
       .getOrchestrator()
       .registerParticipant(pageletId, channel, 'utility');
@@ -44,5 +47,9 @@ export class PageletProcess implements IPageletProcess {
 
   kill(pageletId: string): void {
     this.processes.get(pageletId)?.kill();
+  }
+
+  getChannel(pageletId: string): ElectronUtilityProcessChannel | undefined {
+    return this.channels.get(pageletId);
   }
 }

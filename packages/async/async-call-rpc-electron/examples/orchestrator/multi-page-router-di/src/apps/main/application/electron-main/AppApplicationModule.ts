@@ -37,6 +37,10 @@ import {
   ConnectionApplicationId,
 } from '@/apps/connection/application/node/ConnectionApplication';
 import {
+  MonitorApplication,
+  MonitorApplicationId,
+} from '@/apps/monitor/application/electron-main/MonitorApplication';
+import {
   AppApplication,
   AppApplicationId,
 } from '@/apps/main/application/electron-main/AppApplication';
@@ -54,6 +58,7 @@ export default new Registry((bind) => {
   bind(PageletProcessId).to(PageletProcess);
   bind(AppOrchestratorId).to(AppOrchestrator);
   bind(ConnectionApplicationId).to(ConnectionApplication);
+  bind(MonitorApplicationId).to(MonitorApplication);
 
   bind(AppApplicationId).to(AppApplication);
 });

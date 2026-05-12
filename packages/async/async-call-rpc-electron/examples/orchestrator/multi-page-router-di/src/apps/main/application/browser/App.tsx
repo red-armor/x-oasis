@@ -7,7 +7,10 @@ import {
   ALL_PAGES,
   PageConfig,
 } from '@/apps/main/application/common/cp-config';
-import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
+import {
+  CONNECTION_PARTICIPANT_ID,
+  MONITOR_PARTICIPANT_ID,
+} from '@/services/pagelet-host/common';
 
 export type { PageConfig };
 
@@ -139,7 +142,9 @@ function App(): JSX.Element {
             <br />
             {CONNECTION_PARTICIPANT_ID} ↔ daemon
             <br />
-            daemon → monitor-rpc
+            renderer ↔ main → {MONITOR_PARTICIPANT_ID}
+            <br />
+            {MONITOR_PARTICIPANT_ID} ↔ daemon
           </div>
         </div>
       </div>

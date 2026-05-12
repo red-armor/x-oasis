@@ -8,18 +8,18 @@ import {
   AppOrchestratorId,
   IAppOrchestrator,
 } from '@/services/pagelet-host/electron-main/AppOrchestrator';
-import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
+import { MONITOR_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 
-export const CONNECTION_WORKER_FILE = 'connection-worker.js';
+export const MONITOR_WORKER_FILE = 'monitor-worker.js';
 
-export interface IConnectionApplication {
+export interface IMonitorApplication {
   start(): Promise<void>;
 }
 
-export const ConnectionApplicationId = createId('ConnectionApplication');
+export const MonitorApplicationId = createId('MonitorApplication');
 
 @injectable()
-export class ConnectionApplication implements IConnectionApplication {
+export class MonitorApplication implements IMonitorApplication {
   constructor(
     @inject(PageletProcessId) private readonly pageletProcess: IPageletProcess,
     @inject(AppOrchestratorId)
@@ -28,9 +28,9 @@ export class ConnectionApplication implements IConnectionApplication {
 
   async start(): Promise<void> {
     await this.pageletProcess.spawn(
-      CONNECTION_PARTICIPANT_ID,
-      CONNECTION_WORKER_FILE
+      MONITOR_PARTICIPANT_ID,
+      MONITOR_WORKER_FILE
     );
-    this.appOrchestrator.registerOrchestratorService();
+    this.appOrchestrator.registerMonitorProxyService();
   }
 }

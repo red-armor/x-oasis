@@ -62,6 +62,10 @@ export default defineConfig({
               entry: 'src/apps/connection/application/node/main.ts',
               outName: 'connection-worker',
             },
+            {
+              entry: 'src/apps/monitor/application/node/main.ts',
+              outName: 'monitor-worker',
+            },
           ];
           for (const w of workers) {
             await build({

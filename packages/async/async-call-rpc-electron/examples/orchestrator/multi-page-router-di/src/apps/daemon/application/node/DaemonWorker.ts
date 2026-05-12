@@ -3,7 +3,7 @@ import {
   ElectronUtilityProcessChannel,
   createParticipantProxy,
 } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { RPCServiceHost } from '@x-oasis/async-call-rpc';
 
 import { DAEMON_SERVICE_PATH } from '@/apps/daemon/application/common';
 import { DIAGNOSTICS_SERVICE_PATH } from '@/apps/daemon/diagnostics/common';
@@ -86,16 +86,16 @@ export class DaemonWorker implements IDaemonWorker {
         );
         const ch = proxy.getChannelFor(conn.peerId);
         if (ch) {
-          serviceHost.registerService(DAEMON_SERVICE_PATH, {
-            channel: ch,
-            serviceHost,
-            handlers: daemonHandlers,
-          });
-          serviceHost.registerService(DIAGNOSTICS_SERVICE_PATH, {
-            channel: ch,
-            serviceHost,
-            handlers: monitorHandlers,
-          });
+          const perConnHost = new RPCServiceHost();
+          perConnHost.registerServiceHandler(
+            DAEMON_SERVICE_PATH,
+            daemonHandlers
+          );
+          perConnHost.registerServiceHandler(
+            DIAGNOSTICS_SERVICE_PATH,
+            monitorHandlers
+          );
+          ch.setServiceHost(perConnHost);
           console.log(
             `[daemon-worker] ${DAEMON_SERVICE_PATH} + ${DIAGNOSTICS_SERVICE_PATH} registered for ${conn.peerId}`
           );

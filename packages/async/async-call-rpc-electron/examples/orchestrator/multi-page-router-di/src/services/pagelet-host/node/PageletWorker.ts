@@ -18,11 +18,6 @@ import {
   IDaemonService,
   DAEMON_SERVICE_PATH,
 } from '@/apps/daemon/application/common';
-import {
-  DIAGNOSTICS_SERVICE_PATH,
-  IDiagnosticsService,
-} from '@/apps/daemon/diagnostics/common';
-
 export interface IPageletWorkerConfig {
   selfId: string;
   rendererParticipantId: string;
@@ -41,7 +36,6 @@ export class PageletWorker implements IPageletWorker {
   private sharedClient: ISharedService | null = null;
   private daemonClient: IDaemonService | null = null;
   private mainClient: IMainRpcService | null = null;
-  private diagnosticsClient: IDiagnosticsService | null = null;
 
   constructor(
     @inject(PageletWorkerConfigId) private readonly config: IPageletWorkerConfig
@@ -93,15 +87,6 @@ export class PageletWorker implements IPageletWorker {
               callMainPing: (msg: string): Promise<string> =>
                 this.mainClient?.mainPing(msg) ??
                 Promise.resolve('main not ready'),
-              callMonitorGetSnapshot: (): Promise<any> =>
-                this.diagnosticsClient?.getPerformanceSnapshot() ??
-                Promise.resolve(null),
-              onMonitorPerformanceUpdate: (
-                callback: (snapshot: any) => void
-              ): (() => void) => {
-                if (!this.diagnosticsClient) return () => {};
-                return this.diagnosticsClient.onPerformanceUpdate(callback);
-              },
             },
           });
           console.log(
@@ -126,14 +111,8 @@ export class PageletWorker implements IPageletWorker {
       .registerClient(DAEMON_SERVICE_PATH, { channel: daemonConn.getChannel() })
       .createProxy() as unknown as IDaemonService;
 
-    this.diagnosticsClient = clientHost
-      .registerClient(DIAGNOSTICS_SERVICE_PATH, {
-        channel: daemonConn.getChannel(),
-      })
-      .createProxy() as unknown as IDiagnosticsService;
-
     console.log(
-      `[${this.config.selfId}-worker] connected to shared & daemon (incl. monitor), waiting for ${this.config.rendererParticipantId} to connect`
+      `[${this.config.selfId}-worker] connected to shared & daemon, waiting for ${this.config.rendererParticipantId} to connect`
     );
   }
 }

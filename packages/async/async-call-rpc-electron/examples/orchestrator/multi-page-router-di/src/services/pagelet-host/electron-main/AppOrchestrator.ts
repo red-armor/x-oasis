@@ -1,5 +1,5 @@
 import { createId, inject, injectable } from '@x-oasis/di';
-import { RPCServiceHost } from '@x-oasis/async-call-rpc';
+import { RPCServiceHost, clientHost } from '@x-oasis/async-call-rpc';
 
 import {
   IMainCpServer,
@@ -13,6 +13,9 @@ import { ORCHESTRATOR_SERVICE_PATH } from '@/apps/main/application/common/types'
 import {
   RENDERER_PARTICIPANT_ID,
   CONNECTION_PARTICIPANT_ID,
+  MONITOR_PARTICIPANT_ID,
+  MONITOR_PAGELET_SERVICE_PATH,
+  IMonitorPageletService,
 } from '@/services/pagelet-host/common';
 
 export interface IOrchestratorService {
@@ -30,7 +33,10 @@ export interface IOrchestratorService {
   onClosed(callback: (event: any) => void): void;
 }
 
-export type IAppOrchestrator = IOrchestratorService;
+export interface IAppOrchestrator extends IOrchestratorService {
+  registerOrchestratorService(): void;
+  registerMonitorProxyService(): void;
+}
 
 export const AppOrchestratorId = createId('AppOrchestrator');
 
@@ -138,5 +144,36 @@ export class AppOrchestrator implements IAppOrchestrator {
         },
       },
     });
+  }
+
+  registerMonitorProxyService(): void {
+    const monitorChannel = this.pageletProcess.getChannel(
+      MONITOR_PARTICIPANT_ID
+    );
+    if (!monitorChannel) {
+      console.error('[AppOrchestrator] monitor channel not found');
+      return;
+    }
+
+    const monitorClient = clientHost
+      .registerClient(MONITOR_PAGELET_SERVICE_PATH, { channel: monitorChannel })
+      .createProxy<IMonitorPageletService>();
+
+    const rendererIpcChannel = this.cpServer.getRendererIpcChannel();
+
+    this.pageServiceHost.registerService(MONITOR_PAGELET_SERVICE_PATH, {
+      channel: rendererIpcChannel,
+      serviceHost: this.pageServiceHost,
+      handlers: {
+        info: () => monitorClient.info(),
+        getSnapshot: () => monitorClient.getSnapshot(),
+        onPerformanceUpdate: (callback: (snapshot: any) => void) =>
+          monitorClient.onPerformanceUpdate(callback),
+      },
+    });
+
+    console.log(
+      '[AppOrchestrator] monitor proxy service registered on renderer IPC channel'
+    );
   }
 }

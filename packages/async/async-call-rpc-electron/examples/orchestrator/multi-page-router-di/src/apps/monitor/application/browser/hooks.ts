@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  client,
-  pageletClient,
-} from '@/apps/main/application/browser/rpc-clients';
+import { monitorPageletClient } from '@/apps/main/application/browser/rpc-clients';
 import { MonitorSnapshot } from '@/apps/monitor/application/common';
+
+const RETRY_INTERVAL_MS = 2000;
 
 export function useMonitorSnapshots() {
   const [snapshot, setSnapshot] = useState<MonitorSnapshot | null>(null);
@@ -13,23 +12,29 @@ export function useMonitorSnapshots() {
 
   useEffect(() => {
     let cancelled = false;
-    let stateUnsub: { unsubscribe: () => void } | null = null;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     const subscribe = async () => {
       if (cancelled || subscribedRef.current) return;
       subscribedRef.current = true;
 
       try {
-        const snap = await pageletClient.callMonitorGetSnapshot();
+        const snap = await monitorPageletClient.getSnapshot();
         if (!cancelled && snap) {
           setSnapshot(snap);
           setUpdatedAt(Date.now());
         }
-      } catch {}
+      } catch {
+        subscribedRef.current = false;
+        if (!cancelled) {
+          retryTimer = setTimeout(subscribe, RETRY_INTERVAL_MS);
+        }
+        return;
+      }
 
       try {
         if (cancelled) return;
-        const result = pageletClient.onMonitorPerformanceUpdate(
+        const result = monitorPageletClient.onPerformanceUpdate(
           (snap: MonitorSnapshot) => {
             if (!cancelled) {
               setSnapshot(snap);
@@ -48,41 +53,20 @@ export function useMonitorSnapshots() {
         } else {
           unsub();
         }
-      } catch {}
-    };
-
-    const checkAndSubscribe = async () => {
-      try {
-        const status = await client.getStatus();
-        if (status?.isReady || status?.state === 'READY') {
-          subscribe();
-          return;
+      } catch {
+        subscribedRef.current = false;
+        if (!cancelled) {
+          retryTimer = setTimeout(subscribe, RETRY_INTERVAL_MS);
         }
-      } catch {}
-
-      try {
-        stateUnsub = client.onStateChange((event: any) => {
-          if (
-            (event?.state === 'READY' || event?.isReady) &&
-            !cancelled &&
-            !subscribedRef.current
-          ) {
-            subscribe();
-            if (stateUnsub) {
-              stateUnsub.unsubscribe();
-              stateUnsub = null;
-            }
-          }
-        });
-      } catch {}
+      }
     };
 
-    checkAndSubscribe();
+    subscribe();
 
     return () => {
       cancelled = true;
       subscribedRef.current = false;
-      stateUnsub?.unsubscribe();
+      if (retryTimer) clearTimeout(retryTimer);
       unsubRef.current?.();
       unsubRef.current = null;
     };

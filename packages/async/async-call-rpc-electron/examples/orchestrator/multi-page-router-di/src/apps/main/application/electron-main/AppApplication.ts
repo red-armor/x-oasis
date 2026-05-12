@@ -21,6 +21,10 @@ import {
   IConnectionApplication,
   ConnectionApplicationId,
 } from '@/apps/connection/application/node/ConnectionApplication';
+import {
+  IMonitorApplication,
+  MonitorApplicationId,
+} from '@/apps/monitor/application/electron-main/MonitorApplication';
 import { MAIN_RPC_SERVICE_PATH } from '@/services/pagelet-host/common';
 
 export interface IAppApplication {
@@ -37,7 +41,9 @@ export class AppApplication implements IAppApplication {
     @inject(DaemonApplicationId) private readonly daemonApp: IDaemonApplication,
     @inject(SharedApplicationId) private readonly sharedApp: ISharedApplication,
     @inject(ConnectionApplicationId)
-    private readonly connectionApp: IConnectionApplication
+    private readonly connectionApp: IConnectionApplication,
+    @inject(MonitorApplicationId)
+    private readonly monitorApp: IMonitorApplication
   ) {}
 
   async start(): Promise<void> {
@@ -58,6 +64,7 @@ export class AppApplication implements IAppApplication {
     await Promise.all([this.sharedApp.start(), this.daemonApp.start()]);
 
     await this.connectionApp.start();
+    await this.monitorApp.start();
 
     console.log('[AppApplication] start() done');
   }
