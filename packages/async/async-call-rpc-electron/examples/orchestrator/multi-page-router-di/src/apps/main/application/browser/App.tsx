@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import PageView from './PageView';
 
-import {
-  PAGES,
-  getPageletId,
-  PageConfig,
-} from './apps/main/application/common/cp-config';
+import { PAGES, getPageletId, PageConfig } from '../common/cp-config';
 
 export { getPageletId };
 export type { PageConfig };
