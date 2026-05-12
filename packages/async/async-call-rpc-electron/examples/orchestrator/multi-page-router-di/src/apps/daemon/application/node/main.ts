@@ -1,8 +1,5 @@
 import { Container, Registry } from '@x-oasis/di';
-import {
-  DaemonWorker,
-  DaemonWorkerId,
-} from './src/apps/daemon/application/node/DaemonWorker';
+import { DaemonWorker, DaemonWorkerId } from './DaemonWorker';
 
 const container = new Container();
 container.load(

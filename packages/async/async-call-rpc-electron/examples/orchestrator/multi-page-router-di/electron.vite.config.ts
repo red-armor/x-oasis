@@ -49,21 +49,37 @@ export default defineConfig({
       {
         name: 'build-utility-workers',
         async closeBundle() {
-          for (const workerName of [
-            'shared-worker',
-            'daemon-worker',
-            'pagelet-A-worker',
-            'pagelet-B-worker',
-            'pagelet-C-worker',
-          ]) {
+          const workers = [
+            {
+              entry: 'src/apps/daemon/application/node/main.ts',
+              outName: 'daemon-worker',
+            },
+            {
+              entry: 'src/apps/shared/application/node/main.ts',
+              outName: 'shared-worker',
+            },
+            {
+              entry: 'src/apps/pagelet/application/node/pagelet-A-main.ts',
+              outName: 'pagelet-A-worker',
+            },
+            {
+              entry: 'src/apps/pagelet/application/node/pagelet-B-main.ts',
+              outName: 'pagelet-B-worker',
+            },
+            {
+              entry: 'src/apps/pagelet/application/node/pagelet-C-main.ts',
+              outName: 'pagelet-C-worker',
+            },
+          ];
+          for (const w of workers) {
             await build({
               build: {
                 outDir: resolve(__dirname, 'out/preload'),
                 emptyOutDir: false,
                 lib: {
-                  entry: resolve(__dirname, `${workerName}.ts`),
+                  entry: resolve(__dirname, w.entry),
                   formats: ['cjs'],
-                  fileName: () => `${workerName}.js`,
+                  fileName: () => `${w.outName}.js`,
                 },
                 rollupOptions: {
                   external: ['electron'],

@@ -3,9 +3,9 @@ import {
   PageletWorker,
   PageletWorkerId,
   PageletWorkerConfigId,
-} from './src/apps/pagelet/application/node/PageletWorker';
+} from './PageletWorker';
 
-const SELF_ID = 'pagelet-C';
+const SELF_ID = 'pagelet-A';
 const RENDERER_ID = 'renderer';
 
 const container = new Container();
