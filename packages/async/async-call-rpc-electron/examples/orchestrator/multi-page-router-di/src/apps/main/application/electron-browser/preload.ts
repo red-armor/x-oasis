@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { clientHost } from '@x-oasis/async-call-rpc';
 
 import { ORCHESTRATOR_CP_CHANNEL_NAME } from '@/apps/main/application/common/cp-config';
 import {
@@ -26,13 +26,3 @@ const bridge = createPageBridge({
 clientHost
   .registerClient(CONNECTION_PAGELET_SERVICE_PATH, { channel: bridge.channel })
   .createProxy();
-
-serviceHost.registerService('renderer-direct', {
-  channel: bridge.channel,
-  serviceHost,
-  handlers: {
-    greet(msg: string): string {
-      return `greeting from renderer: ${msg}`;
-    },
-  },
-});

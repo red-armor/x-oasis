@@ -3,10 +3,19 @@ import {
   MonitorPageletWorker,
   MonitorPageletWorkerId,
 } from './MonitorPageletWorker';
+import { PageletWorkerConfigId } from '@/services/pagelet-host/node/PageletWorker';
+import {
+  MONITOR_PARTICIPANT_ID,
+  RENDERER_PARTICIPANT_ID,
+} from '@/services/pagelet-host/common';
 
 const container = new Container();
 container.load(
   new Registry((bind) => {
+    bind(PageletWorkerConfigId).toConstantValue({
+      selfId: MONITOR_PARTICIPANT_ID,
+      rendererParticipantId: RENDERER_PARTICIPANT_ID,
+    });
     bind(MonitorPageletWorkerId).to(MonitorPageletWorker);
   })
 );

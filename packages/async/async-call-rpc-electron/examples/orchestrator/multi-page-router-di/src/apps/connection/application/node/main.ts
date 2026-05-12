@@ -1,9 +1,6 @@
 import { Container, Registry } from '@x-oasis/di';
-import {
-  PageletWorker,
-  PageletWorkerId,
-  PageletWorkerConfigId,
-} from '@/services/pagelet-host/node/PageletWorker';
+import { ConnectionWorker, ConnectionWorkerId } from './ConnectionWorker';
+import { PageletWorkerConfigId } from '@/services/pagelet-host/node/PageletWorker';
 import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 
 const SELF_ID = CONNECTION_PARTICIPANT_ID;
@@ -16,11 +13,11 @@ container.load(
       selfId: SELF_ID,
       rendererParticipantId: RENDERER_ID,
     });
-    bind(PageletWorkerId).to(PageletWorker);
+    bind(ConnectionWorkerId).to(ConnectionWorker);
   })
 );
 
-const worker = container.get(PageletWorkerId) as PageletWorker;
+const worker = container.get(ConnectionWorkerId) as ConnectionWorker;
 worker
   .boot()
   .catch((err) => console.error(`[${SELF_ID}-worker] boot failed:`, err));
