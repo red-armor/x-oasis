@@ -10,8 +10,14 @@ import {
   PAGELET_SERVICE_PATH,
   MAIN_RPC_SERVICE_PATH,
 } from '../common';
-import { ISharedService, SHARED_SERVICE_PATH } from '../../shared/common';
-import { IDaemonService, DAEMON_SERVICE_PATH } from '../../daemon/common';
+import {
+  ISharedService,
+  SHARED_SERVICE_PATH,
+} from '../../../shared/application/common';
+import {
+  IDaemonService,
+  DAEMON_SERVICE_PATH,
+} from '../../../daemon/application/common';
 
 export interface IPageletWorkerConfig {
   selfId: string;

@@ -7,35 +7,35 @@ import { join } from 'path';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../../electron-main/MainCpServer';
-import { SHARED_PARTICIPANT_ID } from '../common';
+} from '../../../../../electron-main/MainCpServer';
+import { DAEMON_PARTICIPANT_ID } from '../common';
 
-export interface ISharedProcess {
+export interface IDaemonProcess {
   spawn(): Promise<void>;
 }
 
-export const SharedProcessId = createId('SharedProcess');
+export const DaemonProcessId = createId('DaemonProcess');
 
 @injectable()
-export class SharedProcess implements ISharedProcess {
+export class DaemonProcess implements IDaemonProcess {
   constructor(
     @inject(MainCpServerId) private readonly cpServer: IMainCpServer
   ) {}
 
   async spawn(): Promise<void> {
     const proc = utilityProcess.fork(
-      join(__dirname, '../preload/shared-worker.js')
+      join(__dirname, '../preload/daemon-worker.js')
     );
     const channel = new ElectronUtilityProcessChannel({
       process: proc,
-      description: 'main→shared IPC channel',
+      description: 'main→daemon IPC channel',
     });
     channel.setServiceHost(serviceHost);
 
     this.cpServer
       .getOrchestrator()
-      .registerParticipant(SHARED_PARTICIPANT_ID, channel, 'utility');
+      .registerParticipant(DAEMON_PARTICIPANT_ID, channel, 'utility');
 
-    console.log('[SharedProcess] spawned');
+    console.log('[DaemonProcess] spawned');
   }
 }

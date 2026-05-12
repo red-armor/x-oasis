@@ -7,7 +7,7 @@ import { join } from 'path';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../../electron-main/MainCpServer';
+} from '../../../../../electron-main/MainCpServer';
 import { PAGELET_IDS } from '../common';
 
 export interface IPageletProcess {

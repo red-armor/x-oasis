@@ -2,7 +2,7 @@ import { Container, Registry } from '@x-oasis/di';
 import {
   DaemonWorker,
   DaemonWorkerId,
-} from './src/apps/daemon/node/DaemonWorker';
+} from './src/apps/daemon/application/node/DaemonWorker';
 
 const container = new Container();
 container.load(

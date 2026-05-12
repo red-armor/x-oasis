@@ -6,16 +6,16 @@ import { IMainCpServer, MainCpServerId } from './MainCpServer';
 import {
   IDaemonApplication,
   DaemonApplicationId,
-} from '../src/apps/daemon/application/DaemonApplication';
+} from '../src/apps/daemon/application/node/DaemonApplication';
 import {
   ISharedApplication,
   SharedApplicationId,
-} from '../src/apps/shared/application/SharedApplication';
+} from '../src/apps/shared/application/node/SharedApplication';
 import {
   IPageletApplication,
   PageletApplicationId,
-} from '../src/apps/pagelet/application/PageletApplication';
-import { MAIN_RPC_SERVICE_PATH } from '../src/apps/pagelet/common';
+} from '../src/apps/pagelet/application/node/PageletApplication';
+import { MAIN_RPC_SERVICE_PATH } from '../src/apps/pagelet/application/common';
 
 export interface IAppApplication {
   start(): Promise<void>;
