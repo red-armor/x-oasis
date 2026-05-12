@@ -1,0 +1,25 @@
+{
+  "name": "@x-oasis-example/orchestrator-multi-page-router",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./out/main/main-process.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview"
+  },
+  "dependencies": {
+    "@x-oasis/async-call-rpc": "workspace:*",
+    "@x-oasis/async-call-rpc-electron": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.0",
+    "electron": ">=20.0.0",
+    "electron-vite": "^2.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.4.11"
+  }
+}
