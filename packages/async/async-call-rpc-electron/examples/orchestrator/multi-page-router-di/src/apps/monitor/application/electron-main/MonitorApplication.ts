@@ -31,6 +31,6 @@ export class MonitorApplication implements IMonitorApplication {
       MONITOR_PARTICIPANT_ID,
       MONITOR_WORKER_FILE
     );
-    this.appOrchestrator.registerMonitorProxyService();
+    await this.appOrchestrator.connectMonitor();
   }
 }

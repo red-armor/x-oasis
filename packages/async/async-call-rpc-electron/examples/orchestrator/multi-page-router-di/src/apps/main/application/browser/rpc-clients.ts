@@ -1,5 +1,4 @@
 import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
-import { clientHost } from '@x-oasis/async-call-rpc';
 import {
   IPageletService,
   PAGELET_SERVICE_PATH,
@@ -16,6 +15,6 @@ export const connectionPageletClient = client.getService(
   PAGELET_SERVICE_PATH
 ) as IPageletService;
 
-export const monitorPageletClient = clientHost
-  .registerClient(MONITOR_PAGELET_SERVICE_PATH, { channel: client.ipcChannel })
-  .createProxy() as unknown as IMonitorPageletService;
+export const monitorPageletClient = client.getService(
+  MONITOR_PAGELET_SERVICE_PATH
+) as unknown as IMonitorPageletService;

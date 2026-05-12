@@ -60,13 +60,6 @@ export class PageletWorker implements IPageletWorker {
         );
         const ch = proxy.getChannelFor(conn.peerId);
 
-        console.log(
-          'connect ',
-          conn.peerId,
-          this.config.rendererParticipantId,
-          ch
-        );
-
         if (ch && conn.peerId === this.config.rendererParticipantId) {
           serviceHost.registerService(PAGELET_SERVICE_PATH, {
             channel: ch,

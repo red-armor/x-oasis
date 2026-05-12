@@ -54,9 +54,10 @@ features:
 
 ### issue/ — Issue 记录
 
-| #     | 文件                                                                                                                     | 标题                                               | 概述                                                                                                |
-| ----- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| I-001 | [20260510-async-call-rpc-electron-heartbeat-ping-bug.md](./issue/20260510-async-call-rpc-electron-heartbeat-ping-bug.md) | async-call-rpc-electron 心跳 ping 失败导致连接断开 | 修复 createPageBridge 中 RPC 消息解析错误，心跳 ping 被错误转发到 renderer 进程导致连接频繁断开重连 |
+| #     | 文件                                                                                                                     | 标题                                                            | 概述                                                                                                         |
+| ----- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| I-001 | [20260510-async-call-rpc-electron-heartbeat-ping-bug.md](./issue/20260510-async-call-rpc-electron-heartbeat-ping-bug.md) | async-call-rpc-electron 心跳 ping 失败导致连接断开              | 修复 createPageBridge 中 RPC 消息解析错误，心跳 ping 被错误转发到 renderer 进程导致连接频繁断开重连          |
+| I-002 | [20260512-create-page-bridge-multi-port-routing.md](./issue/20260512-create-page-bridge-multi-port-routing.md)           | createPageBridge 多 port 路由导致 monitor / connection 服务互斥 | createPageBridge 原只支持单 port，多 utility process 连接时互斥；新增 serviceRoutes / defaultPeerId 路由机制 |
 
 ### reference/ — 参考手册
 

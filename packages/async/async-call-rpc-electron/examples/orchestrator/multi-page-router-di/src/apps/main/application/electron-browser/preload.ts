@@ -3,7 +3,10 @@ import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
 import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
 import { ORCHESTRATOR_CP_CHANNEL_NAME } from '@/apps/main/application/common/cp-config';
-import { PAGELET_SERVICE_PATH } from '@/services/pagelet-host/common';
+import {
+  PAGELET_SERVICE_PATH,
+  MONITOR_PAGELET_SERVICE_PATH,
+} from '@/services/pagelet-host/common';
 
 const channelName = ORCHESTRATOR_CP_CHANNEL_NAME;
 
@@ -11,6 +14,11 @@ const bridge = createPageBridge({
   ipcRenderer,
   channelName,
   description: `${channelName} bridge`,
+  serviceRoutes: {
+    [PAGELET_SERVICE_PATH]: 'connection',
+    [MONITOR_PAGELET_SERVICE_PATH]: 'monitor',
+  },
+  defaultPeerId: 'connection',
 });
 
 clientHost

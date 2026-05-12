@@ -36,6 +36,10 @@ export const wikiSidebar = {
         {
           "text": "I-001 async-call-rpc-electron 心跳 ping 失败导致连接断开",
           "link": "/issue/20260510-async-call-rpc-electron-heartbeat-ping-bug"
+        },
+        {
+          "text": "I-002 createPageBridge 多 port 路由导致 monitor / connection 服务互斥",
+          "link": "/issue/20260512-create-page-bridge-multi-port-routing"
         }
       ]
     }
