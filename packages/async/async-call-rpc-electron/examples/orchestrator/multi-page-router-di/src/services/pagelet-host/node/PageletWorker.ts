@@ -17,9 +17,11 @@ import {
 import {
   IDaemonService,
   DAEMON_SERVICE_PATH,
-  MONITOR_SERVICE_PATH,
-  IMonitorService,
 } from '@/apps/daemon/application/common';
+import {
+  DIAGNOSTICS_SERVICE_PATH,
+  IDiagnosticsService,
+} from '@/apps/daemon/diagnostics/common';
 
 export interface IPageletWorkerConfig {
   selfId: string;
@@ -39,7 +41,7 @@ export class PageletWorker implements IPageletWorker {
   private sharedClient: ISharedService | null = null;
   private daemonClient: IDaemonService | null = null;
   private mainClient: IMainRpcService | null = null;
-  private monitorClient: IMonitorService | null = null;
+  private diagnosticsClient: IDiagnosticsService | null = null;
 
   constructor(
     @inject(PageletWorkerConfigId) private readonly config: IPageletWorkerConfig
@@ -92,13 +94,13 @@ export class PageletWorker implements IPageletWorker {
                 this.mainClient?.mainPing(msg) ??
                 Promise.resolve('main not ready'),
               callMonitorGetSnapshot: (): Promise<any> =>
-                this.monitorClient?.getPerformanceSnapshot() ??
+                this.diagnosticsClient?.getPerformanceSnapshot() ??
                 Promise.resolve(null),
               onMonitorPerformanceUpdate: (
                 callback: (snapshot: any) => void
               ): (() => void) => {
-                if (!this.monitorClient) return () => {};
-                return this.monitorClient.onPerformanceUpdate(callback);
+                if (!this.diagnosticsClient) return () => {};
+                return this.diagnosticsClient.onPerformanceUpdate(callback);
               },
             },
           });
@@ -124,11 +126,11 @@ export class PageletWorker implements IPageletWorker {
       .registerClient(DAEMON_SERVICE_PATH, { channel: daemonConn.getChannel() })
       .createProxy() as unknown as IDaemonService;
 
-    this.monitorClient = clientHost
-      .registerClient(MONITOR_SERVICE_PATH, {
+    this.diagnosticsClient = clientHost
+      .registerClient(DIAGNOSTICS_SERVICE_PATH, {
         channel: daemonConn.getChannel(),
       })
-      .createProxy() as unknown as IMonitorService;
+      .createProxy() as unknown as IDiagnosticsService;
 
     console.log(
       `[${this.config.selfId}-worker] connected to shared & daemon (incl. monitor), waiting for ${this.config.rendererParticipantId} to connect`

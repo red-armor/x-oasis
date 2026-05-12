@@ -3,5 +3,4 @@ export type {
   PerformanceTotals,
   MonitorSnapshot,
   IDiagnosticsService,
-  IMonitorService,
-} from '@/apps/daemon/application/common';
+} from '@/apps/daemon/diagnostics/common';
