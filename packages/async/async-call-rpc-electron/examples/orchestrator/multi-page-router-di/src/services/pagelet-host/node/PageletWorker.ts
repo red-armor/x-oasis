@@ -17,6 +17,8 @@ import {
 import {
   IDaemonService,
   DAEMON_SERVICE_PATH,
+  MONITOR_SERVICE_PATH,
+  IMonitorService,
 } from '@/apps/daemon/application/common';
 
 export interface IPageletWorkerConfig {
@@ -37,6 +39,7 @@ export class PageletWorker implements IPageletWorker {
   private sharedClient: ISharedService | null = null;
   private daemonClient: IDaemonService | null = null;
   private mainClient: IMainRpcService | null = null;
+  private monitorClient: IMonitorService | null = null;
 
   constructor(
     @inject(PageletWorkerConfigId) private readonly config: IPageletWorkerConfig
@@ -88,6 +91,15 @@ export class PageletWorker implements IPageletWorker {
               callMainPing: (msg: string): Promise<string> =>
                 this.mainClient?.mainPing(msg) ??
                 Promise.resolve('main not ready'),
+              callMonitorGetSnapshot: (): Promise<any> =>
+                this.monitorClient?.getPerformanceSnapshot() ??
+                Promise.resolve(null),
+              onMonitorPerformanceUpdate: (
+                callback: (snapshot: any) => void
+              ): (() => void) => {
+                if (!this.monitorClient) return () => {};
+                return this.monitorClient.onPerformanceUpdate(callback);
+              },
             },
           });
           console.log(
@@ -112,8 +124,14 @@ export class PageletWorker implements IPageletWorker {
       .registerClient(DAEMON_SERVICE_PATH, { channel: daemonConn.getChannel() })
       .createProxy() as unknown as IDaemonService;
 
+    this.monitorClient = clientHost
+      .registerClient(MONITOR_SERVICE_PATH, {
+        channel: daemonConn.getChannel(),
+      })
+      .createProxy() as unknown as IMonitorService;
+
     console.log(
-      `[${this.config.selfId}-worker] connected to shared & daemon, waiting for ${this.config.rendererParticipantId} to connect`
+      `[${this.config.selfId}-worker] connected to shared & daemon (incl. monitor), waiting for ${this.config.rendererParticipantId} to connect`
     );
   }
 }

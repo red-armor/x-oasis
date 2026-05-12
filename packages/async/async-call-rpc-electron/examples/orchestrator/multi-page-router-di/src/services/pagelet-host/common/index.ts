@@ -12,6 +12,8 @@ export interface IPageletService {
   callDaemonEcho(msg: string): Promise<string>;
   callDaemonSystemStatus(): Promise<string>;
   callMainPing(msg: string): Promise<string>;
+  callMonitorGetSnapshot(): Promise<any>;
+  onMonitorPerformanceUpdate(callback: (snapshot: any) => void): () => void;
 }
 
 export const MAIN_RPC_SERVICE_PATH = 'main-rpc';

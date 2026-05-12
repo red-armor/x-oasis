@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import PageView from '@/apps/connection/application/browser/PageView';
+import MonitorPage from '@/apps/monitor/application/browser/MonitorPage';
 
 import {
   CONNECTION_PAGE,
+  ALL_PAGES,
   PageConfig,
 } from '@/apps/main/application/common/cp-config';
 import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
@@ -9,7 +12,7 @@ import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 export type { PageConfig };
 
 function App(): JSX.Element {
-  const page = CONNECTION_PAGE;
+  const [activePage, setActivePage] = useState<PageConfig>(CONNECTION_PAGE);
 
   return (
     <div
@@ -50,54 +53,62 @@ function App(): JSX.Element {
         </div>
 
         <div style={{ padding: '8px' }}>
-          <button
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '10px 12px',
-              fontSize: 13,
-              fontWeight: 600,
-              border: 'none',
-              borderRadius: 8,
-              backgroundColor: `${page.color}25`,
-              color: page.color,
-              cursor: 'default',
-              marginBottom: 2,
-              textAlign: 'left',
-            }}
-          >
-            <span
+          {ALL_PAGES.map((page) => (
+            <button
+              key={page.id}
+              onClick={() => setActivePage(page)}
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 6,
-                backgroundColor: page.color,
-                color: '#fff',
+                width: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 12,
-                fontWeight: 700,
-                flexShrink: 0,
+                gap: 10,
+                padding: '10px 12px',
+                fontSize: 13,
+                fontWeight: 600,
+                border: 'none',
+                borderRadius: 8,
+                backgroundColor:
+                  activePage.id === page.id ? `${page.color}25` : 'transparent',
+                color: activePage.id === page.id ? page.color : '#94a3b8',
+                cursor: 'pointer',
+                marginBottom: 2,
+                textAlign: 'left',
+                transition: 'all 0.15s ease',
               }}
             >
-              C
-            </span>
-            <div>
-              <div style={{ lineHeight: '16px' }}>{page.label}</div>
-              <div
+              <span
                 style={{
-                  fontSize: 10,
-                  color: `${page.color}99`,
-                  lineHeight: '14px',
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  backgroundColor:
+                    activePage.id === page.id ? page.color : '#334155',
+                  color: activePage.id === page.id ? '#fff' : '#94a3b8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  flexShrink: 0,
                 }}
               >
-                {page.description}
+                {page.id === 'connection' ? 'C' : 'M'}
+              </span>
+              <div>
+                <div style={{ lineHeight: '16px' }}>{page.label}</div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    color:
+                      activePage.id === page.id ? `${page.color}99` : '#64748b',
+                    lineHeight: '14px',
+                  }}
+                >
+                  {page.description}
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+          ))}
         </div>
 
         <div style={{ flex: 1 }} />
@@ -127,6 +138,8 @@ function App(): JSX.Element {
             {CONNECTION_PARTICIPANT_ID} ↔ shared
             <br />
             {CONNECTION_PARTICIPANT_ID} ↔ daemon
+            <br />
+            daemon → monitor-rpc
           </div>
         </div>
       </div>
@@ -139,7 +152,11 @@ function App(): JSX.Element {
           minWidth: 0,
         }}
       >
-        <PageView page={page} />
+        {activePage.id === 'connection' ? (
+          <PageView page={CONNECTION_PAGE} />
+        ) : (
+          <MonitorPage />
+        )}
       </div>
     </div>
   );

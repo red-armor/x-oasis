@@ -8,4 +8,13 @@ export const CONNECTION_PAGE = {
   description: 'Connection Management',
 } as const;
 
-export type PageConfig = typeof CONNECTION_PAGE;
+export const MONITOR_PAGE = {
+  id: 'monitor',
+  label: 'Monitor',
+  color: '#10b981',
+  description: 'Performance Monitor',
+} as const;
+
+export type PageConfig = typeof CONNECTION_PAGE | typeof MONITOR_PAGE;
+
+export const ALL_PAGES: PageConfig[] = [CONNECTION_PAGE, MONITOR_PAGE];
