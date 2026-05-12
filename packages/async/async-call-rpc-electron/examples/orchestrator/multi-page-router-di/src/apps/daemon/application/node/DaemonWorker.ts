@@ -6,7 +6,6 @@ import {
 import { RPCServiceHost } from '@x-oasis/async-call-rpc';
 
 import { DAEMON_SERVICE_PATH } from '@/apps/daemon/application/common';
-import { DIAGNOSTICS_SERVICE_PATH } from '@/apps/daemon/diagnostics/common';
 import { Diagnostics } from '@/apps/daemon/diagnostics/node/Diagnostics';
 
 export interface IDaemonWorker {
@@ -30,6 +29,8 @@ export class DaemonWorker implements IDaemonWorker {
       parentPort: process.parentPort as any,
       description: 'daemon→main IPC channel',
     });
+
+    const diagnostics = this.diagnostics;
 
     const daemonHandlers = {
       systemStatus: (): string => {
@@ -68,10 +69,6 @@ export class DaemonWorker implements IDaemonWorker {
         }, 1500);
         return () => clearInterval(interval);
       },
-    };
-
-    const diagnostics = this.diagnostics;
-    const monitorHandlers = {
       getPerformanceSnapshot: () => diagnostics.getPerformanceSnapshot(),
       onPerformanceUpdate: (callback: (snapshot: any) => void) =>
         diagnostics.onPerformanceUpdate(callback),
@@ -91,13 +88,9 @@ export class DaemonWorker implements IDaemonWorker {
             DAEMON_SERVICE_PATH,
             daemonHandlers
           );
-          perConnHost.registerServiceHandler(
-            DIAGNOSTICS_SERVICE_PATH,
-            monitorHandlers
-          );
           ch.setServiceHost(perConnHost);
           console.log(
-            `[daemon-worker] ${DAEMON_SERVICE_PATH} + ${DIAGNOSTICS_SERVICE_PATH} registered for ${conn.peerId}`
+            `[daemon-worker] ${DAEMON_SERVICE_PATH} registered for ${conn.peerId}`
           );
         }
       },

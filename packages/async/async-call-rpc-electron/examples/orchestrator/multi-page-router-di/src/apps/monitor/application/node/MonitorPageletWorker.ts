@@ -7,9 +7,9 @@ import { clientHost, RPCServiceHost } from '@x-oasis/async-call-rpc';
 
 import { MONITOR_PAGELET_SERVICE_PATH } from '@/services/pagelet-host/common';
 import {
-  DIAGNOSTICS_SERVICE_PATH,
-  IDiagnosticsService,
-} from '@/apps/daemon/diagnostics/common';
+  DAEMON_SERVICE_PATH,
+  IDaemonService,
+} from '@/apps/daemon/application/common';
 
 export const MonitorPageletWorkerId = createId('MonitorPageletWorker');
 
@@ -32,11 +32,11 @@ export class MonitorPageletWorker {
 
     const daemonConn = await proxy.connect('daemon');
 
-    const diagnosticsClient = clientHost
-      .registerClient(DIAGNOSTICS_SERVICE_PATH, {
+    const daemonClient = clientHost
+      .registerClient(DAEMON_SERVICE_PATH, {
         channel: daemonConn.getChannel(),
       })
-      .createProxy() as unknown as IDiagnosticsService;
+      .createProxy() as unknown as IDaemonService;
 
     const mainServiceHost = new RPCServiceHost();
 
@@ -50,9 +50,9 @@ export class MonitorPageletWorker {
 
     mainServiceHost.registerServiceHandler(MONITOR_PAGELET_SERVICE_PATH, {
       info: (): string => `monitor-pagelet ready (pid=${process.pid})`,
-      getSnapshot: (): any => diagnosticsClient.getPerformanceSnapshot(),
+      getSnapshot: (): any => daemonClient.getPerformanceSnapshot(),
       onPerformanceUpdate: (callback: (snapshot: any) => void) =>
-        diagnosticsClient.onPerformanceUpdate(callback),
+        daemonClient.onPerformanceUpdate(callback),
     });
 
     mainChannel.setServiceHost(mainServiceHost);
