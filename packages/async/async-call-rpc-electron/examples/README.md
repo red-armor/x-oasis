@@ -14,8 +14,8 @@ pnpm install
 cd packages/async/async-call-rpc-electron/examples/ipc-example
 pnpm start
 
-# utility-process-example：主进程 ↔ Utility 进程通信
-cd packages/async/async-call-rpc-electron/examples/utility-process-example
+# utility-process：主进程 ↔ Utility 进程通信
+cd packages/async/async-call-rpc-electron/examples/utility-process
 pnpm start
 ```
 
@@ -61,7 +61,7 @@ pnpm start
 
 > **注意**：渲染进程使用 `.js` 文件，因为 Electron 渲染进程的 V8 环境不支持 `tsx` 等 TypeScript 运行时编译器（Worker 线程不可用）。主进程通过 `NODE_OPTIONS='--import tsx'` 运行 TypeScript。
 
-### 2. `utility-process-example/` - UtilityProcess 通信
+### 2. `utility-process/` - UtilityProcess 通信
 
 用于将 CPU 密集型任务卸载到独立进程，不需要 UI 窗口。
 

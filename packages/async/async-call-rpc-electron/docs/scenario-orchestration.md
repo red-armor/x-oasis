@@ -1561,19 +1561,19 @@ Need direct MessagePort?
 
 ## Example Reference
 
-| Example                                              | Pattern                   | Approach                        | Subscription              |
-| ---------------------------------------------------- | ------------------------- | ------------------------------- | ------------------------- |
-| `ipc-example`                                        | Main ↔ Renderer           | Direct IPC                      | —                         |
-| `utility-process-example`                            | Main ↔ Utility            | Direct Utility                  | —                         |
-| `renderer-acquire-main-port-example`                 | Renderer ↔ Main (Port)    | Manual                          | —                         |
-| `renderer-acquire-main-port-orchestrator-example`    | Renderer ↔ Main (Port)    | Orchestrator                    | —                         |
-| `renderer-acquire-utility-port-example`              | Renderer ↔ Utility (Port) | Manual                          | —                         |
-| `renderer-acquire-utility-port-orchestrator-example` | Renderer ↔ Utility (Port) | Orchestrator                    | —                         |
-| `utility-acquire-main-port-example`                  | Utility ↔ Main (Port)     | Manual                          | —                         |
-| `utility-acquire-main-port-orchestrator-example`     | Utility ↔ Main (Port)     | Orchestrator                    | —                         |
-| `utility-acquire-utility-port-example`               | Utility ↔ Utility (Port)  | Manual                          | —                         |
-| `utility-acquire-utility-port-orchestrator-example`  | Utility ↔ Utility (Port)  | Orchestrator                    | —                         |
-| `pagelet-proxy-example`                              | Renderer ↔ Multi-Utility  | Orchestrator + ParticipantProxy | Event method + Observable |
+| Example                                      | Pattern                   | Approach                        | Subscription              |
+| -------------------------------------------- | ------------------------- | ------------------------------- | ------------------------- |
+| `ipc-example`                                | Main ↔ Renderer           | Direct IPC                      | —                         |
+| `utility-process`                            | Main ↔ Utility            | Direct Utility                  | —                         |
+| `renderer-acquire-main-port`                 | Renderer ↔ Main (Port)    | Manual                          | —                         |
+| `renderer-acquire-main-port-orchestrator`    | Renderer ↔ Main (Port)    | Orchestrator                    | —                         |
+| `renderer-acquire-utility-port`              | Renderer ↔ Utility (Port) | Manual                          | —                         |
+| `renderer-acquire-utility-port-orchestrator` | Renderer ↔ Utility (Port) | Orchestrator                    | —                         |
+| `utility-acquire-main-port`                  | Utility ↔ Main (Port)     | Manual                          | —                         |
+| `utility-acquire-main-port-orchestrator`     | Utility ↔ Main (Port)     | Orchestrator                    | —                         |
+| `utility-acquire-utility-port`               | Utility ↔ Utility (Port)  | Manual                          | —                         |
+| `utility-acquire-utility-port-orchestrator`  | Utility ↔ Utility (Port)  | Orchestrator                    | —                         |
+| `pagelet-proxy`                              | Renderer ↔ Multi-Utility  | Orchestrator + ParticipantProxy | Event method + Observable |
 
 ---
 

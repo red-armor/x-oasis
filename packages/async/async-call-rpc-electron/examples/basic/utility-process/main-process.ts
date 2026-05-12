@@ -2,7 +2,7 @@
  * @x-oasis/async-call-rpc-electron — UtilityProcess 示例（主进程侧）
  *
  * 启动方式：
- *   cd packages/async/async-call-rpc-electron/examples/utility-process-example
+ *   cd packages/async/async-call-rpc-electron/examples/utility-process
  *   npm install    # 安装 electron（约 90MB 下载）
  *   npm start      # 启动 Electron 应用
  *

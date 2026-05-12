@@ -866,10 +866,10 @@ const unsub = pageletClient.onCpuUsage((data) => {
 
 See the [examples directory](https://github.com/red-armor/x-oasis/tree/main/packages/async/async-call-rpc-electron/examples) for complete working samples:
 
-- `renderer-acquire-main-port-orchestrator-example`: Renderer ↔ Main
-- `utility-acquire-main-port-orchestrator-example`: Utility ↔ Main
-- `renderer-acquire-utility-port-orchestrator-example`: Renderer ↔ Utility
-- `utility-acquire-utility-port-orchestrator-example`: Utility ↔ Utility
+- `renderer-acquire-main-port-orchestrator`: Renderer ↔ Main
+- `utility-acquire-main-port-orchestrator`: Utility ↔ Main
+- `renderer-acquire-utility-port-orchestrator`: Renderer ↔ Utility
+- `utility-acquire-utility-port-orchestrator`: Utility ↔ Utility
 
 ## See Also
 
