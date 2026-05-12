@@ -8,6 +8,7 @@ import {
   IMainCpServer,
   MainCpServerId,
 } from '@/apps/main/application/electron-main/MainCpServer';
+import { pidNameRegistry } from '@/services/main-metrics/electron-main/pidNameRegistry';
 
 export interface IPageletProcess {
   spawn(pageletId: string, workerFileName: string): Promise<void>;
@@ -16,6 +17,11 @@ export interface IPageletProcess {
 }
 
 export const PageletProcessId = createId('PageletProcess');
+
+const PAGELET_NAMES: Record<string, string> = {
+  connection: 'Connection',
+  monitor: 'Monitor',
+};
 
 @injectable()
 export class PageletProcess implements IPageletProcess {
@@ -41,6 +47,8 @@ export class PageletProcess implements IPageletProcess {
     this.cpServer
       .getOrchestrator()
       .registerParticipant(pageletId, channel, 'utility');
+
+    pidNameRegistry.register(proc, PAGELET_NAMES[pageletId] || pageletId);
 
     console.log(`[PageletProcess] spawned ${pageletId}`);
   }

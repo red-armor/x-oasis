@@ -8,6 +8,7 @@ import {
   IMainCpServer,
   MainCpServerId,
 } from '@/apps/main/application/electron-main/MainCpServer';
+import { pidNameRegistry } from '@/services/main-metrics/electron-main/pidNameRegistry';
 import { DAEMON_PARTICIPANT_ID } from '@/apps/daemon/application/common';
 
 export interface IDaemonProcess {
@@ -35,6 +36,8 @@ export class DaemonProcess implements IDaemonProcess {
     this.cpServer
       .getOrchestrator()
       .registerParticipant(DAEMON_PARTICIPANT_ID, channel, 'utility');
+
+    pidNameRegistry.register(proc, 'Daemon');
 
     console.log('[DaemonProcess] spawned');
   }

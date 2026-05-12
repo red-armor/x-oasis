@@ -3,10 +3,14 @@ import {
   ElectronUtilityProcessChannel,
   createParticipantProxy,
 } from '@x-oasis/async-call-rpc-electron';
-import { RPCServiceHost } from '@x-oasis/async-call-rpc';
+import { clientHost, RPCServiceHost } from '@x-oasis/async-call-rpc';
 
 import { DAEMON_SERVICE_PATH } from '@/apps/daemon/application/common';
 import { Diagnostics } from '@/apps/daemon/diagnostics/node/Diagnostics';
+import {
+  MAIN_METRICS_SERVICE_PATH,
+  IMainMetricsService,
+} from '@/services/main-metrics/common';
 
 export interface IDaemonWorker {
   boot(): void;
@@ -29,6 +33,12 @@ export class DaemonWorker implements IDaemonWorker {
       parentPort: process.parentPort as any,
       description: 'daemon→main IPC channel',
     });
+
+    const mainMetricsClient = clientHost
+      .registerClient(MAIN_METRICS_SERVICE_PATH, { channel: mainChannel })
+      .createProxy() as unknown as IMainMetricsService;
+
+    this.diagnostics.setMetricsProvider(mainMetricsClient);
 
     const diagnostics = this.diagnostics;
 

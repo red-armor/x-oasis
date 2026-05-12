@@ -1,48 +1,71 @@
 import { MonitorSnapshot, ProcessRow } from '../common/types';
+import { AppMetric, IMainMetricsService } from '@/services/main-metrics/common';
 
 export class Diagnostics {
   private listeners: Set<(snapshot: MonitorSnapshot) => void> = new Set();
   private interval: ReturnType<typeof setInterval> | null = null;
+  private metricsProvider: IMainMetricsService | null = null;
+  private lastCpuUsage: NodeJS.CpuUsage | null = null;
+  private lastCpuTime: number | null = null;
 
-  private collectSnapshot(): MonitorSnapshot {
+  setMetricsProvider(provider: IMainMetricsService): void {
+    this.metricsProvider = provider;
+  }
+
+  private async collectSnapshot(): Promise<MonitorSnapshot> {
     const memUsage = process.memoryUsage();
-    const cpuUsage = process.cpuUsage();
+    const now = Date.now();
 
-    const mainProcess: ProcessRow = {
+    let daemonCpu = 0;
+    const currentCpu = process.cpuUsage();
+    if (this.lastCpuUsage && this.lastCpuTime) {
+      const elapsedUs =
+        currentCpu.user -
+        this.lastCpuUsage.user +
+        (currentCpu.system - this.lastCpuUsage.system);
+      const elapsedMs = now - this.lastCpuTime;
+      daemonCpu = +((elapsedUs / 1000 / elapsedMs) * 100).toFixed(2);
+    }
+    this.lastCpuUsage = currentCpu;
+    this.lastCpuTime = now;
+
+    const daemonSelf: ProcessRow = {
       pid: process.pid,
-      name: 'daemon',
+      name: 'Daemon',
       type: 'Utility',
-      cpu: +(cpuUsage.user / 1000).toFixed(2),
+      cpu: daemonCpu,
       memory: +(memUsage.rss / 1024 / 1024).toFixed(2),
     };
 
-    const simulatedProcesses: ProcessRow[] = [
-      mainProcess,
-      {
-        pid: process.pid + 1,
-        name: 'gc-worker',
-        type: 'Utility',
-        cpu: +(Math.random() * 5).toFixed(2),
-        memory: +((memUsage.heapUsed / 1024 / 1024) * 0.3).toFixed(2),
-      },
-      {
-        pid: process.pid + 2,
-        name: 'log-collector',
-        type: 'Utility',
-        cpu: +(Math.random() * 3).toFixed(2),
-        memory: +(Math.random() * 20 + 5).toFixed(2),
-      },
-      {
-        pid: process.pid + 3,
-        name: 'health-checker',
-        type: 'Utility',
-        cpu: +(Math.random() * 2).toFixed(2),
-        memory: +(Math.random() * 10 + 3).toFixed(2),
-      },
+    let appMetrics: AppMetric[] = [];
+    if (this.metricsProvider) {
+      try {
+        appMetrics = await this.metricsProvider.getAppMetrics();
+      } catch {}
+    }
+
+    const processes: ProcessRow[] = [
+      daemonSelf,
+      ...appMetrics
+        .filter(
+          (m) =>
+            m.type !== 'GPU' &&
+            m.name !== 'Network Service' &&
+            m.pid !== process.pid
+        )
+        .map(
+          (m): ProcessRow => ({
+            pid: m.pid,
+            name: m.name,
+            type: m.type,
+            cpu: +m.cpu.percentCPUUsage.toFixed(2),
+            memory: +(m.memory.workingSetSize / 1024).toFixed(2),
+          })
+        ),
     ];
 
-    const totalCpu = simulatedProcesses.reduce((s, p) => s + p.cpu, 0);
-    const totalMem = simulatedProcesses.reduce((s, p) => s + p.memory, 0);
+    const totalCpu = processes.reduce((s, p) => s + p.cpu, 0);
+    const totalMem = processes.reduce((s, p) => s + p.memory, 0);
 
     return {
       timestamp: Date.now(),
@@ -50,19 +73,21 @@ export class Diagnostics {
         cpu: +totalCpu.toFixed(2),
         memory: +totalMem.toFixed(2),
       },
-      processes: simulatedProcesses,
+      processes,
+      pidTree: null,
     };
   }
 
   private startRoutine(): void {
     if (this.interval) return;
     this.interval = setInterval(() => {
-      const snapshot = this.collectSnapshot();
-      for (const cb of this.listeners) {
-        try {
-          cb(snapshot);
-        } catch {}
-      }
+      this.collectSnapshot().then((snapshot) => {
+        for (const cb of this.listeners) {
+          try {
+            cb(snapshot);
+          } catch {}
+        }
+      });
     }, 2000);
   }
 
@@ -73,7 +98,7 @@ export class Diagnostics {
     }
   }
 
-  getPerformanceSnapshot(): MonitorSnapshot {
+  async getPerformanceSnapshot(): Promise<MonitorSnapshot> {
     return this.collectSnapshot();
   }
 

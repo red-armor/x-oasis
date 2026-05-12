@@ -322,7 +322,7 @@ function TopCard({
           const v = p[field];
           const ratio = Math.min(1, max > 0 ? v / max : 0);
           return (
-            <li key={p.pid} className="space-y-1">
+            <li key={`${p.pid}-${p.name}`} className="space-y-1">
               <div className="flex items-center justify-between gap-2 text-[12px]">
                 <span className="flex min-w-0 items-center gap-2">
                   <span

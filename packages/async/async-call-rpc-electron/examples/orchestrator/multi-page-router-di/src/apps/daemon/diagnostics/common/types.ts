@@ -13,14 +13,24 @@ export interface PerformanceTotals {
   memory: number;
 }
 
+export interface PidNodeJson {
+  pid: string;
+  ppid: string;
+  cpu: string;
+  mem: string;
+  command: string;
+  children: PidNodeJson[];
+}
+
 export interface MonitorSnapshot {
   timestamp: number;
   totals: PerformanceTotals;
   processes: ProcessRow[];
+  pidTree: PidNodeJson | null;
 }
 
 export interface IDiagnosticsService {
-  getPerformanceSnapshot(): MonitorSnapshot;
+  getPerformanceSnapshot(): Promise<MonitorSnapshot>;
   onPerformanceUpdate(
     callback: (snapshot: MonitorSnapshot) => void
   ): () => void;

@@ -8,6 +8,7 @@ import {
   IMainCpServer,
   MainCpServerId,
 } from '@/apps/main/application/electron-main/MainCpServer';
+import { pidNameRegistry } from '@/services/main-metrics/electron-main/pidNameRegistry';
 import { SHARED_PARTICIPANT_ID } from '@/apps/shared/application/common';
 
 export interface ISharedProcess {
@@ -35,6 +36,8 @@ export class SharedProcess implements ISharedProcess {
     this.cpServer
       .getOrchestrator()
       .registerParticipant(SHARED_PARTICIPANT_ID, channel, 'utility');
+
+    pidNameRegistry.register(proc, 'Shared');
 
     console.log('[SharedProcess] spawned');
   }
