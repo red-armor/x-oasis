@@ -3,7 +3,10 @@ import useOrchestratorDashboard, {
   OrchestratorAPI,
 } from '@shared-ui/useOrchestratorDashboard';
 import { client, pageletClient } from './rpc-clients';
-import { getPageletId, PageConfig } from '../common/cp-config';
+import {
+  getPageletId,
+  PageConfig,
+} from './apps/main/application/common/cp-config';
 
 type TabId = 'pagelet' | 'shared' | 'daemon' | 'main';
 

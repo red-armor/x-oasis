@@ -7,7 +7,7 @@ import { join } from 'path';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../../../electron-main/MainCpServer';
+} from '../../../main/application/electron-main/MainCpServer';
 import { SHARED_PARTICIPANT_ID } from '../common';
 
 export interface ISharedProcess {

@@ -11,7 +11,12 @@ export default defineConfig({
     build: {
       outDir: 'out/main',
       rollupOptions: {
-        input: { main: resolve(__dirname, 'electron-main/main.ts') },
+        input: {
+          main: resolve(
+            __dirname,
+            'src/apps/main/application/electron-main/main.ts'
+          ),
+        },
         output: { entryFileNames: 'main-process.js', format: 'cjs' },
         external: ['electron'],
       },
@@ -27,7 +32,10 @@ export default defineConfig({
       outDir: 'out/preload',
       rollupOptions: {
         input: {
-          preload: resolve(__dirname, 'electron-browser/preload.ts'),
+          preload: resolve(
+            __dirname,
+            'src/apps/main/application/electron-browser/preload.ts'
+          ),
         },
         output: {
           format: 'cjs',

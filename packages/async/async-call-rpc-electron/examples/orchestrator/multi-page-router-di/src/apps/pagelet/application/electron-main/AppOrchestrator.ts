@@ -4,9 +4,9 @@ import { RPCServiceHost } from '@x-oasis/async-call-rpc';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../../../electron-main/MainCpServer';
+} from '../../../main/application/electron-main/MainCpServer';
 import { IPageletProcess, PageletProcessId } from './PageletProcess';
-import { ORCHESTRATOR_SERVICE_PATH } from '../../../../../common/types';
+import { ORCHESTRATOR_SERVICE_PATH } from '../../../main/application/common/types';
 import { RENDERER_PARTICIPANT_ID } from '../common';
 
 export interface IOrchestratorService {

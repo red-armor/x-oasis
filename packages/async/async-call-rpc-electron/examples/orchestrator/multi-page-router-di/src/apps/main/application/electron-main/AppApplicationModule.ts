@@ -5,31 +5,31 @@ import { WindowManager, WindowManagerId } from './WindowManager';
 import {
   DaemonProcess,
   DaemonProcessId,
-} from '../src/apps/daemon/application/electron-main/DaemonProcess';
+} from '../../../daemon/application/electron-main/DaemonProcess';
 import {
   DaemonApplication,
   DaemonApplicationId,
-} from '../src/apps/daemon/application/node/DaemonApplication';
+} from '../../../daemon/application/node/DaemonApplication';
 import {
   SharedProcess,
   SharedProcessId,
-} from '../src/apps/shared/application/electron-main/SharedProcess';
+} from '../../../shared/application/electron-main/SharedProcess';
 import {
   SharedApplication,
   SharedApplicationId,
-} from '../src/apps/shared/application/node/SharedApplication';
+} from '../../../shared/application/node/SharedApplication';
 import {
   PageletProcess,
   PageletProcessId,
-} from '../src/apps/pagelet/application/electron-main/PageletProcess';
+} from '../../../pagelet/application/electron-main/PageletProcess';
 import {
   AppOrchestrator,
   AppOrchestratorId,
-} from '../src/apps/pagelet/application/electron-main/AppOrchestrator';
+} from '../../../pagelet/application/electron-main/AppOrchestrator';
 import {
   PageletApplication,
   PageletApplicationId,
-} from '../src/apps/pagelet/application/node/PageletApplication';
+} from '../../../pagelet/application/node/PageletApplication';
 import { AppApplication, AppApplicationId } from './AppApplication';
 
 export default new Registry((bind) => {
