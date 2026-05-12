@@ -12,10 +12,10 @@ import {
   SharedApplicationId,
 } from '../../../shared/application/node/SharedApplication';
 import {
-  IPageletApplication,
-  PageletApplicationId,
-} from '../../../pagelet/application/node/PageletApplication';
-import { MAIN_RPC_SERVICE_PATH } from '../../../pagelet/application/common';
+  IConnectionApplication,
+  ConnectionApplicationId,
+} from '../../../connection/application/node/ConnectionApplication';
+import { MAIN_RPC_SERVICE_PATH } from '../../../../services/pagelet-host/common';
 
 export interface IAppApplication {
   start(): Promise<void>;
@@ -30,8 +30,8 @@ export class AppApplication implements IAppApplication {
     @inject(MainCpServerId) private readonly mainCpServer: IMainCpServer,
     @inject(DaemonApplicationId) private readonly daemonApp: IDaemonApplication,
     @inject(SharedApplicationId) private readonly sharedApp: ISharedApplication,
-    @inject(PageletApplicationId)
-    private readonly pageletApp: IPageletApplication
+    @inject(ConnectionApplicationId)
+    private readonly connectionApp: IConnectionApplication
   ) {}
 
   async start(): Promise<void> {
@@ -51,7 +51,7 @@ export class AppApplication implements IAppApplication {
 
     await Promise.all([this.sharedApp.start(), this.daemonApp.start()]);
 
-    await this.pageletApp.start();
+    await this.connectionApp.start();
 
     console.log('[AppApplication] start() done');
   }

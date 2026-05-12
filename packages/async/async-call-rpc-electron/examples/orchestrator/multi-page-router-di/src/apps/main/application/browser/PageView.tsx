@@ -3,7 +3,8 @@ import useOrchestratorDashboard, {
   OrchestratorAPI,
 } from '@shared-ui/useOrchestratorDashboard';
 import { client, pageletClient } from './rpc-clients';
-import { getPageletId, PageConfig } from '../common/cp-config';
+import { PageConfig } from '../common/cp-config';
+import { CONNECTION_PARTICIPANT_ID } from '../../../../services/pagelet-host/common';
 
 type TabId = 'pagelet' | 'shared' | 'daemon' | 'main';
 
@@ -35,13 +36,13 @@ interface PageViewProps {
   page: PageConfig;
 }
 
-function createPageApi(pageId: string): OrchestratorAPI {
+function createPageApi(): OrchestratorAPI {
   return {
-    connect: () => client.connect(pageId),
-    disconnect: () => client.disconnect(pageId),
-    simulateLost: () => client.simulateLost(pageId),
-    getStatus: () => client.getStatus(pageId),
-    killUtility: () => client.killUtility(pageId),
+    connect: () => client.connect(),
+    disconnect: () => client.disconnect(),
+    simulateLost: () => client.simulateLost(),
+    getStatus: () => client.getStatus(),
+    killUtility: () => client.killUtility(),
     onStateChange: client.onStateChange.bind(client),
     onReady: client.onReady.bind(client),
     onDisconnected: client.onDisconnected.bind(client),
@@ -58,8 +59,8 @@ function PageView({ page }: PageViewProps): JSX.Element {
   const [loading, setLoading] = useState<string | null>(null);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
 
-  const pageletId = getPageletId(page.id);
-  const pageApi = useMemo(() => createPageApi(page.id), [page.id]);
+  const pageApi = useMemo(() => createPageApi(), []);
+  const pageletId = CONNECTION_PARTICIPANT_ID;
 
   const TABS: TabDef[] = [
     {

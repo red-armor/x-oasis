@@ -1,27 +1,12 @@
-import { useState } from 'react';
 import PageView from './PageView';
 
-import { PAGES, getPageletId, PageConfig } from '../common/cp-config';
+import { CONNECTION_PAGE, PageConfig } from '../common/cp-config';
+import { CONNECTION_PARTICIPANT_ID } from '../../../../services/pagelet-host/common';
 
-export { getPageletId };
 export type { PageConfig };
 
 function App(): JSX.Element {
-  const [activePageId, setActivePageId] = useState<string>('pageA');
-  const [visited, setVisited] = useState<Set<string>>(new Set(['pageA']));
-
-  const pageletId = getPageletId(activePageId);
-
-  const handleSwitch = (pageId: string) => {
-    if (pageId === activePageId) return;
-    setActivePageId(pageId);
-    setVisited((prev) => {
-      if (prev.has(pageId)) return prev;
-      const next = new Set(prev);
-      next.add(pageId);
-      return next;
-    });
-  };
+  const page = CONNECTION_PAGE;
 
   return (
     <div
@@ -62,62 +47,54 @@ function App(): JSX.Element {
         </div>
 
         <div style={{ padding: '8px' }}>
-          {PAGES.map((page) => {
-            const active = page.id === activePageId;
-            return (
-              <button
-                key={page.id}
-                onClick={() => handleSwitch(page.id)}
+          <button
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 12px',
+              fontSize: 13,
+              fontWeight: 600,
+              border: 'none',
+              borderRadius: 8,
+              backgroundColor: `${page.color}25`,
+              color: page.color,
+              cursor: 'default',
+              marginBottom: 2,
+              textAlign: 'left',
+            }}
+          >
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                backgroundColor: page.color,
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 12,
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
+            >
+              C
+            </span>
+            <div>
+              <div style={{ lineHeight: '16px' }}>{page.label}</div>
+              <div
                 style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '10px 12px',
-                  fontSize: 13,
-                  fontWeight: active ? 600 : 400,
-                  border: 'none',
-                  borderRadius: 8,
-                  backgroundColor: active ? `${page.color}25` : 'transparent',
-                  color: active ? page.color : '#94a3b8',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  marginBottom: 2,
-                  textAlign: 'left',
+                  fontSize: 10,
+                  color: `${page.color}99`,
+                  lineHeight: '14px',
                 }}
               >
-                <span
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 6,
-                    backgroundColor: active ? page.color : '#475569',
-                    color: active ? '#fff' : '#94a3b8',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    flexShrink: 0,
-                  }}
-                >
-                  {page.id.replace('page', '')}
-                </span>
-                <div>
-                  <div style={{ lineHeight: '16px' }}>{page.label}</div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: active ? `${page.color}99` : '#64748b',
-                      lineHeight: '14px',
-                    }}
-                  >
-                    {page.description}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+                {page.description}
+              </div>
+            </div>
+          </button>
         </div>
 
         <div style={{ flex: 1 }} />
@@ -142,11 +119,11 @@ function App(): JSX.Element {
               fontFamily: 'monospace',
             }}
           >
-            renderer ↔ {pageletId}
+            renderer ↔ {CONNECTION_PARTICIPANT_ID}
             <br />
-            {pageletId} ↔ shared
+            {CONNECTION_PARTICIPANT_ID} ↔ shared
             <br />
-            {pageletId} ↔ daemon
+            {CONNECTION_PARTICIPANT_ID} ↔ daemon
           </div>
         </div>
       </div>
@@ -159,24 +136,7 @@ function App(): JSX.Element {
           minWidth: 0,
         }}
       >
-        {PAGES.map((page) => {
-          const active = page.id === activePageId;
-          const shouldRender = visited.has(page.id);
-          if (!shouldRender) return null;
-          return (
-            <div
-              key={page.id}
-              style={{
-                flex: 1,
-                display: active ? 'flex' : 'none',
-                flexDirection: 'column',
-                minWidth: 0,
-              }}
-            >
-              <PageView page={page} />
-            </div>
-          );
-        })}
+        <PageView page={page} />
       </div>
     </div>
   );

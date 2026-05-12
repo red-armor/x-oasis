@@ -21,15 +21,15 @@ import {
 import {
   PageletProcess,
   PageletProcessId,
-} from '../../../pagelet/application/electron-main/PageletProcess';
+} from '../../../../services/pagelet-host/electron-main/PageletProcess';
 import {
   AppOrchestrator,
   AppOrchestratorId,
-} from '../../../pagelet/application/electron-main/AppOrchestrator';
+} from '../../../../services/pagelet-host/electron-main/AppOrchestrator';
 import {
-  PageletApplication,
-  PageletApplicationId,
-} from '../../../pagelet/application/node/PageletApplication';
+  ConnectionApplication,
+  ConnectionApplicationId,
+} from '../../../connection/application/node/ConnectionApplication';
 import { AppApplication, AppApplicationId } from './AppApplication';
 
 export default new Registry((bind) => {
@@ -44,7 +44,7 @@ export default new Registry((bind) => {
 
   bind(PageletProcessId).to(PageletProcess);
   bind(AppOrchestratorId).to(AppOrchestrator);
-  bind(PageletApplicationId).to(PageletApplication);
+  bind(ConnectionApplicationId).to(ConnectionApplication);
 
   bind(AppApplicationId).to(AppApplication);
 });

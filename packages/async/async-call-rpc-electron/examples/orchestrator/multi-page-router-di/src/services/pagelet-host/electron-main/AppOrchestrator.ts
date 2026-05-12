@@ -4,17 +4,17 @@ import { RPCServiceHost } from '@x-oasis/async-call-rpc';
 import {
   IMainCpServer,
   MainCpServerId,
-} from '../../../main/application/electron-main/MainCpServer';
+} from '../../../apps/main/application/electron-main/MainCpServer';
 import { IPageletProcess, PageletProcessId } from './PageletProcess';
-import { ORCHESTRATOR_SERVICE_PATH } from '../../../main/application/common/types';
-import { RENDERER_PARTICIPANT_ID } from '../common';
+import { ORCHESTRATOR_SERVICE_PATH } from '../../../apps/main/application/common/types';
+import { RENDERER_PARTICIPANT_ID, CONNECTION_PARTICIPANT_ID } from '../common';
 
 export interface IOrchestratorService {
-  connect(pageId: string): Promise<any>;
-  disconnect(pageId: string): Promise<void>;
-  simulateLost(pageId: string): void;
-  getStatus(pageId: string): Promise<any>;
-  killUtility(pageId: string): void;
+  connect(): Promise<any>;
+  disconnect(): Promise<void>;
+  simulateLost(): void;
+  getStatus(): Promise<any>;
+  killUtility(): void;
   onStateChange(callback: (event: any) => void): void;
   onReady(callback: (event: any) => void): void;
   onDisconnected(callback: (event: any) => void): void;
@@ -47,12 +47,11 @@ export class AppOrchestrator implements IAppOrchestrator {
       channel: rendererIpcChannel,
       serviceHost: this.pageServiceHost,
       handlers: {
-        async connect(pageId: string): Promise<any> {
-          const pageletId = getPageletId(pageId);
+        async connect(): Promise<any> {
           try {
             const info = await orchestrator.connect(
               RENDERER_PARTICIPANT_ID,
-              pageletId
+              CONNECTION_PARTICIPANT_ID
             );
             return {
               connectionId: info.connectionId,
@@ -66,28 +65,25 @@ export class AppOrchestrator implements IAppOrchestrator {
             return { error: err.message };
           }
         },
-        async disconnect(pageId: string): Promise<void> {
-          const pageletId = getPageletId(pageId);
+        async disconnect(): Promise<void> {
           const info = orchestrator.getConnectionInfo(
             RENDERER_PARTICIPANT_ID,
-            pageletId
+            CONNECTION_PARTICIPANT_ID
           );
           if (info) {
             await orchestrator.disconnect(info.connectionId);
           }
         },
-        simulateLost(pageId: string): void {
-          const pageletId = getPageletId(pageId);
+        simulateLost(): void {
           orchestrator.handleParticipantLost(
-            pageletId,
+            CONNECTION_PARTICIPANT_ID,
             'simulated process exit'
           );
         },
-        async getStatus(pageId: string): Promise<any> {
-          const pageletId = getPageletId(pageId);
+        async getStatus(): Promise<any> {
           const info = orchestrator.getConnectionInfo(
             RENDERER_PARTICIPANT_ID,
-            pageletId
+            CONNECTION_PARTICIPANT_ID
           );
           if (!info) return null;
           const stats = orchestrator.getConnectionStats(info.connectionId);
@@ -110,9 +106,8 @@ export class AppOrchestrator implements IAppOrchestrator {
               : null,
           };
         },
-        killUtility: (pageId: string): void => {
-          const pageletId = getPageletId(pageId);
-          this.pageletProcess.kill(pageletId);
+        killUtility: (): void => {
+          this.pageletProcess.kill(CONNECTION_PARTICIPANT_ID);
         },
         onStateChange(remoteCallback: (event: any) => void) {
           orchestrator.onStateChange((event) => remoteCallback(event));
@@ -138,8 +133,4 @@ export class AppOrchestrator implements IAppOrchestrator {
       },
     });
   }
-}
-
-function getPageletId(pageId: string): string {
-  return `pagelet-${pageId.replace('page', '').toUpperCase()}`;
 }

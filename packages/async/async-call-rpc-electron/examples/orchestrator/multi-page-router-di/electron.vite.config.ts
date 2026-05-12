@@ -59,16 +59,8 @@ export default defineConfig({
               outName: 'shared-worker',
             },
             {
-              entry: 'src/apps/pagelet/application/node/pagelet-A-main.ts',
-              outName: 'pagelet-A-worker',
-            },
-            {
-              entry: 'src/apps/pagelet/application/node/pagelet-B-main.ts',
-              outName: 'pagelet-B-worker',
-            },
-            {
-              entry: 'src/apps/pagelet/application/node/pagelet-C-main.ts',
-              outName: 'pagelet-C-worker',
+              entry: 'src/apps/connection/application/node/main.ts',
+              outName: 'connection-worker',
             },
           ];
           for (const w of workers) {

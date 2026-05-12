@@ -1,6 +1,6 @@
 export const RENDERER_PARTICIPANT_ID = 'renderer';
 
-export const PAGELET_IDS = ['pagelet-A', 'pagelet-B', 'pagelet-C'];
+export const CONNECTION_PARTICIPANT_ID = 'connection';
 
 export const PAGELET_SERVICE_PATH = 'pagelet-api';
 

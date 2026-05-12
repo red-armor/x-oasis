@@ -13,11 +13,11 @@ import {
 import {
   ISharedService,
   SHARED_SERVICE_PATH,
-} from '../../../shared/application/common';
+} from '../../../apps/shared/application/common';
 import {
   IDaemonService,
   DAEMON_SERVICE_PATH,
-} from '../../../daemon/application/common';
+} from '../../../apps/daemon/application/common';
 
 export interface IPageletWorkerConfig {
   selfId: string;

@@ -3,9 +3,10 @@ import {
   PageletWorker,
   PageletWorkerId,
   PageletWorkerConfigId,
-} from './PageletWorker';
+} from '../../../../services/pagelet-host/node/PageletWorker';
+import { CONNECTION_PARTICIPANT_ID } from '../../../../services/pagelet-host/common';
 
-const SELF_ID = 'pagelet-C';
+const SELF_ID = CONNECTION_PARTICIPANT_ID;
 const RENDERER_ID = 'renderer';
 
 const container = new Container();
