@@ -8,6 +8,7 @@ import {
 } from '@/apps/main/application/browser/rpc-clients';
 import { PageConfig } from '@/apps/main/application/common/cp-config';
 import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
+import { Button } from '@/ui/components/ui/button';
 
 type TabId = 'pagelet' | 'shared' | 'daemon' | 'main';
 
@@ -428,54 +429,32 @@ function PageView({ page }: PageViewProps): JSX.Element {
           >
             Actions
           </div>
-          <button
+          <Button
             onClick={dashboard.onConnect}
             disabled={isReady}
-            style={{
-              padding: '5px 14px',
-              fontSize: 12,
-              fontWeight: 600,
-              border: 'none',
-              borderRadius: 6,
-              backgroundColor: isReady ? '#d1d5db' : page.color,
-              color: '#fff',
-              cursor: isReady ? 'not-allowed' : 'pointer',
-            }}
+            size="sm"
+            className="w-full"
           >
             Connect
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={dashboard.onDisconnect}
             disabled={!isReady}
-            style={{
-              padding: '5px 14px',
-              fontSize: 12,
-              fontWeight: 600,
-              border: 'none',
-              borderRadius: 6,
-              backgroundColor: isReady ? '#ef4444' : '#d1d5db',
-              color: '#fff',
-              cursor: isReady ? 'pointer' : 'not-allowed',
-            }}
+            variant="destructive"
+            size="sm"
+            className="w-full"
           >
             Disconnect
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={dashboard.onSimulateLost}
             disabled={!isReady}
-            style={{
-              padding: '5px 14px',
-              fontSize: 12,
-              fontWeight: 600,
-              border: isReady ? '1px solid #f59e0b' : '1px solid #d1d5db',
-              borderRadius: 6,
-              backgroundColor: isReady ? '#fffbeb' : '#f9fafb',
-              color: isReady ? '#b45309' : '#9ca3af',
-              cursor: isReady ? 'pointer' : 'not-allowed',
-            }}
+            variant="outline"
+            size="sm"
+            className="w-full"
           >
             Sim Lost
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -492,25 +471,21 @@ function PageView({ page }: PageViewProps): JSX.Element {
         }}
       >
         {TABS.map((tab) => (
-          <button
+          <Button
             key={tab.id}
+            variant="ghost"
             onClick={() => setActiveTab(tab.id)}
+            className="flex-1"
             style={{
-              flex: 1,
-              padding: '8px 16px',
-              fontSize: 13,
               fontWeight: activeTab === tab.id ? 600 : 400,
-              border: 'none',
-              borderRadius: 8,
               backgroundColor:
                 activeTab === tab.id ? `${tab.color}15` : 'transparent',
               color: activeTab === tab.id ? tab.color : '#64748b',
-              cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}
           >
             {tab.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -571,28 +546,19 @@ function PageView({ page }: PageViewProps): JSX.Element {
                       {method.name}()
                     </span>
                   </div>
-                  <button
+                  <Button
                     onClick={() => handleCall(method)}
                     disabled={!isReady || loading === method.name}
+                    size="sm"
                     style={{
-                      padding: '5px 14px',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      border: 'none',
-                      borderRadius: 6,
                       backgroundColor:
                         isReady && loading !== method.name
                           ? currentTab.color
-                          : '#d1d5db',
-                      color: '#fff',
-                      cursor:
-                        isReady && loading !== method.name
-                          ? 'pointer'
-                          : 'not-allowed',
+                          : undefined,
                     }}
                   >
                     {loading === method.name ? '...' : 'Call'}
-                  </button>
+                  </Button>
                 </div>
                 <div
                   style={{

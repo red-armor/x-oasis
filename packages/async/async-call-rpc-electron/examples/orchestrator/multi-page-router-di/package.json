@@ -9,6 +9,7 @@
     "preview": "electron-vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "@x-oasis/async-call-rpc": "workspace:*",
     "@x-oasis/async-call-rpc-electron": "workspace:*",
     "@x-oasis/di": "workspace:*",
