@@ -1,13 +1,28 @@
 import { createId, inject, injectable } from '@x-oasis/di';
 import { RPCServiceHost } from '@x-oasis/async-call-rpc';
 
-import { IMainCpServer, MainCpServerId } from './MainCpServer';
-import { IPageletProcess, PageletProcessId } from './PageletProcess';
 import {
-  IOrchestratorService,
-  ORCHESTRATOR_SERVICE_PATH,
-} from '../common/types';
-import { getPageletId, RENDERER_PARTICIPANT_ID } from '../common/cp-config';
+  IMainCpServer,
+  MainCpServerId,
+} from '../../../../electron-main/MainCpServer';
+import { IPageletProcess, PageletProcessId } from './PageletProcess';
+import { ORCHESTRATOR_SERVICE_PATH } from '../../../../common/types';
+import { RENDERER_PARTICIPANT_ID } from '../common';
+
+export interface IOrchestratorService {
+  connect(pageId: string): Promise<any>;
+  disconnect(pageId: string): Promise<void>;
+  simulateLost(pageId: string): void;
+  getStatus(pageId: string): Promise<any>;
+  killUtility(pageId: string): void;
+  onStateChange(callback: (event: any) => void): void;
+  onReady(callback: (event: any) => void): void;
+  onDisconnected(callback: (event: any) => void): void;
+  onReconnecting(callback: (event: any) => void): void;
+  onReconnected(callback: (event: any) => void): void;
+  onReconnectFailed(callback: (event: any) => void): void;
+  onClosed(callback: (event: any) => void): void;
+}
 
 export type IAppOrchestrator = IOrchestratorService;
 
@@ -95,7 +110,7 @@ export class AppOrchestrator implements IAppOrchestrator {
               : null,
           };
         },
-        killUtility(pageId: string): void {
+        killUtility: (pageId: string): void => {
           const pageletId = getPageletId(pageId);
           this.pageletProcess.kill(pageletId);
         },
@@ -123,4 +138,8 @@ export class AppOrchestrator implements IAppOrchestrator {
       },
     });
   }
+}
+
+function getPageletId(pageId: string): string {
+  return `pagelet-${pageId.replace('page', '').toUpperCase()}`;
 }

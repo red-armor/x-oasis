@@ -27,9 +27,3 @@ export type PageConfig = (typeof PAGES)[number];
 export function getPageletId(pageId: string): string {
   return `pagelet-${pageId.replace('page', '').toUpperCase()}`;
 }
-
-export const PAGELET_IDS = PAGES.map((p) => getPageletId(p.id));
-
-export const RENDERER_PARTICIPANT_ID = 'renderer';
-export const SHARED_PARTICIPANT_ID = 'shared';
-export const DAEMON_PARTICIPANT_ID = 'daemon';

@@ -4,8 +4,11 @@ import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron'
 import { serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
-import { IMainCpServer, MainCpServerId } from './MainCpServer';
-import { DAEMON_PARTICIPANT_ID } from '../common/cp-config';
+import {
+  IMainCpServer,
+  MainCpServerId,
+} from '../../../../electron-main/MainCpServer';
+import { DAEMON_PARTICIPANT_ID } from '../common';
 
 export interface IDaemonProcess {
   spawn(): Promise<void>;

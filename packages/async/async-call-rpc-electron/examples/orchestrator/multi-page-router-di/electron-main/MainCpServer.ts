@@ -6,10 +6,8 @@ import {
 import { serviceHost } from '@x-oasis/async-call-rpc';
 
 import { IWindowManager, WindowManagerId } from './WindowManager';
-import {
-  ORCHESTRATOR_CP_CHANNEL_NAME,
-  RENDERER_PARTICIPANT_ID,
-} from '../common/cp-config';
+import { ORCHESTRATOR_CP_CHANNEL_NAME } from '../common/cp-config';
+import { RENDERER_PARTICIPANT_ID } from '../src/apps/pagelet/common';
 
 export interface IMainCpServer {
   start(): void;

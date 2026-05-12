@@ -4,11 +4,15 @@ import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron'
 import { serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
-import { IMainCpServer, MainCpServerId } from './MainCpServer';
-import { PAGELET_IDS } from '../common/cp-config';
+import {
+  IMainCpServer,
+  MainCpServerId,
+} from '../../../../electron-main/MainCpServer';
+import { PAGELET_IDS } from '../common';
 
 export interface IPageletProcess {
   spawn(): Promise<void>;
+  kill(pageletId: string): void;
 }
 
 export const PageletProcessId = createId('PageletProcess');

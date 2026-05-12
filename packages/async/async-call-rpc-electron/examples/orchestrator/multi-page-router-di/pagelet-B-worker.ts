@@ -3,7 +3,7 @@ import {
   PageletWorker,
   PageletWorkerId,
   PageletWorkerConfigId,
-} from './node/PageletWorker';
+} from './src/apps/pagelet/node/PageletWorker';
 
 const SELF_ID = 'pagelet-B';
 const RENDERER_ID = 'renderer';

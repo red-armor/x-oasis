@@ -6,14 +6,12 @@ import {
 import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
 
 import {
-  ISharedService,
-  IDaemonService,
   IMainRpcService,
-  SHARED_SERVICE_PATH,
-  DAEMON_SERVICE_PATH,
-  MAIN_RPC_SERVICE_PATH,
   PAGELET_SERVICE_PATH,
-} from '../common/types';
+  MAIN_RPC_SERVICE_PATH,
+} from '../common';
+import { ISharedService, SHARED_SERVICE_PATH } from '../../shared/common';
+import { IDaemonService, DAEMON_SERVICE_PATH } from '../../daemon/common';
 
 export interface IPageletWorkerConfig {
   selfId: string;

@@ -1,5 +1,8 @@
 import { Container, Registry } from '@x-oasis/di';
-import { SharedWorker, SharedWorkerId } from './node/SharedWorker';
+import {
+  SharedWorker,
+  SharedWorkerId,
+} from './src/apps/shared/node/SharedWorker';
 
 const container = new Container();
 container.load(
