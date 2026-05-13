@@ -54,10 +54,12 @@ features:
 
 ### issue/ — Issue 记录
 
-| #     | 文件                                                                                                                     | 标题                                                            | 概述                                                                                                         |
-| ----- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| I-001 | [20260510-async-call-rpc-electron-heartbeat-ping-bug.md](./issue/20260510-async-call-rpc-electron-heartbeat-ping-bug.md) | async-call-rpc-electron 心跳 ping 失败导致连接断开              | 修复 createPageBridge 中 RPC 消息解析错误，心跳 ping 被错误转发到 renderer 进程导致连接频繁断开重连          |
-| I-002 | [20260512-create-page-bridge-multi-port-routing.md](./issue/20260512-create-page-bridge-multi-port-routing.md)           | createPageBridge 多 port 路由导致 monitor / connection 服务互斥 | createPageBridge 原只支持单 port，多 utility process 连接时互斥；新增 serviceRoutes / defaultPeerId 路由机制 |
+| #     | 文件                                                                                                                         | 标题                                                            | 概述                                                                                                                |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| I-001 | [20260510-async-call-rpc-electron-heartbeat-ping-bug.md](./issue/20260510-async-call-rpc-electron-heartbeat-ping-bug.md)     | async-call-rpc-electron 心跳 ping 失败导致连接断开              | 修复 createPageBridge 中 RPC 消息解析错误，心跳 ping 被错误转发到 renderer 进程导致连接频繁断开重连                 |
+| I-002 | [20260512-create-page-bridge-multi-port-routing.md](./issue/20260512-create-page-bridge-multi-port-routing.md)               | createPageBridge 多 port 路由导致 monitor / connection 服务互斥 | createPageBridge 原只支持单 port，多 utility process 连接时互斥；新增 serviceRoutes / defaultPeerId 路由机制        |
+| I-003 | [20260513-setting-window-rpc-three-bugs.md](./issue/20260513-setting-window-rpc-three-bugs.md)                               | Setting 独立窗口 RPC 三连故障                                   | preload chunks 无法在 sandbox 加载、createPageBridge peer ID heuristic 路由失败、reconnect 后 servicePortMap 不更新 |
+| I-004 | [20260513-create-page-bridge-reconnect-firstport-stale.md](./issue/20260513-create-page-bridge-reconnect-firstport-stale.md) | createPageBridge reconnect 后 firstPort 不更新导致 RPC 无响应   | disconnect→connect 后 firstPort 仍指向已关闭旧 port，realChannel.bindPort 不被调用，send 收不到 response            |
 
 ### reference/ — 参考手册
 

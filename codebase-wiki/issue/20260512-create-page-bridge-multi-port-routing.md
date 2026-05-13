@@ -7,7 +7,7 @@ description: >
   排查涉及 servicePath 路由、connectionId peerId 解析、bridgePort fallback 等多个维度。
 category: issue
 created: 2026-05-12
-updated: 2026-05-12
+updated: 2026-05-13
 tags:
   [
     createPageBridge,
@@ -24,6 +24,9 @@ references:
   - id: I-001
     rel: related-to
     file: ./20260510-async-call-rpc-electron-heartbeat-ping-bug.md
+  - id: I-003
+    rel: extended-by
+    file: ./20260513-setting-window-rpc-three-bugs.md
 status: draft
 ---
 

@@ -1,275 +1,322 @@
-# x-oasis 连接问题分析 - 完整索引
+# CreateParticipantProxy Analysis - Complete Index
 
-本项目包含关于 x-oasis 连接卡在 CONNECTING 状态的详细分析。
+## Quick Navigation
 
-## 📄 文档清单
+This analysis covers the `createParticipantProxy` function implementation in x-oasis and answers your three specific questions about the orchestrator architecture.
 
-### 核心分析文档
+### Your Three Questions - Quick Answers
 
-1. **ANALYSIS_SUMMARY.md** (11K)
-   - 执行摘要和问题概述
-   - 三个最可能的根本原因
-   - 推荐修复方向和快速检查清单
-   - **推荐首先阅读本文档**
+1. **How does `getChannelFor(peerId)` work?**
+   - Returns the MessagePort-based direct channel
+   - Simple Map lookup from `_peerChannels`
+   - See: Line 193-195 of ParticipantOrchestratorProxy.ts
 
-2. **CONNECTION_BLOCKING_ANALYSIS.md** (24K)
-   - 详尽的根本原因分析
-   - 完整的代码流程图
-   - 变量跟踪和数据结构分析
-   - SeqId 不匹配问题深度分析
-   - 诊断检查清单
+2. **How is `onConnection` callback triggered?**
+   - Two-part RPC mechanism: `activateConnectionContext` then `activateConnection`
+   - Triggered at lines 116-132 in ParticipantOrchestratorProxy.ts
+   - Initiator path: resolves promise; Receiver path: calls callback
 
-3. **QUICK_REFERENCE.md** (7.1K)
-   - 文件清单和代码行数对应表
-   - 关键数据流向图
-   - 中间件执行顺序
-   - 快速诊断命令
-   - ResponseType 和 RequestType 枚举
-
-### 其他相关文档
-
-4. **ASYNC_CALL_RPC_CONNECTION_ORCHESTRATOR.md** (78K)
-   - 完整的连接编排系统实现详解
-   - 所有中间件的详细说明
-   - 错误处理和边界情况
-
-5. **CONNECTION_ORCHESTRATOR_IMPLEMENTATION_PLAN.md** (14K)
-   - 实现计划和检查清单
+3. **How does `connect(peerId)` work on utility process side?**
+   - Two approaches: ParticipantOrchestratorProxy or UtilityOrchestratorParticipant
+   - Utility version uses shared `_directChannel` instead of per-peer channels
+   - See: UtilityOrchestratorParticipant.ts (107 lines)
 
 ---
 
-## 🎯 快速导航
+## Document Files
 
-### 我想...
+### Primary Analysis Document
+**File:** `/Users/ryu/Documents/code/red/x-oasis/CREATEPARTICIPANTPROXY_ANALYSIS.md` (879 lines)
 
-**快速了解问题**
-→ 阅读 `ANALYSIS_SUMMARY.md` 的 "执行摘要" 部分
+Complete analysis including:
+- Full source code for all 6 related files
+- Detailed explanations for each question
+- Architecture diagrams
+- Flow sequences
+- Context management system explanation
+- Supporting code references
 
-**找到根本原因**
-→ 阅读 `CONNECTION_BLOCKING_ANALYSIS.md` 的第 10 和 11 部分
+### Source Files Referenced
 
-**了解代码流程**
-→ 阅读 `QUICK_REFERENCE.md` 的 "关键数据流向" 部分
+All located in: `/Users/ryu/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/`
 
-**查找特定文件位置**
-→ 查看 `QUICK_REFERENCE.md` 的文件清单表
+1. **electron-main/ParticipantOrchestratorProxy.ts** (206 lines)
+   - Main factory: `createParticipantProxy()`
+   - Class: `ParticipantOrchestratorProxy`
+   - Key method: `getChannelFor(peerId)` - line 193-195
+   - Key method: `connect(toId)` - line 148-179
+   - Key handler: `activateConnection()` - line 80-133
 
-**进行诊断**
-→ 使用 `ANALYSIS_SUMMARY.md` 中的"快速检查列表"
+2. **electron-main/UtilityOrchestratorParticipant.ts** (107 lines)
+   - Utility-process-specific participant
+   - Factory: `createUtilityParticipant()`
+   - Key methods: `getService()`, `registerService()`, `registerControlService()`
 
-**理解中间件**
-→ 查看 `QUICK_REFERENCE.md` 的中间件执行顺序
+3. **electron-main/ElectronMessagePortMainChannel.ts** (180 lines)
+   - Wrapper for Electron's MessagePortMain
+   - Key method: `bindPort()` - line 84-94
+   - Key method: `send()` - line 138-150
+
+4. **electron-main/ElectronConnectionOrchestrator.ts** (196 lines)
+   - Orchestrator that creates connections
+   - Key method: `activateParticipant()` - line 102-127
+
+5. **electron-browser/registerOrchestratorHandler.ts** (114 lines)
+   - Handler registration for renderer processes
+   - Key function: `registerOrchestratorHandler()` - line 50-114
+
+6. **electron-main/MainOrchestratorSetup.ts** (246 lines)
+   - Orchestrator setup utilities
+   - Key function: `setupMainOrchestrator()`
 
 ---
 
-## 🔴 关键问题概述
+## Understanding the System
 
-### 问题描述
-连接流程卡在 `CONNECTING` 状态，永远无法转移到 `READY` 状态。
+### Core Concept
+The orchestrator is a broker in the main process that:
+1. Accepts connection requests from two participants
+2. Creates an entangled MessagePortMain pair
+3. Delivers each port to its respective participant via RPC
+4. Participants then communicate directly via those ports
 
-### 根本原因
-`ElectronConnectionOrchestrator.activateParticipant()` 中的 `await deferred.promise` 永远不会被 resolve。
+### Connection Flow
 
-### 最可能的原因（按概率）
-1. **SeqId 不匹配** (概率: 极高)
-2. **Ports 提取失败** (概率: 高)  
-3. **响应未发送** (概率: 中)
+```
+Initiator                Main Process              Receiver
+   (A)                  Orchestrator               (B)
+    |                        |                      |
+    |--connect('B')--------->|                      |
+    |                        | create MessageChannelMain()
+    |                        | port1, port2
+    |                        |
+    |    activateConnectionContext(ctx)            |
+    |<-----------------------|                      |
+    | stores ctx in queue    |                      |
+    |                        |                      |
+    |      activateConnection(port1)               |
+    |<-----------------------|                      |
+    | retrieves ctx          |                      |
+    | binds port1            |                      |
+    | resolves promise       |                      |
+    |                        |                      |
+    |                        | activateConnectionContext(ctx)
+    |                        |--------------------->|
+    |                        |                 stores ctx in queue
+    |                        |
+    |                        | activateConnection(port2)
+    |                        |--------------------->|
+    |                        |              retrieves ctx
+    |                        |              binds port2
+    |                        |
+    | getChannelFor('B')     |         participant.directChannel
+    | -> ElectronMessagePortMainChannel (wrapping port1)
+    |
+    |------ point-to-point direct RPC over MessagePort ----->|
+    |<------- (orchestrator no longer involved) --------------|
+```
 
-### 关键代码位置
-- 问题: `ElectronConnectionOrchestrator.ts` 第 103-118 行
-- 端口提取: `IPCMainChannel.ts` 第 125 行
-- 数据发送: `IPCMainChannel.ts` 第 174 行
-- 响应处理: `handleResponse.ts` 第 204-207 行
+### Context Queuing System
+
+The system uses three fallback strategies to match contexts with ports:
+
+1. **Explicit matching** (modern, explicit connectionId)
+   ```
+   _pendingContexts.get(connectionId)
+   ```
+
+2. **Queue-based matching** (FIFO)
+   ```
+   _contextQueue.shift()
+   ```
+
+3. **Last context fallback** (single-connection scenario)
+   ```
+   _lastContext
+   ```
 
 ---
 
-## 📊 关键技术概念
+## Key Data Structures
 
-### Deferred 对象
+### ParticipantOrchestratorProxy Private Members
+
+- `_selfId`: string - This participant's identifier
+- `_controlChannel`: AbstractChannelProtocol - Control plane to orchestrator
+- `_peerChannels`: Map<string, ElectronMessagePortMainChannel> - Direct channels cache
+- `_pendingConnects`: Map<string, {peerId, resolve, reject}> - Pending connection promises
+- `_pendingContexts`: Map<string, {connectionId, role}> - Metadata waiting for ports
+- `_contextQueue`: Array<{connectionId, role}> - FIFO queue of contexts
+- `_lastContext`: Last received context for fallback
+- `_orchestratorClient`: RPC proxy to orchestrator
+
+### ElectronMessagePortMainChannel
+
+- Wraps a Electron `MessagePortMain` object
+- Implements `AbstractChannelProtocol`
+- Supports late binding: can be created before port arrives
+- `bindPort()` activates a previously unbound channel
+- `send()` posts messages to the port
+
+---
+
+## Architecture Patterns
+
+### Pattern 1: Dual-Channel Participant
+Each participant maintains:
+- **Control channel**: Persistent connection to orchestrator (for requests and port delivery)
+- **Direct channels**: Per-peer MessagePort-based channels (for high-performance RPC)
+
+### Pattern 2: Promise-Based Connection
 ```typescript
-type Deferred<T = any> = {
-  resolve: (value: T | PromiseLike<T>) => void;
-  reject: (err?: unknown) => void;
-  promise: PromiseLike<T>;
-};
+const conn = await proxy.connect('peer-id');
+// Returns when orchestrator delivers the port and binds it
+const channel = conn.getChannel();
 ```
-- 创建: `updateSeqInfo` 中间件
-- 存储: `channel.ongoingRequests` Map
-- 解决: `handleResponse` 中间件
 
-### MessagePort 转移
-- 必须通过 `transfer` 列表传输
-- 接收端从 `event.ports` 获取
-- 发送端无法再使用（已转移）
+### Pattern 3: Event-Based Connection (Inbound)
+```typescript
+proxy.onConnection((conn) => {
+  // Called when remote peer connects to this participant
+  const channel = conn.getChannel();
+});
+```
 
-### 请求/响应类型
-- `TransferableArgsRequest` ('tar'): 参数是 Transferable
-- `PortSuccess` ('ps'): 返回值是单个 Transferable
-- `PortArraySuccess` ('pas'): 返回值是多个 Transferable
+### Pattern 4: Two-Phase Port Activation
+1. Metadata sent first (connectionId, role)
+2. Port sent second (MessagePortMain)
+3. Context queuing handles timing issues
 
 ---
 
-## 📁 相关文件清单
+## Testing & Verification
 
-### Electron 专用文件
-- `/packages/async/async-call-rpc-electron/src/ElectronConnectionOrchestrator.ts`
-- `/packages/async/async-call-rpc-electron/src/IPCMainChannel.ts`
+To understand the flow, trace through:
 
-### 核心 RPC 框架文件
-- `/packages/async/async-call-rpc/src/protocol/AbstractChannelProtocol.ts`
-- `/packages/async/async-call-rpc/src/endpoint/RPCService.ts`
-- `/packages/async/async-call-rpc/src/orchestrator/BaseConnectionOrchestrator.ts`
+1. **Initiator path** (calling `connect()`):
+   - `connect()` stores promise resolver in `_pendingConnects`
+   - `orchestratorClient.requestConnect()` sends request
+   - Later, when `activateConnection()` is called, lookup resolver and call it
 
-### 中间件文件
-- `/packages/async/async-call-rpc/src/middlewares/prepareRequestData.ts`
-- `/packages/async/async-call-rpc/src/middlewares/sendRequest.ts`
-- `/packages/async/async-call-rpc/src/middlewares/handleRequest.ts`
-- `/packages/async/async-call-rpc/src/middlewares/handleResponse.ts`
-- `/packages/async/async-call-rpc/src/middlewares/normalize.ts`
+2. **Receiver path** (not calling `connect()`):
+   - `activateConnection()` is called by orchestrator
+   - No entry in `_pendingConnects`
+   - `_onConnection` callback is invoked instead
 
-### 类型定义文件
-- `/packages/async/async-call-rpc/src/types/rpc.ts`
-- `/packages/async/async-call-rpc/src/orchestrator/types.ts`
-- `/packages/promise/deferred/src/index.ts`
+3. **Port binding flow**:
+   - Extract peerId from canonical connectionId (format: "id1--id2")
+   - Get or create channel from `_peerChannels`
+   - Call `channel.bindPort(port, { rebind: true })`
+   - Channel activates and fires `onDidConnected` event
 
 ---
 
-## 🔍 诊断步骤
+## Utility Process Specifics
 
-### 第一步：验证 SeqId 一致性
-```bash
-# 在发送和接收端添加日志，比较 seqId 值
-# 预期：两端 seqId 应该完全匹配
+### UtilityOrchestratorParticipant Differences
+
+| Aspect | Standard Proxy | Utility Participant |
+|--------|---|---|
+| Creation | `createParticipantProxy()` | `createUtilityParticipant()` |
+| Control Channel Type | Generic `AbstractChannelProtocol` | `ElectronUtilityProcessChannel` |
+| Direct Channel Count | One per peer | Single shared channel |
+| Port Reception | Per-peer handler | Shared handler |
+| Service Usage | Via `connect()` promise | Via `getService()` getter |
+
+### Utility Process Channel Architecture
 ```
-
-### 第二步：验证 Ports 提取
-```bash
-# 在 IPCMainChannel.on() 中检查 _event.ports
-# 预期：ports 应该包含转移的 MessagePort
-```
-
-### 第三步：验证响应发送
-```bash
-# 在 handleRequest.ts 中检查 safeSendReply() 调用
-# 预期：响应应该被发送回主进程
-```
-
-### 第四步：验证 Deferred 解决
-```bash
-# 在 handleResponse.ts 中检查 deferred 查找
-# 预期：应该找到对应的 deferred 并调用 resolve()
+Utility Process
+├── _mainChannel: ElectronUtilityProcessChannel (→ parentPort → Main)
+│   └─ Used for: orchestrator control, service registration
+├── _directChannel: ElectronMessagePortMainChannel (unbound initially)
+│   └─ Bound by orchestrator when peer connects
+│   └─ Reused for all direct peer communication
+└── _mainServiceHost: RPCServiceHost
+    └─ Registers handlers: activateConnection, activateConnectionContext, ping
 ```
 
 ---
 
-## 💡 修复建议
+## Related Concepts
 
-### 如果是 SeqId 不匹配
-- 确保序列化/反序列化过程中 seqId 被正确保留
-- 检查 prepareNormalData 和 serialize 中间件
+### AbstractChannelProtocol
+Base class for all channels in the RPC framework. Key methods:
+- `activate()` - Mark as connected
+- `send(data, transfer)` - Send data over channel
+- `on(listener)` - Listen for messages
+- `disconnect()` - Close channel
 
-### 如果是 Ports 提取失败
-- 在 IPCMainChannel.on() 中确保提取 `_event.ports`
-- 确保 ports 被包含在传递给 listener 的对象中
+### RPCService vs RPCClient
+- **RPCService**: Registers handlers for incoming RPC calls
+- **RPCClient**: Creates proxy to call remote handlers
+- Both use the same underlying channel
 
-### 如果是响应未发送
-- 检查 `protocol.isConnected()` 状态
-- 确保处理器返回适当的值
-
----
-
-## 📋 快速检查清单
-
-- [ ] SeqId 在发送和接收端一致？
-- [ ] `_event.ports` 被提取了？
-- [ ] ports 被包含在消息对象中？
-- [ ] 接收端 `isConnected()` 返回 true？
-- [ ] 响应消息中的 seqId 与请求匹配？
-- [ ] `handleResponse` 找到了对应的 deferred？
-- [ ] Deferred 的 `resolve()` 被调用了？
-
----
-
-## 🚀 开始使用
-
-1. 首先阅读 `ANALYSIS_SUMMARY.md` 了解问题概况
-2. 查看 `QUICK_REFERENCE.md` 找到具体代码位置
-3. 使用本文档的诊断步骤进行调试
-4. 参考 `CONNECTION_BLOCKING_ANALYSIS.md` 获取更多细节
-
----
-
-## 📞 问题排查流程
-
-```
-问题: 连接卡在 CONNECTING 状态
-  ↓
-阅读 ANALYSIS_SUMMARY.md
-  ↓
-选择最可能的原因（按概率）
-  ↓
-参考诊断步骤添加日志
-  ↓
-查找问题代码位置
-  ↓
-应用修复
-  ↓
-验证问题解决
+### MessageChannelMain (Electron)
+Native Electron API for creating entangled message ports:
+```typescript
+const { port1, port2 } = new MessageChannelMain();
+// port1 sent to process A, port2 sent to process B
+// A and B can now communicate via port1/port2 without main process involvement
 ```
 
 ---
 
-## 📖 完整流程图
+## Common Questions Answered
 
-完整的数据流程图可在以下文件中找到：
+**Q: Can `getChannelFor()` be called before connection is established?**
+A: Yes, but it returns `undefined`. The channel is only created when the orchestrator delivers the port.
 
-- **发送阶段**: `ANALYSIS_SUMMARY.md` - "发送阶段（主进程）"
-- **接收阶段**: `ANALYSIS_SUMMARY.md` - "接收阶段（渲染进程）"
-- **响应处理**: `ANALYSIS_SUMMARY.md` - "响应处理（主进程）"
+**Q: What happens if `activateConnection()` is called without prior `activateConnectionContext()`?**
+A: The context falls back to `_lastContext`. If that's null too, the handler returns early (line 101).
 
----
+**Q: Why send context before port?**
+A: To decouple timing. The context is queued and ready before the port arrives, preventing race conditions.
 
-## 🎓 学习资源
+**Q: Can multiple connections exist to the same peer?**
+A: Yes, but they'll overwrite the same entry in `_peerChannels`. The shared entry is the last one bound via `rebind: true`.
 
-### 如果你想理解...
-
-**Deferred 的工作原理**
-→ `QUICK_REFERENCE.md` - "Deferred 类型定义"
-→ `/packages/promise/deferred/src/index.ts`
-
-**中间件如何工作**
-→ `QUICK_REFERENCE.md` - "中间件执行顺序"
-→ `ASYNC_CALL_RPC_CONNECTION_ORCHESTRATOR.md`
-
-**MessagePort 转移**
-→ `ANALYSIS_SUMMARY.md` - "核心技术概念"
-→ `CONNECTION_BLOCKING_ANALYSIS.md` - 第 4 部分
-
-**完整的连接流程**
-→ `CONNECTION_BLOCKING_ANALYSIS.md` - 第 9 部分
-→ `ANALYSIS_SUMMARY.md` - "发送-接收-响应完整流程"
+**Q: Does the orchestrator stay involved after port delivery?**
+A: No. Once both participants have their ports, they communicate directly. The orchestrator is out of the loop (except for heartbeats).
 
 ---
 
-## 🔗 外部参考
+## Performance Characteristics
 
-- x-oasis 项目主目录
-- Electron `postMessage` API 文档
-- Web `MessagePort` API 文档
-
----
-
-## 版本信息
-
-- 分析创建日期: 2024-2026
-- 涉及的核心包:
-  - `@x-oasis/async-call-rpc`
-  - `@x-oasis/async-call-rpc-electron`
-  - `@x-oasis/deferred`
+- **Connection setup**: 2 RPC round trips (context + port)
+- **Direct communication**: Zero orchestrator overhead
+- **Message delivery**: Direct MessagePort posting (OS level)
+- **Memory**: One channel per peer in `_peerChannels` Map
+- **Scalability**: Linear with number of active peers
 
 ---
 
-## 许可证
+## Files in This Analysis
 
-这些分析文档是 x-oasis 项目的一部分，遵循项目的许可证条款。
+- **This file**: Index and quick reference
+- **CREATEPARTICIPANTPROXY_ANALYSIS.md**: Complete 879-line analysis with full source code
 
+---
+
+## Source Code Locations
+
+All source code in the x-oasis repository:
+```
+/Users/ryu/Documents/code/red/x-oasis/packages/async/async-call-rpc-electron/src/
+├── electron-main/
+│   ├── ParticipantOrchestratorProxy.ts
+│   ├── UtilityOrchestratorParticipant.ts
+│   ├── ElectronMessagePortMainChannel.ts
+│   ├── ElectronConnectionOrchestrator.ts
+│   └── MainOrchestratorSetup.ts
+└── electron-browser/
+    └── registerOrchestratorHandler.ts
+```
+
+---
+
+## Document Generation Info
+
+- Created: 2026-05-13
+- Repository: x-oasis (async-call-rpc-electron package)
+- Analysis Depth: Complete source code + detailed explanations
+- Document Size: 879 lines (CREATEPARTICIPANTPROXY_ANALYSIS.md)
