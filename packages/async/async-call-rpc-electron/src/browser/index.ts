@@ -10,7 +10,7 @@ export {
 } from './OrchestratorClient';
 export type {
   OrchestratorClientOptions,
-  GetServiceOptions,
+  GetProxyOptions,
 } from './OrchestratorClient';
 
 export type { ContextBridgeChannelProps, ContextBridgeAPI } from '../types';
