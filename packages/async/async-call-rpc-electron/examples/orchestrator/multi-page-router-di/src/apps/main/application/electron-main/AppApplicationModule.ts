@@ -41,6 +41,10 @@ import {
   MonitorApplicationId,
 } from '@/apps/monitor/application/electron-main/MonitorApplication';
 import {
+  SettingApplication,
+  SettingApplicationId,
+} from '@/apps/setting/application/electron-main/SettingApplication';
+import {
   AppApplication,
   AppApplicationId,
 } from '@/apps/main/application/electron-main/AppApplication';
@@ -59,6 +63,7 @@ export default new Registry((bind) => {
   bind(AppOrchestratorId).to(AppOrchestrator);
   bind(ConnectionApplicationId).to(ConnectionApplication);
   bind(MonitorApplicationId).to(MonitorApplication);
+  bind(SettingApplicationId).to(SettingApplication);
 
   bind(AppApplicationId).to(AppApplication);
 });

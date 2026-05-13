@@ -26,6 +26,10 @@ import {
   IMonitorApplication,
   MonitorApplicationId,
 } from '@/apps/monitor/application/electron-main/MonitorApplication';
+import {
+  ISettingApplication,
+  SettingApplicationId,
+} from '@/apps/setting/application/electron-main/SettingApplication';
 import { MAIN_RPC_SERVICE_PATH } from '@/services/pagelet-host/common';
 import { MAIN_METRICS_SERVICE_PATH } from '@/services/main-metrics/common';
 import { pidNameRegistry } from '@/services/main-metrics/electron-main/pidNameRegistry';
@@ -73,7 +77,9 @@ export class AppApplication implements IAppApplication {
     @inject(ConnectionApplicationId)
     private readonly connectionApp: IConnectionApplication,
     @inject(MonitorApplicationId)
-    private readonly monitorApp: IMonitorApplication
+    private readonly monitorApp: IMonitorApplication,
+    @inject(SettingApplicationId)
+    private readonly settingApp: ISettingApplication
   ) {}
 
   async start(): Promise<void> {
@@ -151,6 +157,11 @@ export class AppApplication implements IAppApplication {
 
     await this.connectionApp.start();
     await this.monitorApp.start();
+    await this.settingApp.start();
+
+    this.windowManager.onSettingWindowCreated((win) => {
+      this.mainCpServer.registerSettingWindow(win);
+    });
 
     console.log('[AppApplication] start() done');
   }

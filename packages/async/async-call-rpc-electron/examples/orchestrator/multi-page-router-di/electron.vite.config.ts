@@ -36,10 +36,14 @@ export default defineConfig({
             __dirname,
             'src/apps/main/application/electron-browser/preload.ts'
           ),
+          'setting-preload': resolve(
+            __dirname,
+            'src/apps/setting/application/electron-browser/preload.ts'
+          ),
         },
         output: {
           format: 'cjs',
-          inlineDynamicImports: true,
+          inlineDynamicImports: false,
         },
         external: ['electron'],
       },
@@ -65,6 +69,10 @@ export default defineConfig({
             {
               entry: 'src/apps/monitor/application/node/main.ts',
               outName: 'monitor-worker',
+            },
+            {
+              entry: 'src/apps/setting/application/node/main.ts',
+              outName: 'setting-worker',
             },
           ];
           for (const w of workers) {
@@ -94,7 +102,12 @@ export default defineConfig({
   renderer: {
     root: '.',
     build: {
-      rollupOptions: { input: { index: resolve(__dirname, 'index.html') } },
+      rollupOptions: {
+        input: {
+          index: resolve(__dirname, 'index.html'),
+          setting: resolve(__dirname, 'setting.html'),
+        },
+      },
     },
     plugins: [react()],
     resolve: {

@@ -21,6 +21,7 @@ export const PageletProcessId = createId('PageletProcess');
 const PAGELET_NAMES: Record<string, string> = {
   connection: 'Connection',
   monitor: 'Monitor',
+  setting: 'Setting',
 };
 
 @injectable()

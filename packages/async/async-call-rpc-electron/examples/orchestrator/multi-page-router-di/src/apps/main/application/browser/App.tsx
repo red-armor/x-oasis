@@ -11,11 +11,28 @@ import {
   CONNECTION_PARTICIPANT_ID,
   MONITOR_PARTICIPANT_ID,
 } from '@/services/pagelet-host/common';
+import { SETTING_PARTICIPANT_ID } from '@/apps/setting/application/common';
 
 export type { PageConfig };
 
+declare global {
+  interface Window {
+    electronAPI: {
+      openSettingWindow: () => Promise<void>;
+    };
+  }
+}
+
 function App(): JSX.Element {
   const [activePage, setActivePage] = useState<PageConfig>(CONNECTION_PAGE);
+
+  const handlePageClick = (page: PageConfig) => {
+    if (page.id === 'setting') {
+      window.electronAPI?.openSettingWindow();
+      return;
+    }
+    setActivePage(page);
+  };
 
   return (
     <div
@@ -59,7 +76,7 @@ function App(): JSX.Element {
           {ALL_PAGES.map((page) => (
             <button
               key={page.id}
-              onClick={() => setActivePage(page)}
+              onClick={() => handlePageClick(page)}
               style={{
                 width: '100%',
                 display: 'flex',
@@ -71,8 +88,13 @@ function App(): JSX.Element {
                 border: 'none',
                 borderRadius: 8,
                 backgroundColor:
-                  activePage.id === page.id ? `${page.color}25` : 'transparent',
-                color: activePage.id === page.id ? page.color : '#94a3b8',
+                  activePage.id === page.id && page.id !== 'setting'
+                    ? `${page.color}25`
+                    : 'transparent',
+                color:
+                  activePage.id === page.id && page.id !== 'setting'
+                    ? page.color
+                    : '#94a3b8',
                 cursor: 'pointer',
                 marginBottom: 2,
                 textAlign: 'left',
@@ -85,8 +107,13 @@ function App(): JSX.Element {
                   height: 28,
                   borderRadius: 6,
                   backgroundColor:
-                    activePage.id === page.id ? page.color : '#334155',
-                  color: activePage.id === page.id ? '#fff' : '#94a3b8',
+                    activePage.id === page.id && page.id !== 'setting'
+                      ? page.color
+                      : '#334155',
+                  color:
+                    activePage.id === page.id && page.id !== 'setting'
+                      ? '#fff'
+                      : '#94a3b8',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -95,7 +122,11 @@ function App(): JSX.Element {
                   flexShrink: 0,
                 }}
               >
-                {page.id === 'connection' ? 'C' : 'M'}
+                {page.id === 'connection'
+                  ? 'C'
+                  : page.id === 'monitor'
+                  ? 'M'
+                  : 'S'}
               </span>
               <div>
                 <div style={{ lineHeight: '16px' }}>{page.label}</div>
@@ -103,7 +134,9 @@ function App(): JSX.Element {
                   style={{
                     fontSize: 10,
                     color:
-                      activePage.id === page.id ? `${page.color}99` : '#64748b',
+                      activePage.id === page.id && page.id !== 'setting'
+                        ? `${page.color}99`
+                        : '#64748b',
                     lineHeight: '14px',
                   }}
                 >
@@ -145,6 +178,8 @@ function App(): JSX.Element {
             renderer ↔ main → {MONITOR_PARTICIPANT_ID}
             <br />
             {MONITOR_PARTICIPANT_ID} ↔ daemon
+            <br />
+            {SETTING_PARTICIPANT_ID} ↔ shared/daemon
           </div>
         </div>
       </div>

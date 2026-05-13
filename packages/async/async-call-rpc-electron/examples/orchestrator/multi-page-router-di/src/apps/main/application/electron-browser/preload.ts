@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, contextBridge } from 'electron';
 import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
 import { clientHost } from '@x-oasis/async-call-rpc';
 
@@ -26,3 +26,7 @@ const bridge = createPageBridge({
 clientHost
   .registerClient(CONNECTION_PAGELET_SERVICE_PATH, { channel: bridge.channel })
   .createProxy();
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  openSettingWindow: () => ipcRenderer.invoke('open-setting-window'),
+});

@@ -4,6 +4,7 @@ import {
   ElectronConnectionOrchestrator,
 } from '@x-oasis/async-call-rpc-electron';
 import { serviceHost } from '@x-oasis/async-call-rpc';
+import { BrowserWindow } from 'electron';
 
 import {
   IWindowManager,
@@ -16,6 +17,7 @@ export interface IMainCpServer {
   start(): void;
   getOrchestrator(): ElectronConnectionOrchestrator;
   getRendererIpcChannel(): IPCMainChannel;
+  registerSettingWindow(win: BrowserWindow): IPCMainChannel;
 }
 
 export const MainCpServerId = createId('MainCpServer');
@@ -69,5 +71,25 @@ export class MainCpServer implements IMainCpServer {
 
   getRendererIpcChannel(): IPCMainChannel {
     return this.rendererIpcChannel;
+  }
+
+  registerSettingWindow(win: BrowserWindow): IPCMainChannel {
+    const settingIpcChannel = new IPCMainChannel({
+      channelName: 'setting-rpc',
+      webContents: win.webContents,
+      description: 'main→setting-renderer IPC channel',
+    });
+
+    this.orchestrator.registerParticipant(
+      'setting-renderer',
+      settingIpcChannel,
+      'renderer'
+    );
+
+    settingIpcChannel.setServiceHost(serviceHost);
+
+    console.log('[MainCpServer] setting window registered');
+
+    return settingIpcChannel;
   }
 }
