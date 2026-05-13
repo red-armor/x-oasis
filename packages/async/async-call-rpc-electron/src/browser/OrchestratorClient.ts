@@ -1,6 +1,18 @@
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import {
+  clientHost,
+  serviceHost,
+  StateChangeEvent,
+  ReadyEvent,
+  DisconnectedEvent,
+  ReconnectingEvent,
+  ReconnectedEvent,
+  ReconnectFailedEvent,
+  ClosedEvent,
+} from '@x-oasis/async-call-rpc';
 import ContextBridgeChannel from './ContextBridgeChannel';
 import { createPageChannel, createIpcPageChannel } from './createPageChannel';
+
+type ServiceProxy = Record<string, (...args: unknown[]) => unknown>;
 
 export interface OrchestratorClientOptions {
   directChannelDescription?: string;
@@ -15,11 +27,8 @@ export interface GetServiceOptions {
 export class OrchestratorClient {
   private _directChannel: ContextBridgeChannel;
   private _ipcChannel: ContextBridgeChannel;
-  private _orchestratorProxy: Record<string, (...args: any[]) => any>;
-  private _serviceProxies = new Map<
-    string,
-    Record<string, (...args: any[]) => any>
-  >();
+  private _orchestratorProxy: ServiceProxy;
+  private _serviceProxies = new Map<string, ServiceProxy>();
   private _defaultAutoConnect: boolean;
 
   constructor(options: OrchestratorClientOptions = {}) {
@@ -48,7 +57,7 @@ export class OrchestratorClient {
     return this._ipcChannel;
   }
 
-  getService<T extends Record<string, (...args: any[]) => any>>(
+  getService<T extends ServiceProxy>(
     servicePath: string,
     options: GetServiceOptions = {}
   ): T {
@@ -73,10 +82,7 @@ export class OrchestratorClient {
     return proxy;
   }
 
-  registerService(
-    serviceId: string,
-    handlers: Record<string, (...args: any[]) => any>
-  ): void {
+  registerService(serviceId: string, handlers: ServiceProxy): void {
     serviceHost.registerService(serviceId, {
       channel: this._directChannel,
       serviceHost,
@@ -84,62 +90,86 @@ export class OrchestratorClient {
     });
   }
 
-  async connect(...args: any[]): Promise<any> {
+  async connect(...args: unknown[]): Promise<unknown> {
     return this._orchestratorProxy.connect(...args);
   }
 
-  async disconnect(...args: any[]): Promise<any> {
+  async disconnect(...args: unknown[]): Promise<unknown> {
     return this._orchestratorProxy.disconnect(...args);
   }
 
-  async getStatus(...args: any[]): Promise<any> {
+  async getStatus(...args: unknown[]): Promise<unknown> {
     return this._orchestratorProxy.getStatus(...args);
   }
 
-  simulateLost(...args: any[]): any {
+  simulateLost(...args: unknown[]): unknown {
     return this._orchestratorProxy.simulateLost(...args);
   }
 
-  killUtility(...args: any[]): any {
+  killUtility(...args: unknown[]): unknown {
     return this._orchestratorProxy.killUtility(...args);
   }
 
-  switchPage(...args: any[]): any {
+  switchPage(...args: unknown[]): unknown {
     return this._orchestratorProxy.switchPage(...args);
   }
 
-  async sendRpc(...args: any[]): Promise<any> {
+  async sendRpc(...args: unknown[]): Promise<unknown> {
     return this._orchestratorProxy.sendRpc(...args);
   }
 
-  onStateChange(callback: (event: any) => void): { unsubscribe: () => void } {
-    return this._orchestratorProxy.onStateChange(callback);
-  }
-
-  onReady(callback: (event: any) => void): { unsubscribe: () => void } {
-    return this._orchestratorProxy.onReady(callback);
-  }
-
-  onDisconnected(callback: (event: any) => void): { unsubscribe: () => void } {
-    return this._orchestratorProxy.onDisconnected(callback);
-  }
-
-  onReconnecting(callback: (event: any) => void): { unsubscribe: () => void } {
-    return this._orchestratorProxy.onReconnecting(callback);
-  }
-
-  onReconnected(callback: (event: any) => void): { unsubscribe: () => void } {
-    return this._orchestratorProxy.onReconnected(callback);
-  }
-
-  onReconnectFailed(callback: (event: any) => void): {
+  onStateChange(callback: (event: StateChangeEvent) => void): {
     unsubscribe: () => void;
   } {
-    return this._orchestratorProxy.onReconnectFailed(callback);
+    return this._orchestratorProxy.onStateChange(callback) as {
+      unsubscribe: () => void;
+    };
   }
 
-  onClosed(callback: (event: any) => void): { unsubscribe: () => void } {
-    return this._orchestratorProxy.onClosed(callback);
+  onReady(callback: (event: ReadyEvent) => void): { unsubscribe: () => void } {
+    return this._orchestratorProxy.onReady(callback) as {
+      unsubscribe: () => void;
+    };
+  }
+
+  onDisconnected(callback: (event: DisconnectedEvent) => void): {
+    unsubscribe: () => void;
+  } {
+    return this._orchestratorProxy.onDisconnected(callback) as {
+      unsubscribe: () => void;
+    };
+  }
+
+  onReconnecting(callback: (event: ReconnectingEvent) => void): {
+    unsubscribe: () => void;
+  } {
+    return this._orchestratorProxy.onReconnecting(callback) as {
+      unsubscribe: () => void;
+    };
+  }
+
+  onReconnected(callback: (event: ReconnectedEvent) => void): {
+    unsubscribe: () => void;
+  } {
+    return this._orchestratorProxy.onReconnected(callback) as {
+      unsubscribe: () => void;
+    };
+  }
+
+  onReconnectFailed(callback: (event: ReconnectFailedEvent) => void): {
+    unsubscribe: () => void;
+  } {
+    return this._orchestratorProxy.onReconnectFailed(callback) as {
+      unsubscribe: () => void;
+    };
+  }
+
+  onClosed(callback: (event: ClosedEvent) => void): {
+    unsubscribe: () => void;
+  } {
+    return this._orchestratorProxy.onClosed(callback) as {
+      unsubscribe: () => void;
+    };
   }
 }
 

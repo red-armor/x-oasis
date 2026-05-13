@@ -1,7 +1,19 @@
 import { ElectronConnectionOrchestrator } from './ElectronConnectionOrchestrator.js';
 import ElectronMessagePortMainChannel from './ElectronMessagePortMainChannel.js';
 import IPCMainChannel from './IPCMainChannel.js';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import {
+  serviceHost,
+  ConnectionInfo,
+  AbstractChannelProtocol,
+  StateChangeEvent,
+  ReadyEvent,
+  DisconnectedEvent,
+  ReconnectingEvent,
+  ReconnectedEvent,
+  ReconnectFailedEvent,
+  ClosedEvent,
+} from '@x-oasis/async-call-rpc';
+import { MessagePortMain } from '../types';
 
 export interface MainOrchestratorSetupOptions {
   /** Main window's IPC channel */
@@ -31,7 +43,7 @@ export interface MainOrchestratorSetupOptions {
   };
 
   /** Service handlers for orchestrator control */
-  handlers?: Record<string, (...args: any[]) => any>;
+  handlers?: Record<string, (...args: unknown[]) => unknown>;
 
   /** Custom participant setup function */
   setupParticipants?: (
@@ -92,7 +104,11 @@ export async function setupMainOrchestrator(
     });
     const mainParticipantChannel =
       createMainParticipantChannel(mainDirectChannel);
-    orchestrator.registerParticipant('main', mainParticipantChannel, 'process');
+    orchestrator.registerParticipant(
+      'main',
+      mainParticipantChannel as unknown as AbstractChannelProtocol,
+      'process'
+    );
   }
 
   // Create default handlers merged with custom handlers
@@ -130,39 +146,86 @@ export async function setupMainOrchestrator(
  * Create a participant channel adapter for main process
  * This allows main process to participate in orchestrator connections
  */
+interface MainParticipantChannel {
+  makeRequest(
+    requestPath: string,
+    methodName: string,
+    port?: MessagePortMain
+  ): { promise: Promise<void>; seqId: number };
+  send(): void;
+  on(): () => void;
+  activate(): void;
+  disconnect(): void;
+  onDidConnected(): void;
+  onDidDisconnected(): void;
+  ensureListenerAttached(): void;
+}
+
 function createMainParticipantChannel(
   directChannel: ElectronMessagePortMainChannel
-): any {
+): MainParticipantChannel {
   return {
-    makeRequest(requestPath: string, methodName: string, port: any) {
+    makeRequest(
+      _requestPath: string,
+      methodName: string,
+      port?: MessagePortMain
+    ) {
       if (methodName === 'activateConnection' && port) {
         directChannel.bindPort(port, { rebind: true });
       }
       return { promise: Promise.resolve(), seqId: 0 };
     },
-    send: () => {},
-    on: () => () => {},
-    activate: () => {},
-    disconnect: () => {},
-    onDidConnected: () => {},
-    onDidDisconnected: () => {},
-    ensureListenerAttached: () => {},
-  } as any;
+    send() {},
+    on() {
+      return () => {};
+    },
+    activate() {},
+    disconnect() {},
+    onDidConnected() {},
+    onDidDisconnected() {},
+    ensureListenerAttached() {},
+  };
 }
 
 /**
  * Create default orchestrator event handlers
  * These handlers provide standard orchestrator functionality
  */
+interface ConnectResult {
+  connectionId?: string;
+  fromId?: string;
+  toId?: string;
+  state?: string;
+  lastStateChangedAt?: number;
+  error?: string;
+}
+
+interface GetStatusResult {
+  connectionId: string;
+  fromId: string;
+  toId: string;
+  state: string;
+  lastStateChangedAt: number;
+  error?: string;
+  isReady: boolean;
+  stats: {
+    totalRpcCalls: number;
+    successfulCalls: number;
+    failedCalls: number;
+    avgLatencyMs: number;
+    totalReconnects: number;
+  } | null;
+}
+
 function createDefaultOrchestratorHandlers(
   orchestrator: ElectronConnectionOrchestrator,
   fromId: string,
   toId?: string
-): Record<string, (...args: any[]) => any> {
+): Record<string, (...args: unknown[]) => unknown> {
   return {
-    async connect(): Promise<any> {
+    async connect(): Promise<ConnectResult> {
       try {
-        const info = await orchestrator.connect(fromId, toId!);
+        const info: ConnectionInfo = await orchestrator.connect(fromId, toId!);
         return {
           connectionId: info.connectionId,
           fromId: info.fromId,
@@ -171,8 +234,8 @@ function createDefaultOrchestratorHandlers(
           lastStateChangedAt: info.lastStateChangedAt,
           error: info.error?.message,
         };
-      } catch (err: any) {
-        return { error: err.message };
+      } catch (err: unknown) {
+        return { error: (err as Error).message };
       }
     },
 
@@ -190,7 +253,7 @@ function createDefaultOrchestratorHandlers(
       );
     },
 
-    async getStatus(): Promise<any> {
+    async getStatus(): Promise<GetStatusResult | null> {
       const info = orchestrator.getConnectionInfo(fromId, toId!);
       if (!info) return null;
 
@@ -215,32 +278,42 @@ function createDefaultOrchestratorHandlers(
       };
     },
 
-    onStateChange(remoteCallback: (event: any) => void) {
-      orchestrator.onStateChange((event) => remoteCallback(event));
+    onStateChange(remoteCallback: (event: StateChangeEvent) => void) {
+      orchestrator.onStateChange((event: StateChangeEvent) =>
+        remoteCallback(event)
+      );
     },
 
-    onReady(remoteCallback: (event: any) => void) {
-      orchestrator.onReady((event) => remoteCallback(event));
+    onReady(remoteCallback: (event: ReadyEvent) => void) {
+      orchestrator.onReady((event: ReadyEvent) => remoteCallback(event));
     },
 
-    onDisconnected(remoteCallback: (event: any) => void) {
-      orchestrator.onDisconnected((event) => remoteCallback(event));
+    onDisconnected(remoteCallback: (event: DisconnectedEvent) => void) {
+      orchestrator.onDisconnected((event: DisconnectedEvent) =>
+        remoteCallback(event)
+      );
     },
 
-    onReconnecting(remoteCallback: (event: any) => void) {
-      orchestrator.onReconnecting((event) => remoteCallback(event));
+    onReconnecting(remoteCallback: (event: ReconnectingEvent) => void) {
+      orchestrator.onReconnecting((event: ReconnectingEvent) =>
+        remoteCallback(event)
+      );
     },
 
-    onReconnected(remoteCallback: (event: any) => void) {
-      orchestrator.onReconnected((event) => remoteCallback(event));
+    onReconnected(remoteCallback: (event: ReconnectedEvent) => void) {
+      orchestrator.onReconnected((event: ReconnectedEvent) =>
+        remoteCallback(event)
+      );
     },
 
-    onReconnectFailed(remoteCallback: (event: any) => void) {
-      orchestrator.onReconnectFailed((event) => remoteCallback(event));
+    onReconnectFailed(remoteCallback: (event: ReconnectFailedEvent) => void) {
+      orchestrator.onReconnectFailed((event: ReconnectFailedEvent) =>
+        remoteCallback(event)
+      );
     },
 
-    onClosed(remoteCallback: (event: any) => void) {
-      orchestrator.onClosed((event) => remoteCallback(event));
+    onClosed(remoteCallback: (event: ClosedEvent) => void) {
+      orchestrator.onClosed((event: ClosedEvent) => remoteCallback(event));
     },
   };
 }

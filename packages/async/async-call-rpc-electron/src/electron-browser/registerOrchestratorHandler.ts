@@ -4,6 +4,7 @@ import {
   RPCService,
   ActivationContext,
 } from '@x-oasis/async-call-rpc';
+import { ActivationConnectionContext } from '../types';
 
 /**
  * Register a handler on `channel` that receives the direct `MessagePort`
@@ -49,30 +50,18 @@ import {
  */
 export function registerOrchestratorHandler(
   channel: AbstractChannelProtocol,
-  onPort: ((port: any) => void) | ((ctx: ActivationContext) => void)
+  onPort: ((ctx: ActivationContext) => void) | ((port: MessagePort) => void)
 ): void {
-  let lastContext: {
-    connectionId: string;
-    role: 'initiator' | 'receiver';
-  } | null = null;
+  let lastContext: ActivationConnectionContext | null = null;
 
-  const pendingContexts = new Map<
-    string,
-    { connectionId: string; role: 'initiator' | 'receiver' }
-  >();
+  const pendingContexts = new Map<string, ActivationConnectionContext>();
 
-  const contextQueue: {
-    connectionId: string;
-    role: 'initiator' | 'receiver';
-  }[] = [];
+  const contextQueue: ActivationConnectionContext[] = [];
 
   const service = new RPCService(ORCHESTRATOR_SERVICE_PATH, {
     handlers: {
-      activateConnection: (port: any, connectionId?: string) => {
-        let ctx: {
-          connectionId: string;
-          role: 'initiator' | 'receiver';
-        } | null = null;
+      activateConnection: (port: MessagePort, connectionId?: string) => {
+        let ctx: ActivationConnectionContext | null = null;
 
         if (connectionId) {
           ctx = pendingContexts.get(connectionId) ?? null;
@@ -90,19 +79,16 @@ export function registerOrchestratorHandler(
         }
 
         if (ctx) {
-          onPort({
+          (onPort as (ctx: ActivationContext) => void)({
             port,
             connectionId: ctx.connectionId,
             role: ctx.role,
           } as ActivationContext);
         } else {
-          (onPort as (port: any) => void)(port);
+          (onPort as (port: MessagePort) => void)(port);
         }
       },
-      activateConnectionContext: (ctx: {
-        connectionId: string;
-        role: 'initiator' | 'receiver';
-      }) => {
+      activateConnectionContext: (ctx: ActivationConnectionContext) => {
         pendingContexts.set(ctx.connectionId, ctx);
         contextQueue.push(ctx);
         lastContext = ctx;

@@ -1,6 +1,5 @@
 import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
-import { MessagePortMainChannelProps } from '../types';
-import { MessagePortMain } from 'electron';
+import { MessagePortMainChannelProps, MessagePortMain } from '../types';
 
 /**
  * RPC channel protocol for Electron's `MessagePortMain`.
@@ -66,7 +65,7 @@ export default class ElectronMessagePortMainChannel extends AbstractChannelProto
     this._onMessageListener = null;
 
     if (port) {
-      this._attachPort(port as unknown as MessagePortMain);
+      this._attachPort(port);
     }
   }
 

@@ -6,7 +6,13 @@ import {
 } from '@x-oasis/async-call-rpc';
 import ElectronUtilityProcessChannel from './ElectronUtilityProcessChannel';
 import ElectronMessagePortMainChannel from './ElectronMessagePortMainChannel';
-import { ParentPort } from '../types';
+import {
+  ParentPort,
+  MessagePortMain,
+  ActivationConnectionContext,
+} from '../types';
+
+type ServiceProxy = Record<string, (...args: unknown[]) => unknown>;
 
 export interface UtilityParticipantOptions {
   parentPort: ParentPort;
@@ -19,10 +25,7 @@ export class UtilityOrchestratorParticipant {
   private _mainChannel: ElectronUtilityProcessChannel;
   private _directChannel: ElectronMessagePortMainChannel;
   private _mainServiceHost: RPCServiceHost;
-  private _serviceProxies = new Map<
-    string,
-    Record<string, (...args: any[]) => any>
-  >();
+  private _serviceProxies = new Map<string, ServiceProxy>();
   private _rebind: boolean;
 
   constructor(options: UtilityParticipantOptions) {
@@ -48,10 +51,10 @@ export class UtilityOrchestratorParticipant {
     this._mainChannel.setServiceHost(this._mainServiceHost);
 
     this._mainServiceHost.registerServiceHandler(ORCHESTRATOR_SERVICE_PATH, {
-      activateConnection: (port: any) => {
+      activateConnection: (port: MessagePortMain) => {
         this._directChannel.bindPort(port, { rebind: this._rebind });
       },
-      activateConnectionContext: (_ctx: any) => {},
+      activateConnectionContext: (_ctx: ActivationConnectionContext) => {},
       ping: () => 'pong',
     });
   }
@@ -64,9 +67,7 @@ export class UtilityOrchestratorParticipant {
     return this._directChannel;
   }
 
-  getService<T extends Record<string, (...args: any[]) => any>>(
-    servicePath: string
-  ): T {
+  getService<T extends ServiceProxy>(servicePath: string): T {
     if (this._serviceProxies.has(servicePath)) {
       return this._serviceProxies.get(servicePath) as T;
     }
@@ -81,10 +82,7 @@ export class UtilityOrchestratorParticipant {
     return proxy;
   }
 
-  registerService(
-    serviceId: string,
-    handlers: Record<string, (...args: any[]) => any>
-  ): void {
+  registerService(serviceId: string, handlers: ServiceProxy): void {
     serviceHost.registerService(serviceId, {
       channel: this._directChannel,
       serviceHost,
@@ -92,10 +90,7 @@ export class UtilityOrchestratorParticipant {
     });
   }
 
-  registerControlService(
-    serviceId: string,
-    handlers: Record<string, (...args: any[]) => any>
-  ): void {
+  registerControlService(serviceId: string, handlers: ServiceProxy): void {
     this._mainServiceHost.registerServiceHandler(serviceId, handlers);
   }
 }

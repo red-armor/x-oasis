@@ -6,6 +6,7 @@ import {
   IpcRendererEvent,
   UtilityProcess,
   WebContents,
+  MessagePortMain,
 } from 'electron';
 
 // ─── MessagePortMain interfaces ──────────────────────────────────────────────
@@ -19,24 +20,24 @@ import {
  * @see https://www.electronjs.org/docs/latest/api/message-port-main
  */
 export interface MainPort extends NodeJS.EventEmitter {
-  on(event: 'close', listener: Function): this;
+  on(event: 'close', listener: () => void): this;
   on(event: 'message', listener: (messageEvent: MessageEvent) => void): this;
-  off(event: 'close', listener: Function): this;
+  off(event: 'close', listener: () => void): this;
   off(event: 'message', listener: (messageEvent: MessageEvent) => void): this;
-  once(event: 'close', listener: Function): this;
+  once(event: 'close', listener: () => void): this;
   once(event: 'message', listener: (messageEvent: MessageEvent) => void): this;
-  addListener(event: 'close', listener: Function): this;
+  addListener(event: 'close', listener: () => void): this;
   addListener(
     event: 'message',
     listener: (messageEvent: MessageEvent) => void
   ): this;
-  removeListener(event: 'close', listener: Function): this;
+  removeListener(event: 'close', listener: () => void): this;
   removeListener(
     event: 'message',
     listener: (messageEvent: MessageEvent) => void
   ): this;
   close(): void;
-  postMessage(message: any, transfer?: MainPort[]): void;
+  postMessage(message: unknown, transfer?: MainPort[]): void;
   start(): void;
 }
 
@@ -56,18 +57,13 @@ export interface ParentPort extends NodeJS.EventEmitter {
     event: 'message',
     listener: (messageEvent: MessageEvent) => void
   ): this;
-  postMessage(message: any): void;
+  postMessage(message: unknown, transfer?: MainPort[]): void;
 }
 
 // ─── Props types ─────────────────────────────────────────────────────────────
 
 export type MessagePortMainChannelProps = {
-  /**
-   * The `MessagePortMain` to wrap. May be omitted to construct a
-   * disconnected channel that queues sends; bind the port later via
-   * {@link ElectronMessagePortMainChannel.bindPort}.
-   */
-  port?: MainPort;
+  port?: MessagePortMain;
 } & AbstractChannelProtocolProps;
 
 export type UtilityProcessChannelProps = {
@@ -113,6 +109,26 @@ export interface ContextBridgeAPI {
 
 export type ContextBridgeChannelProps = AbstractChannelProtocolProps;
 
+// ─── IPC message structure types ─────────────────────────────────────────────
+
+export interface IpcLikeMessage {
+  data: unknown;
+  ports: MessagePort[];
+  [key: string]: unknown;
+}
+
+export interface IpcMainLikeMessage {
+  data: unknown;
+  sender: WebContents;
+  ports: MessagePortMain[];
+  [key: string]: unknown;
+}
+
+export interface ActivationConnectionContext {
+  connectionId: string;
+  role: 'initiator' | 'receiver';
+}
+
 // ─── Re-exports for convenience ──────────────────────────────────────────────
 
 export type {
@@ -122,4 +138,5 @@ export type {
   IpcRendererEvent,
   UtilityProcess,
   WebContents,
+  MessagePortMain,
 };

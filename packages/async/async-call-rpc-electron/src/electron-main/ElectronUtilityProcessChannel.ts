@@ -4,6 +4,7 @@ import {
   UtilityProcessParentPortChannelProps,
   ParentPort,
   UtilityProcess,
+  MessagePortMain,
 } from '../types';
 
 /**
@@ -67,13 +68,16 @@ export default class ElectronUtilityProcessChannel extends AbstractChannelProtoc
     if ('process' in props) {
       target = props.process;
       killOnDisconnect = true;
-      delete (rest as any).process;
+      const { process: _, ...restWithoutProcess } =
+        rest as UtilityProcessChannelProps;
+      super(restWithoutProcess);
     } else {
       target = (props as UtilityProcessParentPortChannelProps).parentPort;
-      delete (rest as any).parentPort;
+      const { parentPort: _, ...restWithoutParentPort } =
+        rest as UtilityProcessParentPortChannelProps;
+      super(restWithoutParentPort);
     }
 
-    super(rest);
     this._target = target;
     this._killOnDisconnect = killOnDisconnect;
 
@@ -116,13 +120,15 @@ export default class ElectronUtilityProcessChannel extends AbstractChannelProtoc
     };
   }
 
-  send(data: unknown, transfer?: any[]): void {
+  send(data: unknown, transfer?: MessagePortMain[]): void {
     if (typeof this._target.postMessage === 'function') {
       if (transfer && transfer.length) {
-        (this._target.postMessage as (d: unknown, t?: any[]) => void)(
-          data,
-          transfer
-        );
+        (
+          this._target.postMessage as (
+            d: unknown,
+            t?: MessagePortMain[]
+          ) => void
+        )(data, transfer);
       } else {
         this._target.postMessage(data);
       }

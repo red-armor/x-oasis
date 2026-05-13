@@ -8,6 +8,9 @@ import {
   ListConnectionEntry,
 } from '@x-oasis/async-call-rpc';
 import ElectronMessagePortMainChannel from './ElectronMessagePortMainChannel';
+import { MessagePortMain, ActivationConnectionContext } from '../types';
+
+type OrchestratorProxyClient = Record<string, (...args: unknown[]) => unknown>;
 
 export interface ParticipantConnection {
   readonly connectionId: string;
@@ -38,7 +41,7 @@ export class ParticipantOrchestratorProxy {
       reject: (err: Error) => void;
     }
   >();
-  private _orchestratorClient: any;
+  private _orchestratorClient: OrchestratorProxyClient;
   private _onConnection?: (conn: ParticipantConnection) => void;
 
   constructor(options: ParticipantOrchestratorProxyOptions) {
@@ -77,11 +80,8 @@ export class ParticipantOrchestratorProxy {
   private _setupOrchestratorHandler(): void {
     const service = new RPCService(ORCHESTRATOR_SERVICE_PATH, {
       handlers: {
-        activateConnection: (port: any, connectionId?: string) => {
-          let ctx: {
-            connectionId: string;
-            role: 'initiator' | 'receiver';
-          } | null = null;
+        activateConnection: (port: MessagePortMain, connectionId?: string) => {
+          let ctx: ActivationConnectionContext | null = null;
 
           if (connectionId) {
             ctx = this._pendingContexts.get(connectionId) ?? null;
@@ -131,10 +131,7 @@ export class ParticipantOrchestratorProxy {
             });
           }
         },
-        activateConnectionContext: (ctx: {
-          connectionId: string;
-          role: 'initiator' | 'receiver';
-        }) => {
+        activateConnectionContext: (ctx: ActivationConnectionContext) => {
           this._pendingContexts.set(ctx.connectionId, ctx);
           this._contextQueue.push(ctx);
           this._lastContext = ctx;
@@ -147,8 +144,8 @@ export class ParticipantOrchestratorProxy {
 
   async connect(
     toId: string,
-    config?: Record<string, any>,
-    options?: Record<string, any>
+    config?: Record<string, unknown>,
+    options?: Record<string, unknown>
   ): Promise<ParticipantConnection> {
     const connectionId = this._canonicalConnectionId(this._selfId, toId);
 
@@ -169,25 +166,34 @@ export class ParticipantOrchestratorProxy {
         reject,
       });
 
-      this._orchestratorClient
-        .requestConnect(this._selfId, toId, config, options)
-        .catch((err: Error) => {
-          this._pendingConnects.delete(connectionId);
-          reject(err);
-        });
+      (
+        this._orchestratorClient.requestConnect(
+          this._selfId,
+          toId,
+          config,
+          options
+        ) as Promise<unknown>
+      ).catch((err: Error) => {
+        this._pendingConnects.delete(connectionId);
+        reject(err);
+      });
     });
   }
 
   async disconnect(connectionId: string): Promise<void> {
-    return this._orchestratorClient.requestDisconnect(connectionId);
+    await this._orchestratorClient.requestDisconnect(connectionId);
   }
 
   async listParticipants(): Promise<ListParticipantEntry[]> {
-    return this._orchestratorClient.listParticipants();
+    return this._orchestratorClient.listParticipants() as Promise<
+      ListParticipantEntry[]
+    >;
   }
 
   async listConnections(): Promise<ListConnectionEntry[]> {
-    return this._orchestratorClient.listConnections();
+    return this._orchestratorClient.listConnections() as Promise<
+      ListConnectionEntry[]
+    >;
   }
 
   getChannelFor(peerId: string): ElectronMessagePortMainChannel | undefined {

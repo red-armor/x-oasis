@@ -1,7 +1,7 @@
 import { contextBridge } from 'electron';
 import IPCRendererChannel from './IPCRendererChannel';
 import { registerOrchestratorHandler } from './registerOrchestratorHandler';
-import { ContextBridgeAPI, IpcRenderer } from '../types';
+import { ContextBridgeAPI, IpcRenderer, IpcLikeMessage } from '../types';
 import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
 import { ORCHESTRATOR_SERVICE_PATH } from '@x-oasis/async-call-rpc';
 
@@ -16,7 +16,7 @@ export interface CreatePageBridgeOptions {
   defaultPeerId?: string;
 }
 
-function getServicePath(data: unknown): string | undefined {
+export function getServicePath(data: unknown): string | undefined {
   if (typeof data === 'string') {
     try {
       data = JSON.parse(data);
@@ -32,8 +32,20 @@ function getServicePath(data: unknown): string | undefined {
   return typeof header[2] === 'string' ? header[2] : undefined;
 }
 
+export function resolvePeerId(connectionId: string): string | undefined {
+  const parts = connectionId.split('--');
+  if (parts.length !== 2) return undefined;
+  return parts[0] === 'renderer' ? parts[1] : parts[0];
+}
+
+export interface ActivationHandlerContext {
+  port: MessagePort;
+  connectionId?: string;
+  role?: 'initiator' | 'receiver';
+}
+
 export function createPageBridge(options: CreatePageBridgeOptions): {
-  channel: any;
+  channel: RPCMessageChannel;
   ipcChannel: IPCRendererChannel;
 } {
   const {
@@ -74,17 +86,16 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
 
   let firstPort: MessagePort | null = null;
 
-  registerOrchestratorHandler(ipcChannel, (ctx: any) => {
+  registerOrchestratorHandler(ipcChannel, (ctx: ActivationHandlerContext) => {
     const port: MessagePort =
-      ctx && typeof ctx === 'object' && 'port' in ctx ? ctx.port : ctx;
+      ctx && typeof ctx === 'object' && 'port' in ctx
+        ? ctx.port
+        : (ctx as unknown as MessagePort);
 
     let resolvedPeerId: string | undefined;
 
-    if (ctx?.connectionId && typeof ctx.connectionId === 'string') {
-      const parts = ctx.connectionId.split('--');
-      if (parts.length === 2) {
-        resolvedPeerId = parts[0] === 'renderer' ? parts[1] : parts[0];
-      }
+    if ('connectionId' in ctx && typeof ctx.connectionId === 'string') {
+      resolvedPeerId = resolvePeerId(ctx.connectionId);
       if (resolvedPeerId) {
         peerPortMap.set(resolvedPeerId, port);
         if (serviceRoutes) {
@@ -110,7 +121,10 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
     port.addEventListener('message', handler);
     port.start();
 
-    if (!firstPort) {
+    const resolvedAsDefault =
+      !defaultPeerId || (resolvedPeerId && resolvedPeerId === defaultPeerId);
+
+    if (resolvedAsDefault) {
       firstPort = port;
       realChannel.bindPort(port, { rebind: true });
     }
@@ -158,9 +172,9 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
     },
   };
 
-  ipcChannel.on((rawMessage: any) => {
+  ipcChannel.on((rawMessage: IpcLikeMessage) => {
     const data = rawMessage?.data ?? rawMessage;
-    const ports = rawMessage?.ports ?? [];
+    const ports = (rawMessage as IpcLikeMessage)?.ports ?? [];
     if (ports.length > 0) return;
     if (getServicePath(data) === ORCHESTRATOR_SERVICE_PATH) return;
     ipcMessageHandlers.forEach((cb) => cb(data));
@@ -182,12 +196,13 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
       '[createPageBridge] contextBridge not available. ' +
         'Falling back to globalThis. This should only happen in tests.'
     );
-    (globalThis as any)[bridgeKey] = {
+    const g = globalThis as Record<string, unknown>;
+    g[bridgeKey] = {
       _send: bridge._send,
       _onMessage: bridge._onMessage,
       _offMessage: bridge._offMessage,
     };
-    (globalThis as any)[ipcBridgeKey] = {
+    g[ipcBridgeKey] = {
       _send: ipcBridge._send,
       _onMessage: ipcBridge._onMessage,
       _offMessage: ipcBridge._offMessage,

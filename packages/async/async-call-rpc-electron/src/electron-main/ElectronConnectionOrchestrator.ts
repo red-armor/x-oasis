@@ -8,6 +8,10 @@ import {
   HeartbeatConfig,
 } from '@x-oasis/async-call-rpc';
 
+interface DeferredLike {
+  promise: PromiseLike<unknown>;
+}
+
 /**
  * Factory type for creating a `MessageChannelMain` port pair.
  * Can be overridden in tests or subclasses.
@@ -111,8 +115,11 @@ export class ElectronConnectionOrchestrator extends BaseConnectionOrchestrator {
       { connectionId, role }
     );
 
-    if (metaDeferred && typeof (metaDeferred as any).promise === 'object') {
-      await (metaDeferred as any).promise;
+    if (
+      metaDeferred &&
+      typeof (metaDeferred as DeferredLike).promise === 'object'
+    ) {
+      await (metaDeferred as DeferredLike).promise;
     }
 
     const portDeferred = info.channel.makeRequest(
@@ -121,8 +128,11 @@ export class ElectronConnectionOrchestrator extends BaseConnectionOrchestrator {
       port
     );
 
-    if (portDeferred && typeof (portDeferred as any).promise === 'object') {
-      await (portDeferred as any).promise;
+    if (
+      portDeferred &&
+      typeof (portDeferred as DeferredLike).promise === 'object'
+    ) {
+      await (portDeferred as DeferredLike).promise;
     }
   }
 
@@ -131,6 +141,8 @@ export class ElectronConnectionOrchestrator extends BaseConnectionOrchestrator {
    * timeout check. If the participant's channel does not deliver a pong
    * within `hbConfig.timeoutMs`, the connection is treated as lost.
    */
+  // mc uses the internal ManagedConnection type from BaseConnectionOrchestrator
+  // which is not exported — cannot narrow further without upstream changes
   protected _sendHeartbeat(mc: any, hbConfig: HeartbeatConfig): void {
     if (mc.state !== 'READY') {
       this._stopHeartbeat(mc);

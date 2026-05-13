@@ -33,7 +33,7 @@ export default class ContextBridgeChannel extends AbstractChannelProtocol {
     return () => this._listeners.delete(listener);
   }
 
-  send(data: unknown, _transfer?: any[]): void {
+  send(data: unknown, _transfer?: Transferable[]): void {
     if (!this._bridge) {
       console.warn(
         '[ContextBridgeChannel] send called before bridge was set up.'
@@ -44,7 +44,7 @@ export default class ContextBridgeChannel extends AbstractChannelProtocol {
   }
 
   activate(): void {
-    const bridge = (globalThis as any)[this._bridgeKey] as
+    const bridge = (globalThis as Record<string, unknown>)[this._bridgeKey] as
       | ContextBridgeAPI
       | undefined;
     if (!bridge) {

@@ -1,6 +1,12 @@
 import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
 import { ipcMain } from 'electron';
-import { IPCMainChannelProps, IpcMainEvent, WebContents } from '../types';
+import {
+  IPCMainChannelProps,
+  IpcMainEvent,
+  IpcMainLikeMessage,
+  MessagePortMain,
+  WebContents,
+} from '../types';
 
 /**
  * RPC channel protocol for Electron's `ipcMain` side.
@@ -132,7 +138,7 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
         data,
         sender: _event.sender,
         ports, // ← CRITICAL: Don't forget to include ports!
-      } as any);
+      } as IpcMainLikeMessage);
     };
 
     ipcMain.on(this._channelName, handler);
@@ -143,17 +149,11 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
     };
   }
 
-  send(data: unknown, transfer?: any[]): void {
-    /**
-     * STEP 1: Determine the target WebContents
-     * In broadcast mode, use the last sender
-     * In bound mode, use the configured webContents
-     */
+  send(data: unknown, transfer?: MessagePortMain[]): void {
     const target = this._acceptAllSenders
       ? this._lastSender
       : this._webContents;
 
-    // STEP 2: Check if target exists
     if (!target) {
       console.warn(
         `[IPCMainChannel] Cannot send on "${this._channelName}": no target WebContents.`
@@ -161,20 +161,13 @@ export default class IPCMainChannel extends AbstractChannelProtocol {
       return;
     }
 
-    // STEP 3: Check if target is destroyed
     if (target.isDestroyed && target.isDestroyed()) {
       return;
     }
 
-    // STEP 4: Send with appropriate method based on transfer list
     if (transfer && transfer.length) {
-      // CASE 1: Sending with Transferable objects
-      // Use postMessage which supports transfer list
-      // This makes the Transferable objects appear in receiver's event.ports
-      (target as any).postMessage(this._channelName, data, transfer);
+      target.postMessage(this._channelName, data, transfer);
     } else {
-      // CASE 2: Simple message without Transferables
-      // Use regular send, which is slightly more efficient
       target.send(this._channelName, data);
     }
   }

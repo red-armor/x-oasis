@@ -3,6 +3,7 @@ import {
   IPCRendererChannelProps,
   IpcRenderer,
   IpcRendererEvent,
+  IpcLikeMessage,
 } from '../types';
 
 /**
@@ -112,7 +113,7 @@ export default class IPCRendererChannel extends AbstractChannelProtocol {
         data,
         ports, // ← CRITICAL: Don't forget to include ports!
         event: _event,
-      } as any);
+      } as IpcLikeMessage);
     };
 
     this._ipcRenderer.on(this._channelName, handler);
@@ -123,20 +124,10 @@ export default class IPCRendererChannel extends AbstractChannelProtocol {
     };
   }
 
-  send(data: unknown, transfer?: any[]): void {
-    /**
-     * STEP 1: Check if there are Transferable objects to send
-     * If transfer list is provided, use postMessage for Transferable support
-     * Otherwise, use send for simple messages
-     */
+  send(data: unknown, transfer?: MessagePort[]): void {
     if (transfer && transfer.length) {
-      // CASE 1: Sending with Transferable objects
-      // Use postMessage which supports transfer list
-      // This makes the Transferable objects appear in receiver's event.ports
-      (this._ipcRenderer as any).postMessage(this._channelName, data, transfer);
+      this._ipcRenderer.postMessage(this._channelName, data, transfer);
     } else {
-      // CASE 2: Simple message without Transferables
-      // Use regular send, which is slightly more efficient
       this._ipcRenderer.send(this._channelName, data);
     }
   }
