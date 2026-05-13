@@ -43,6 +43,7 @@ export const AppOrchestratorId = createId('AppOrchestrator');
 @injectable()
 export class AppOrchestrator implements IAppOrchestrator {
   private pageServiceHost = new RPCServiceHost();
+  private settingPageServiceHost = new RPCServiceHost();
 
   constructor(
     @inject(MainCpServerId) private readonly cpServer: IMainCpServer,
@@ -153,20 +154,23 @@ export class AppOrchestrator implements IAppOrchestrator {
   }
 
   registerSettingOrchestratorService(): void {
-    const rendererIpcChannel = this.cpServer.getRendererIpcChannel();
-    rendererIpcChannel.setServiceHost(this.pageServiceHost);
+    const settingIpcChannel = this.cpServer.getSettingIpcChannel();
+    if (!settingIpcChannel) {
+      console.warn('[AppOrchestrator] setting IPC channel not ready yet');
+      return;
+    }
 
-    const orchestrator = this.cpServer.getOrchestrator();
+    settingIpcChannel.setServiceHost(this.settingPageServiceHost);
 
-    const SETTING_ORCHESTRATOR_SERVICE_PATH = 'setting-orchestrator';
+    const settingOrchestrator = this.cpServer.getSettingOrchestrator();
 
-    this.pageServiceHost.registerService(SETTING_ORCHESTRATOR_SERVICE_PATH, {
-      channel: rendererIpcChannel,
-      serviceHost: this.pageServiceHost,
+    this.settingPageServiceHost.registerService('orchestrator', {
+      channel: settingIpcChannel,
+      serviceHost: this.settingPageServiceHost,
       handlers: {
         async connect(): Promise<any> {
           try {
-            const info = await orchestrator.connect(
+            const info = await settingOrchestrator.connect(
               RENDERER_PARTICIPANT_ID,
               SETTING_PARTICIPANT_ID
             );
@@ -183,27 +187,29 @@ export class AppOrchestrator implements IAppOrchestrator {
           }
         },
         async disconnect(): Promise<void> {
-          const info = orchestrator.getConnectionInfo(
+          const info = settingOrchestrator.getConnectionInfo(
             RENDERER_PARTICIPANT_ID,
             SETTING_PARTICIPANT_ID
           );
           if (info) {
-            await orchestrator.disconnect(info.connectionId);
+            await settingOrchestrator.disconnect(info.connectionId);
           }
         },
         simulateLost(): void {
-          orchestrator.handleParticipantLost(
+          settingOrchestrator.handleParticipantLost(
             SETTING_PARTICIPANT_ID,
             'simulated process exit'
           );
         },
         async getStatus(): Promise<any> {
-          const info = orchestrator.getConnectionInfo(
+          const info = settingOrchestrator.getConnectionInfo(
             RENDERER_PARTICIPANT_ID,
             SETTING_PARTICIPANT_ID
           );
           if (!info) return null;
-          const stats = orchestrator.getConnectionStats(info.connectionId);
+          const stats = settingOrchestrator.getConnectionStats(
+            info.connectionId
+          );
           return {
             connectionId: info.connectionId,
             fromId: info.fromId,
@@ -227,25 +233,27 @@ export class AppOrchestrator implements IAppOrchestrator {
           this.pageletProcess.kill(SETTING_PARTICIPANT_ID);
         },
         onStateChange(remoteCallback: (event: any) => void) {
-          orchestrator.onStateChange((event) => remoteCallback(event));
+          settingOrchestrator.onStateChange((event) => remoteCallback(event));
         },
         onReady(remoteCallback: (event: any) => void) {
-          orchestrator.onReady((event) => remoteCallback(event));
+          settingOrchestrator.onReady((event) => remoteCallback(event));
         },
         onDisconnected(remoteCallback: (event: any) => void) {
-          orchestrator.onDisconnected((event) => remoteCallback(event));
+          settingOrchestrator.onDisconnected((event) => remoteCallback(event));
         },
         onReconnecting(remoteCallback: (event: any) => void) {
-          orchestrator.onReconnecting((event) => remoteCallback(event));
+          settingOrchestrator.onReconnecting((event) => remoteCallback(event));
         },
         onReconnected(remoteCallback: (event: any) => void) {
-          orchestrator.onReconnected((event) => remoteCallback(event));
+          settingOrchestrator.onReconnected((event) => remoteCallback(event));
         },
         onReconnectFailed(remoteCallback: (event: any) => void) {
-          orchestrator.onReconnectFailed((event) => remoteCallback(event));
+          settingOrchestrator.onReconnectFailed((event) =>
+            remoteCallback(event)
+          );
         },
         onClosed(remoteCallback: (event: any) => void) {
-          orchestrator.onClosed((event) => remoteCallback(event));
+          settingOrchestrator.onClosed((event) => remoteCallback(event));
         },
       },
     });
@@ -254,8 +262,11 @@ export class AppOrchestrator implements IAppOrchestrator {
   }
 
   async connectSetting(): Promise<void> {
-    const orchestrator = this.cpServer.getOrchestrator();
-    await orchestrator.connect(RENDERER_PARTICIPANT_ID, SETTING_PARTICIPANT_ID);
+    const settingOrchestrator = this.cpServer.getSettingOrchestrator();
+    await settingOrchestrator.connect(
+      RENDERER_PARTICIPANT_ID,
+      SETTING_PARTICIPANT_ID
+    );
     console.log('[AppOrchestrator] setting direct connection established');
   }
 }

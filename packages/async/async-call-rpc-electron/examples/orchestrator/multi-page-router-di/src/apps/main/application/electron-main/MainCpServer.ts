@@ -16,7 +16,9 @@ import { RENDERER_PARTICIPANT_ID } from '@/services/pagelet-host/common';
 export interface IMainCpServer {
   start(): void;
   getOrchestrator(): ElectronConnectionOrchestrator;
+  getSettingOrchestrator(): ElectronConnectionOrchestrator;
   getRendererIpcChannel(): IPCMainChannel;
+  getSettingIpcChannel(): IPCMainChannel | null;
   registerSettingWindow(win: BrowserWindow): IPCMainChannel;
 }
 
@@ -26,6 +28,8 @@ export const MainCpServerId = createId('MainCpServer');
 export class MainCpServer implements IMainCpServer {
   private orchestrator!: ElectronConnectionOrchestrator;
   private rendererIpcChannel!: IPCMainChannel;
+  private settingOrchestrator!: ElectronConnectionOrchestrator;
+  private settingIpcChannel: IPCMainChannel | null = null;
 
   constructor(
     @inject(WindowManagerId) private readonly windowManager: IWindowManager
@@ -62,6 +66,12 @@ export class MainCpServer implements IMainCpServer {
 
     this.orchestrator.registerProxyService(serviceHost);
 
+    this.settingOrchestrator = new ElectronConnectionOrchestrator({
+      logger: (level, msg) =>
+        console.log(`[setting-orchestrator:${level}] ${msg}`),
+      enableStats: true,
+    });
+
     console.log('[MainCpServer] started');
   }
 
@@ -73,23 +83,31 @@ export class MainCpServer implements IMainCpServer {
     return this.rendererIpcChannel;
   }
 
+  getSettingIpcChannel(): IPCMainChannel | null {
+    return this.settingIpcChannel;
+  }
+
+  getSettingOrchestrator(): ElectronConnectionOrchestrator {
+    return this.settingOrchestrator;
+  }
+
   registerSettingWindow(win: BrowserWindow): IPCMainChannel {
-    const settingIpcChannel = new IPCMainChannel({
+    this.settingIpcChannel = new IPCMainChannel({
       channelName: 'setting-rpc',
       webContents: win.webContents,
       description: 'main→setting-renderer IPC channel',
     });
 
-    this.orchestrator.registerParticipant(
-      'setting-renderer',
-      settingIpcChannel,
+    this.settingOrchestrator.registerParticipant(
+      RENDERER_PARTICIPANT_ID,
+      this.settingIpcChannel,
       'renderer'
     );
 
-    settingIpcChannel.setServiceHost(serviceHost);
+    this.settingOrchestrator.registerProxyService(serviceHost);
 
     console.log('[MainCpServer] setting window registered');
 
-    return settingIpcChannel;
+    return this.settingIpcChannel;
   }
 }

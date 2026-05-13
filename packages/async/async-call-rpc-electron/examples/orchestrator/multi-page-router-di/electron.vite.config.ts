@@ -36,14 +36,10 @@ export default defineConfig({
             __dirname,
             'src/apps/main/application/electron-browser/preload.ts'
           ),
-          'setting-preload': resolve(
-            __dirname,
-            'src/apps/setting/application/electron-browser/preload.ts'
-          ),
         },
         output: {
           format: 'cjs',
-          inlineDynamicImports: false,
+          inlineDynamicImports: true,
         },
         external: ['electron'],
       },
@@ -51,8 +47,34 @@ export default defineConfig({
     resolve: { alias: xOasisAliases },
     plugins: [
       {
-        name: 'build-utility-workers',
+        name: 'build-extra-preloads-and-workers',
         async closeBundle() {
+          const extraPreloads = [
+            {
+              entry: 'src/apps/setting/application/electron-browser/preload.ts',
+              outName: 'setting-preload',
+            },
+          ];
+          for (const p of extraPreloads) {
+            await build({
+              build: {
+                outDir: resolve(__dirname, 'out/preload'),
+                emptyOutDir: false,
+                lib: {
+                  entry: resolve(__dirname, p.entry),
+                  formats: ['cjs'],
+                  fileName: () => `${p.outName}.js`,
+                },
+                rollupOptions: {
+                  external: ['electron'],
+                },
+              },
+              resolve: {
+                alias: xOasisAliases,
+              },
+            });
+          }
+
           const workers = [
             {
               entry: 'src/apps/daemon/application/node/main.ts',

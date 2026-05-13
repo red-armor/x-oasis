@@ -45,9 +45,19 @@ export class PageletProcess implements IPageletProcess {
 
     this.processes.set(pageletId, proc);
     this.channels.set(pageletId, channel);
-    this.cpServer
-      .getOrchestrator()
-      .registerParticipant(pageletId, channel, 'utility');
+
+    if (pageletId === 'setting') {
+      this.cpServer
+        .getOrchestrator()
+        .registerParticipant(pageletId, channel, 'utility');
+      this.cpServer
+        .getSettingOrchestrator()
+        .registerParticipant(pageletId, channel, 'utility');
+    } else {
+      this.cpServer
+        .getOrchestrator()
+        .registerParticipant(pageletId, channel, 'utility');
+    }
 
     pidNameRegistry.register(proc, PAGELET_NAMES[pageletId] || pageletId);
 

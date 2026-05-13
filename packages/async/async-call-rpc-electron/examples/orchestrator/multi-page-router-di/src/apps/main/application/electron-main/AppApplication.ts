@@ -30,6 +30,10 @@ import {
   ISettingApplication,
   SettingApplicationId,
 } from '@/apps/setting/application/electron-main/SettingApplication';
+import {
+  IAppOrchestrator,
+  AppOrchestratorId,
+} from '@/services/pagelet-host/electron-main/AppOrchestrator';
 import { MAIN_RPC_SERVICE_PATH } from '@/services/pagelet-host/common';
 import { MAIN_METRICS_SERVICE_PATH } from '@/services/main-metrics/common';
 import { pidNameRegistry } from '@/services/main-metrics/electron-main/pidNameRegistry';
@@ -79,7 +83,9 @@ export class AppApplication implements IAppApplication {
     @inject(MonitorApplicationId)
     private readonly monitorApp: IMonitorApplication,
     @inject(SettingApplicationId)
-    private readonly settingApp: ISettingApplication
+    private readonly settingApp: ISettingApplication,
+    @inject(AppOrchestratorId)
+    private readonly appOrchestrator: IAppOrchestrator
   ) {}
 
   async start(): Promise<void> {
@@ -161,6 +167,7 @@ export class AppApplication implements IAppApplication {
 
     this.windowManager.onSettingWindowCreated((win) => {
       this.mainCpServer.registerSettingWindow(win);
+      this.appOrchestrator.registerSettingOrchestratorService();
     });
 
     console.log('[AppApplication] start() done');

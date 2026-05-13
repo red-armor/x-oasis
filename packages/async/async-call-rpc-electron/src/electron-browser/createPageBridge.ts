@@ -91,10 +91,7 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
           for (const [servicePath, routePeerId] of Object.entries(
             serviceRoutes
           )) {
-            if (
-              routePeerId === resolvedPeerId &&
-              !servicePortMap.has(servicePath)
-            ) {
+            if (routePeerId === resolvedPeerId) {
               servicePortMap.set(servicePath, port);
             }
           }
@@ -105,7 +102,7 @@ export function createPageBridge(options: CreatePageBridgeOptions): {
     const handler = (ev: MessageEvent) => {
       const data = ev.data;
       const servicePath = getServicePath(data);
-      if (servicePath && !servicePortMap.has(servicePath)) {
+      if (servicePath) {
         servicePortMap.set(servicePath, port);
       }
       messageHandlers.forEach((cb) => cb(data));

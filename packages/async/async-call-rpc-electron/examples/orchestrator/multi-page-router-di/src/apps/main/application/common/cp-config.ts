@@ -15,20 +15,6 @@ export const MONITOR_PAGE = {
   description: 'Performance Monitor',
 } as const;
 
-export const SETTING_PAGE = {
-  id: 'setting',
-  label: 'Settings',
-  color: '#7c3aed',
-  description: 'Open Settings Window',
-} as const;
+export type PageConfig = typeof CONNECTION_PAGE | typeof MONITOR_PAGE;
 
-export type PageConfig =
-  | typeof CONNECTION_PAGE
-  | typeof MONITOR_PAGE
-  | typeof SETTING_PAGE;
-
-export const ALL_PAGES: PageConfig[] = [
-  CONNECTION_PAGE,
-  MONITOR_PAGE,
-  SETTING_PAGE,
-];
+export const ALL_PAGES: PageConfig[] = [CONNECTION_PAGE, MONITOR_PAGE];

@@ -31,8 +31,6 @@ export class SettingApplication implements ISettingApplication {
       SETTING_PARTICIPANT_ID,
       SETTING_WORKER_FILE
     );
-    this.appOrchestrator.registerSettingOrchestratorService();
-    await this.appOrchestrator.connectSetting();
     console.log('[SettingApplication] started');
   }
 }
