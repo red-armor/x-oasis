@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.9.0
+
+### Minor Changes
+
+- b0af3cc: feat: make di fit to orchestrator'
+
 ## 0.8.0
 
 ### Minor Changes

@@ -1,5 +1,17 @@
 # @x-oasis/async-call-rpc-electron
 
+## 0.10.0
+
+### Minor Changes
+
+- b0af3cc: feat: make di fit to orchestrator'
+
+### Patch Changes
+
+- Updated dependencies [b0af3cc]
+  - @x-oasis/async-call-rpc@0.12.0
+  - @x-oasis/async-call-rpc-web@0.10.0
+
 ## 0.9.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @x-oasis/node-fetch-json
 
+## 0.10.0
+
+### Minor Changes
+
+- b0af3cc: feat: make di fit to orchestrator'
+
 ## 0.9.0
 
 ### Minor Changes
