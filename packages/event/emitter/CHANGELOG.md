@@ -1,5 +1,17 @@
 # @x-oasis/emitter
 
+## 0.13.0
+
+### Minor Changes
+
+- b7e4240: fix: build issue
+
+### Patch Changes
+
+- Updated dependencies [b7e4240]
+  - @x-oasis/is-object@0.13.0
+  - @x-oasis/disposable@0.13.0
+
 ## 0.12.0
 
 ### Minor Changes

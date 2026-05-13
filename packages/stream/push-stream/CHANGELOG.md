@@ -1,5 +1,11 @@
 # @x-oasis/push-stream
 
+## 0.12.0
+
+### Minor Changes
+
+- b7e4240: fix: build issue
+
 ## 0.11.0
 
 ### Minor Changes

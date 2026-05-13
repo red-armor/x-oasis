@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/emitter",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "emitter function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

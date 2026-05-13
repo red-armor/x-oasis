@@ -1,5 +1,11 @@
 # @x-oasis/inherit
 
+## 0.13.0
+
+### Minor Changes
+
+- b7e4240: fix: build issue
+
 ## 0.12.0
 
 ### Minor Changes
