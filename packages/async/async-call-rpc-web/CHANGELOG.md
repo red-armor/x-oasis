@@ -1,5 +1,16 @@
 # @x-oasis/async-call-rpc-web
 
+## 0.11.0
+
+### Minor Changes
+
+- b7e4240: fix: build issue
+
+### Patch Changes
+
+- Updated dependencies [b7e4240]
+  - @x-oasis/async-call-rpc@0.13.0
+
 ## 0.10.0
 
 ### Minor Changes

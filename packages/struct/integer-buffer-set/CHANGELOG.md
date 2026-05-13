@@ -1,5 +1,19 @@
 # @x-oasis/integer-buffer-set
 
+## 0.13.0
+
+### Minor Changes
+
+- b7e4240: fix: build issue
+
+### Patch Changes
+
+- Updated dependencies [b7e4240]
+  - @x-oasis/is-clamped@0.13.0
+  - @x-oasis/invariant@0.13.0
+  - @x-oasis/return-hook@0.13.0
+  - @x-oasis/heap@0.13.0
+
 ## 0.12.0
 
 ### Minor Changes

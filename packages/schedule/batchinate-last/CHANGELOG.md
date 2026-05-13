@@ -1,5 +1,16 @@
 # @x-oasis/batchinate-last
 
+## 0.13.0
+
+### Minor Changes
+
+- b7e4240: fix: build issue
+
+### Patch Changes
+
+- Updated dependencies [b7e4240]
+  - @x-oasis/debounce@0.13.0
+
 ## 0.12.0
 
 ### Minor Changes

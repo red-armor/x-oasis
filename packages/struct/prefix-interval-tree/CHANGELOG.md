@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.14.0
+
+### Minor Changes
+
+- b7e4240: fix: build issue
+
 ## 0.13.0
 
 ### Minor Changes

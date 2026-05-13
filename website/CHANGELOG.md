@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.10.0
+
+### Minor Changes
+
+- b7e4240: fix: build issue
+
 ## 0.9.0
 
 ### Minor Changes
