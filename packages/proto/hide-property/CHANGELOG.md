@@ -1,5 +1,11 @@
 # @x-oasis/create-hidden-property
 
+## 0.12.0
+
+### Minor Changes
+
+- b0af3cc: feat: make di fit to orchestrator'
+
 ## 0.11.0
 
 ### Minor Changes

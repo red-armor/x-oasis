@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.13.0
+
+### Minor Changes
+
+- b0af3cc: feat: make di fit to orchestrator'
+
 ## 0.12.0
 
 ### Minor Changes

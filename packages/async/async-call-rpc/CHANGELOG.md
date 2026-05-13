@@ -1,5 +1,23 @@
 # @x-oasis/async-call-rpc
 
+## 0.12.0
+
+### Minor Changes
+
+- b0af3cc: feat: make di fit to orchestrator'
+
+### Patch Changes
+
+- Updated dependencies [b0af3cc]
+  - @x-oasis/is-ascii@0.12.0
+  - @x-oasis/is-function@0.12.0
+  - @x-oasis/is-object@0.12.0
+  - @x-oasis/is-promise@0.12.0
+  - @x-oasis/disposable@0.12.0
+  - @x-oasis/emitter@0.12.0
+  - @x-oasis/id@0.12.0
+  - @x-oasis/deferred@0.12.0
+
 ## 0.11.0
 
 ### Minor Changes

@@ -1,5 +1,19 @@
 # @x-oasis/integer-buffer-set
 
+## 0.12.0
+
+### Minor Changes
+
+- b0af3cc: feat: make di fit to orchestrator'
+
+### Patch Changes
+
+- Updated dependencies [b0af3cc]
+  - @x-oasis/is-clamped@0.12.0
+  - @x-oasis/invariant@0.12.0
+  - @x-oasis/return-hook@0.12.0
+  - @x-oasis/heap@0.12.0
+
 ## 0.11.0
 
 ### Minor Changes

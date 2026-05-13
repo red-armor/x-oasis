@@ -1,5 +1,16 @@
 # @x-oasis/is-ref
 
+## 0.12.0
+
+### Minor Changes
+
+- b0af3cc: feat: make di fit to orchestrator'
+
+### Patch Changes
+
+- Updated dependencies [b0af3cc]
+  - @x-oasis/is-object@0.12.0
+
 ## 0.11.0
 
 ### Minor Changes
