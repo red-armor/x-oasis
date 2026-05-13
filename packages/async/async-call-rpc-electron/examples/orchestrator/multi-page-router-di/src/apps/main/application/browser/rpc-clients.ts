@@ -13,10 +13,10 @@ export const client = createOrchestratorClient({
   ipcChannelDescription: 'renderer↔preload:ipc',
 });
 
-export const connectionPageletClient = client.getService(
+export const connectionPageletClient = client.getProxy(
   CONNECTION_PAGELET_SERVICE_PATH
 ) as IConnectionPageletService;
 
-export const monitorPageletClient = client.getService(
+export const monitorPageletClient = client.getProxy(
   MONITOR_PAGELET_SERVICE_PATH
 ) as unknown as IMonitorPageletService;

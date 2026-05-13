@@ -20,7 +20,7 @@ export interface OrchestratorClientOptions {
   autoConnect?: boolean;
 }
 
-export interface GetServiceOptions {
+export interface GetProxyOptions {
   autoConnect?: boolean;
 }
 
@@ -57,9 +57,29 @@ export class OrchestratorClient {
     return this._ipcChannel;
   }
 
-  getService<T extends ServiceProxy>(
+  /**
+   * Get a remote service proxy by service path.
+   *
+   * Returns a typed proxy object whose methods forward calls to the
+   * corresponding RPC service over the direct channel. Proxies are cached —
+   * requesting the same `servicePath` twice returns the same proxy instance.
+   *
+   * @param servicePath - The unique path that identifies the target RPC service.
+   * @param options - Optional configuration.
+   * @param options.autoConnect - Whether to automatically call `connect()` after
+   *   creating the proxy. Defaults to the `autoConnect` value passed to the
+   *   `OrchestratorClient` constructor.
+   * @returns A typed proxy whose methods map 1-to-1 to the remote service handlers.
+   *
+   * @example
+   * ```ts
+   * const myService = client.getProxy<IMyService>('my-service');
+   * await myService.doSomething(arg1, arg2);
+   * ```
+   */
+  getProxy<T extends ServiceProxy>(
     servicePath: string,
-    options: GetServiceOptions = {}
+    options: GetProxyOptions = {}
   ): T {
     const { autoConnect = this._defaultAutoConnect } = options;
 

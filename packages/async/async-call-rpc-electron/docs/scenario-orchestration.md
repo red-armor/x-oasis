@@ -644,7 +644,7 @@ const client = createOrchestratorClient({
   ipcChannelDescription: 'page↔preload:ipc',
 });
 
-const pageletClient = client.getService<any>('pagelet-api');
+const pageletClient = client.getProxy<any>('pagelet-api');
 
 // Call through the proxy chain
 const status = await pageletClient.callDaemonSystemStatus();

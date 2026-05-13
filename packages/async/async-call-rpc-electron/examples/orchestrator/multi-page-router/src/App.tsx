@@ -37,7 +37,7 @@ export const client = createOrchestratorClient({
   ipcChannelDescription: 'renderer↔preload:ipc',
 });
 
-export const pageletClient = client.getService<any>('pagelet-api');
+export const pageletClient = client.getProxy<any>('pagelet-api');
 
 function App(): JSX.Element {
   const [activePageId, setActivePageId] = useState<string>('pageA');

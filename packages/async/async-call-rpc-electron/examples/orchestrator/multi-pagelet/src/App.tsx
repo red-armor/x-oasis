@@ -20,7 +20,7 @@ const client = createOrchestratorClient({
   ipcChannelDescription: `${pageId}↔preload:ipc`,
 });
 
-const pageletClient = client.getService<any>('pagelet-api');
+const pageletClient = client.getProxy<any>('pagelet-api');
 
 type TabId = 'pagelet' | 'shared' | 'daemon' | 'main';
 

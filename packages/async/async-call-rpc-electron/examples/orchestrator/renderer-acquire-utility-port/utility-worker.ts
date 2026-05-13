@@ -10,7 +10,7 @@ const participant = createUtilityParticipant({
   directChannelDescription: 'utility↔renderer direct port',
 });
 
-const rendererService = participant.getService<any>('renderer-direct');
+const rendererService = participant.getProxy<any>('renderer-direct');
 
 let callCount = 0;
 

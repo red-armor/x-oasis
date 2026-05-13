@@ -10,7 +10,7 @@ const participant = createUtilityParticipant({
   directChannelDescription: 'utility-b↔utility-a direct port',
 });
 
-const utilityAService = participant.getService<any>('utility-a-direct');
+const utilityAService = participant.getProxy<any>('utility-a-direct');
 
 let callCount = 0;
 

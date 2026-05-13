@@ -7,7 +7,7 @@ const client = createOrchestratorClient({
   ipcChannelDescription: 'page↔preload:ipc',
 });
 
-const utilityService = client.getService<any>('utility-direct');
+const utilityService = client.getProxy<any>('utility-direct');
 
 client.registerService('page-api', {
   greet(msg: string): string {

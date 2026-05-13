@@ -739,7 +739,7 @@ Register RPC handlers on the **data-plane** channel. These are accessible by any
 
 Register RPC handlers on the **control-plane** channel (the `parentPort` channel to main). These are accessible from the main process.
 
-##### `getService<T>(servicePath)`
+##### `getProxy<T>(servicePath)`
 
 Get or create a typed proxy client on the data-plane channel for calling peer services.
 

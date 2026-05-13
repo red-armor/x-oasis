@@ -16,6 +16,9 @@
     "paths": {
       "@/*": ["src/*"],
       "@/ui/*": ["src/ui/*"]
+    },
+    "diagnostics": {
+      "ignoredCodes": [1272]
     }
   },
   "include": [

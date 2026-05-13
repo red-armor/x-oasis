@@ -10,7 +10,7 @@ const client = createOrchestratorClient({
   ipcChannelDescription: 'setting-page↔preload:ipc',
 });
 
-const settingClient = client.getService<any>(
+const settingClient = client.getProxy<any>(
   SETTING_PAGELET_SERVICE_PATH
 ) as ISettingPageletService;
 

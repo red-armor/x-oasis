@@ -37,8 +37,9 @@ module.exports = {
       files: ['**/packages/**/*.ts'],
       rules: {
         '@typescript-eslint/no-this-alias': 'off',
-        '@typescript-eslint/no-namespace': 'off'
+        '@typescript-eslint/no-namespace': 'off',
+        '@typescript-eslint/consistent-type-imports': 'off',
       },
     },
   ],
-}
+};

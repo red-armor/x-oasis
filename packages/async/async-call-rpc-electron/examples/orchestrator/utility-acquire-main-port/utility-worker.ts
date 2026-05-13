@@ -10,7 +10,7 @@ const participant = createUtilityParticipant({
   directChannelDescription: 'utility↔main direct port',
 });
 
-const mainDirectClient = participant.getService<any>('main-direct');
+const mainDirectClient = participant.getProxy<any>('main-direct');
 
 let callCount = 0;
 

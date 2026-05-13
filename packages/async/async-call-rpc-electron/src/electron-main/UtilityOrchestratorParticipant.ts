@@ -67,7 +67,23 @@ export class UtilityOrchestratorParticipant {
     return this._directChannel;
   }
 
-  getService<T extends ServiceProxy>(servicePath: string): T {
+  /**
+   * Get a remote service proxy by service path.
+   *
+   * Returns a typed proxy object whose methods forward calls to the
+   * corresponding RPC service over the direct channel. Proxies are cached —
+   * requesting the same `servicePath` twice returns the same proxy instance.
+   *
+   * @param servicePath - The unique path that identifies the target RPC service.
+   * @returns A typed proxy whose methods map 1-to-1 to the remote service handlers.
+   *
+   * @example
+   * ```ts
+   * const myService = participant.getProxy<IMyService>('my-service');
+   * await myService.doSomething(arg1, arg2);
+   * ```
+   */
+  getProxy<T extends ServiceProxy>(servicePath: string): T {
     if (this._serviceProxies.has(servicePath)) {
       return this._serviceProxies.get(servicePath) as T;
     }

@@ -9,7 +9,7 @@ const client = createOrchestratorClient({
   ipcChannelDescription: 'page↔preload:ipc',
 });
 
-const pageletClient = client.getService<any>('pagelet-api');
+const pageletClient = client.getProxy<any>('pagelet-api');
 
 type TabId = 'shared' | 'daemon' | 'main' | 'pagelet' | 'subscriptions';
 type PanelId = 'dashboard' | 'rpc';

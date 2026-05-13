@@ -6,7 +6,7 @@ const client = createOrchestratorClient({
   ipcChannelDescription: 'setting-page↔preload:ipc',
 });
 
-const settingClient = client.getService<any>('setting-api');
+const settingClient = client.getProxy<any>('setting-api');
 
 interface LogEntry {
   id: number;
