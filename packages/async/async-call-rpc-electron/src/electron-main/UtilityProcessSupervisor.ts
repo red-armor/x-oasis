@@ -45,9 +45,43 @@ export interface ForkOptions {
   serviceName?: string;
 }
 
+/**
+ * Information passed to `onSpawn`. Fires every time a fresh child is
+ * created (initial start *and* every restart) — `isRestart` lets the
+ * callback distinguish the two cases for things like
+ * `pidNameRegistry.register()` vs. `…replace()`.
+ */
+export interface SpawnInfo {
+  pid: number;
+  restartCount: number;
+  isRestart: boolean;
+}
+
+/**
+ * Information passed to `onChannelReady`. Fires after the channel is
+ * constructed but BEFORE it is registered (or replaced) on any
+ * orchestrator — the right place to call
+ * `channel.setServiceHost(serviceHost)` or attach extra listeners.
+ */
+export interface ChannelReadyInfo {
+  channel: ElectronUtilityProcessChannel;
+  pid: number;
+  restartCount: number;
+  isRestart: boolean;
+}
+
 export interface UtilityProcessSupervisorOptions {
-  /** The orchestrator the spawned process registers with. */
-  orchestrator: BaseConnectionOrchestrator;
+  /**
+   * The orchestrator(s) the spawned process registers with.
+   *
+   * Pass an array when the same utility participates in multiple
+   * orchestrator topologies — e.g. a "setting" pagelet that talks
+   * back to both the main renderer orchestrator and a dedicated
+   * settings-window orchestrator. Each orchestrator gets the same
+   * `participantId` and channel, and on restart `replaceParticipantChannel`
+   * is called on every orchestrator in lock-step.
+   */
+  orchestrator: BaseConnectionOrchestrator | BaseConnectionOrchestrator[];
 
   /** Stable participant id; preserved across restarts. */
   participantId: string;
@@ -73,6 +107,28 @@ export interface UtilityProcessSupervisorOptions {
    * Default: undefined ⇒ no auto-restart (state goes `running → failed`).
    */
   restartPolicy?: ReconnectPolicy;
+
+  /**
+   * Invoked every time a child is spawned (initial start AND every
+   * restart). Intended for side-effects keyed on the new pid such as
+   * `pidNameRegistry.register(...)` or "Activity Monitor" labelling.
+   *
+   * Errors thrown synchronously here are swallowed and logged (a
+   * registry hiccup must not knock the supervisor offline).
+   */
+  onSpawn?: (info: SpawnInfo) => void;
+
+  /**
+   * Invoked after the channel is constructed but BEFORE it is
+   * registered with the orchestrator(s). Intended for one-shot channel
+   * configuration that the supervisor doesn't otherwise know about —
+   * the canonical example is `channel.setServiceHost(serviceHost)`,
+   * which has to happen before any RPC arrives.
+   *
+   * Fires on the initial start AND on every restart so the new channel
+   * receives the same setup.
+   */
+  onChannelReady?: (info: ChannelReadyInfo) => void;
 
   /**
    * Injection point for `electron.utilityProcess.fork`. Tests pass a
@@ -110,6 +166,7 @@ export interface UtilityProcessSupervisorOptions {
 export class UtilityProcessSupervisor {
   private readonly opts: UtilityProcessSupervisorOptions;
   private readonly forkFn: ForkFn;
+  private readonly orchestrators: BaseConnectionOrchestrator[];
   private readonly logger: NonNullable<
     UtilityProcessSupervisorOptions['logger']
   >;
@@ -130,6 +187,14 @@ export class UtilityProcessSupervisor {
   constructor(opts: UtilityProcessSupervisorOptions) {
     this.opts = opts;
     this.forkFn = opts.forkFn ?? defaultForkFn;
+    this.orchestrators = Array.isArray(opts.orchestrator)
+      ? [...opts.orchestrator]
+      : [opts.orchestrator];
+    if (this.orchestrators.length === 0) {
+      throw new Error(
+        '[UtilityProcessSupervisor] orchestrator option must contain at least one orchestrator'
+      );
+    }
     this.logger = opts.logger ?? (() => {});
   }
 
@@ -159,7 +224,7 @@ export class UtilityProcessSupervisor {
 
     let child: UtilityProcess;
     try {
-      child = this._spawn();
+      child = this._spawn(false);
     } catch (err) {
       this._transition('failed', err);
       throw err;
@@ -170,11 +235,12 @@ export class UtilityProcessSupervisor {
       description: this.opts.participantId,
     });
 
-    this.opts.orchestrator.registerParticipant(
-      this.opts.participantId,
-      channel,
-      this.opts.role ?? 'utility'
-    );
+    this._fireChannelReady(channel, child.pid, false);
+
+    const role = this.opts.role ?? 'utility';
+    for (const orch of this.orchestrators) {
+      orch.registerParticipant(this.opts.participantId, channel, role);
+    }
 
     this._currentChild = child;
     this._currentChannel = channel;
@@ -211,7 +277,9 @@ export class UtilityProcessSupervisor {
     }
     this._exitListener = null;
 
-    this.opts.orchestrator.unregisterParticipant(this.opts.participantId);
+    for (const orch of this.orchestrators) {
+      orch.unregisterParticipant(this.opts.participantId);
+    }
 
     if (channel) {
       // We are intentionally killing the child below; let the channel
@@ -239,7 +307,7 @@ export class UtilityProcessSupervisor {
 
   // ── Internals ───────────────────────────────────────────────────────────
 
-  private _spawn(): UtilityProcess {
+  private _spawn(isRestart: boolean): UtilityProcess {
     const args = this.opts.forkOptions?.args;
     const forkOpts: ForkOptions = {};
     if (this.opts.forkOptions?.env !== undefined) {
@@ -253,8 +321,46 @@ export class UtilityProcessSupervisor {
       participantId: this.opts.participantId,
       pid: child.pid,
       restartCount: this._restartCount,
+      isRestart,
     });
+
+    if (this.opts.onSpawn) {
+      try {
+        this.opts.onSpawn({
+          pid: child.pid,
+          restartCount: this._restartCount,
+          isRestart,
+        });
+      } catch (err) {
+        this.logger('warn', 'onSpawn callback threw', {
+          participantId: this.opts.participantId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+
     return child;
+  }
+
+  private _fireChannelReady(
+    channel: ElectronUtilityProcessChannel,
+    pid: number,
+    isRestart: boolean
+  ): void {
+    if (!this.opts.onChannelReady) return;
+    try {
+      this.opts.onChannelReady({
+        channel,
+        pid,
+        restartCount: this._restartCount,
+        isRestart,
+      });
+    } catch (err) {
+      this.logger('warn', 'onChannelReady callback threw', {
+        participantId: this.opts.participantId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 
   private _wireChildExitListener(child: UtilityProcess): void {
@@ -318,10 +424,17 @@ export class UtilityProcessSupervisor {
       return;
     }
 
+    // Bump restartCount BEFORE spawning so onSpawn / onChannelReady
+    // see the post-restart count (matches the public `restartCount`
+    // semantic = "number of completed restarts after this spawn").
+    this._restartCount += 1;
+
     let newChild: UtilityProcess;
     try {
-      newChild = this._spawn();
+      newChild = this._spawn(true);
     } catch (err) {
+      // Roll back the increment so policy retry counts stay accurate.
+      this._restartCount -= 1;
       // Spawn itself failed — defer to restart policy again.
       this._handleUnexpectedExit(null);
       return;
@@ -329,23 +442,22 @@ export class UtilityProcessSupervisor {
 
     const newChannel = new ElectronUtilityProcessChannel({
       process: newChild,
-      description: `${this.opts.participantId} (restart #${
-        this._restartCount + 1
-      })`,
+      description: `${this.opts.participantId} (restart #${this._restartCount})`,
     });
 
-    this.opts.orchestrator.replaceParticipantChannel(
-      this.opts.participantId,
-      newChannel,
-      { autoReconnect: true }
-    );
+    this._fireChannelReady(newChannel, newChild.pid, true);
+
+    for (const orch of this.orchestrators) {
+      orch.replaceParticipantChannel(this.opts.participantId, newChannel, {
+        autoReconnect: true,
+      });
+    }
 
     // Old child cleanup: it has already emitted `exit` (that is what
     // brought us here), so we just drop our references. The channel
     // is dead too. Detach old exit listener defensively.
     this._currentChild = newChild;
     this._currentChannel = newChannel;
-    this._restartCount += 1;
     this._wireChildExitListener(newChild);
 
     this._transition('running');

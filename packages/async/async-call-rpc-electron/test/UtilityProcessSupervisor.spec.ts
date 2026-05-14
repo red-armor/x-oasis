@@ -271,6 +271,221 @@ describe('D-004 — UtilityProcessSupervisor MVP', () => {
     });
   });
 
+  describe('callbacks', () => {
+    it('fires onSpawn on initial start with isRestart=false', async () => {
+      const orch = makeFakeOrchestrator();
+      const onSpawn = vi.fn();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn: () => makeFakeProcess(42),
+        onSpawn,
+      });
+      await sup.start();
+
+      expect(onSpawn).toHaveBeenCalledTimes(1);
+      expect(onSpawn).toHaveBeenCalledWith({
+        pid: 42,
+        restartCount: 0,
+        isRestart: false,
+      });
+    });
+
+    it('fires onSpawn on every restart with isRestart=true and incremented count', async () => {
+      const orch = makeFakeOrchestrator();
+      const children: FakeUtilityProcess[] = [];
+      const forkFn: ForkFn = () => {
+        const c = new FakeUtilityProcess(100 + children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      };
+      const onSpawn = vi.fn();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn,
+        restartPolicy: { nextRetryDelayMs: () => 10 },
+        onSpawn,
+      });
+      await sup.start();
+
+      children[0].emit('exit', 1);
+      await vi.advanceTimersByTimeAsync(20);
+
+      expect(onSpawn).toHaveBeenCalledTimes(2);
+      expect(onSpawn.mock.calls[0][0]).toEqual({
+        pid: 100,
+        restartCount: 0,
+        isRestart: false,
+      });
+      expect(onSpawn.mock.calls[1][0]).toEqual({
+        pid: 101,
+        restartCount: 1,
+        isRestart: true,
+      });
+    });
+
+    it('fires onChannelReady BEFORE registerParticipant on initial start', async () => {
+      const orch = makeFakeOrchestrator();
+      const callOrder: string[] = [];
+      orch.registerParticipant.mockImplementation(() => {
+        callOrder.push('registerParticipant');
+      });
+      const onChannelReady = vi.fn(() => {
+        callOrder.push('onChannelReady');
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn: () => makeFakeProcess(1),
+        onChannelReady,
+      });
+      await sup.start();
+
+      expect(onChannelReady).toHaveBeenCalledTimes(1);
+      expect(callOrder).toEqual(['onChannelReady', 'registerParticipant']);
+      const arg = onChannelReady.mock.calls[0][0] as any;
+      expect(arg.pid).toBe(1);
+      expect(arg.isRestart).toBe(false);
+      expect(arg.channel).toBeDefined();
+    });
+
+    it('fires onChannelReady BEFORE replaceParticipantChannel on restart', async () => {
+      const orch = makeFakeOrchestrator();
+      const callOrder: string[] = [];
+      orch.replaceParticipantChannel.mockImplementation(() => {
+        callOrder.push('replaceParticipantChannel');
+      });
+      const onChannelReady = vi.fn((info: any) => {
+        callOrder.push(`onChannelReady(isRestart=${info.isRestart})`);
+      });
+
+      const children: FakeUtilityProcess[] = [];
+      const forkFn: ForkFn = () => {
+        const c = new FakeUtilityProcess(children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      };
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn,
+        restartPolicy: { nextRetryDelayMs: () => 10 },
+        onChannelReady,
+      });
+      await sup.start();
+      children[0].emit('exit', 1);
+      await vi.advanceTimersByTimeAsync(20);
+
+      expect(onChannelReady).toHaveBeenCalledTimes(2);
+      expect(callOrder).toContain('onChannelReady(isRestart=true)');
+      expect(callOrder.indexOf('onChannelReady(isRestart=true)')).toBeLessThan(
+        callOrder.indexOf('replaceParticipantChannel')
+      );
+    });
+
+    it('swallows onSpawn / onChannelReady throws and keeps the supervisor running', async () => {
+      const orch = makeFakeOrchestrator();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn: () => makeFakeProcess(1),
+        onSpawn: () => {
+          throw new Error('registry blew up');
+        },
+        onChannelReady: () => {
+          throw new Error('serviceHost wiring blew up');
+        },
+      });
+
+      await expect(sup.start()).resolves.toBeUndefined();
+      expect(sup.state).toBe('running');
+      expect(orch.registerParticipant).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('multiple orchestrators', () => {
+    it('registers the same channel on every orchestrator in the array', async () => {
+      const orchA = makeFakeOrchestrator();
+      const orchB = makeFakeOrchestrator();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: [orchA as any, orchB as any],
+        participantId: 'setting',
+        entry: '/tmp/s.js',
+        forkFn: () => makeFakeProcess(99),
+      });
+      await sup.start();
+
+      expect(orchA.registerParticipant).toHaveBeenCalledTimes(1);
+      expect(orchB.registerParticipant).toHaveBeenCalledTimes(1);
+      const channelA = orchA.registerParticipant.mock.calls[0][1];
+      const channelB = orchB.registerParticipant.mock.calls[0][1];
+      expect(channelA).toBe(channelB);
+    });
+
+    it('replaces on every orchestrator in lock-step on restart', async () => {
+      const orchA = makeFakeOrchestrator();
+      const orchB = makeFakeOrchestrator();
+      const children: FakeUtilityProcess[] = [];
+      const forkFn: ForkFn = () => {
+        const c = new FakeUtilityProcess(children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      };
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: [orchA as any, orchB as any],
+        participantId: 'setting',
+        entry: '/tmp/s.js',
+        forkFn,
+        restartPolicy: { nextRetryDelayMs: () => 10 },
+      });
+      await sup.start();
+      children[0].emit('exit', 1);
+      await vi.advanceTimersByTimeAsync(20);
+
+      expect(orchA.replaceParticipantChannel).toHaveBeenCalledTimes(1);
+      expect(orchB.replaceParticipantChannel).toHaveBeenCalledTimes(1);
+      const newChannelA = orchA.replaceParticipantChannel.mock.calls[0][1];
+      const newChannelB = orchB.replaceParticipantChannel.mock.calls[0][1];
+      expect(newChannelA).toBe(newChannelB);
+    });
+
+    it('unregisters on every orchestrator on stop()', async () => {
+      const orchA = makeFakeOrchestrator();
+      const orchB = makeFakeOrchestrator();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: [orchA as any, orchB as any],
+        participantId: 'setting',
+        entry: '/tmp/s.js',
+        forkFn: () => makeFakeProcess(1),
+      });
+      await sup.start();
+      sup.stop();
+
+      expect(orchA.unregisterParticipant).toHaveBeenCalledWith('setting');
+      expect(orchB.unregisterParticipant).toHaveBeenCalledWith('setting');
+    });
+
+    it('throws when given an empty orchestrator array', () => {
+      expect(
+        () =>
+          new UtilityProcessSupervisor({
+            orchestrator: [],
+            participantId: 'x',
+            entry: '/tmp/x.js',
+            forkFn: () => makeFakeProcess(1),
+          })
+      ).toThrow(/at least one orchestrator/);
+    });
+  });
+
   describe('stop()', () => {
     it('unregisters the participant and kills the child', async () => {
       const orch = makeFakeOrchestrator();

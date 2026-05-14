@@ -39,6 +39,8 @@ export type {
   SupervisorState,
   ForkFn,
   ForkOptions,
+  SpawnInfo,
+  ChannelReadyInfo,
 } from './UtilityProcessSupervisor';
 
 // Utility processes (node runtime) participating in the orchestrator topology
