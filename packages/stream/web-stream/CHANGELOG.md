@@ -1,5 +1,11 @@
 # @x-oasis/web-stream
 
+## 0.12.2
+
+### Patch Changes
+
+- f819527: feat: trace
+
 ## 0.12.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/color",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "description": "color function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

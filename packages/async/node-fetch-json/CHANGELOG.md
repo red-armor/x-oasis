@@ -1,5 +1,11 @@
 # @x-oasis/node-fetch-json
 
+## 0.11.2
+
+### Patch Changes
+
+- f819527: feat: trace
+
 ## 0.11.1
 
 ### Patch Changes

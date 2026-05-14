@@ -1,5 +1,14 @@
 # @x-oasis/async-call-rpc-electron
 
+## 0.11.2
+
+### Patch Changes
+
+- f819527: feat: trace
+- Updated dependencies [f819527]
+  - @x-oasis/async-call-rpc@0.13.2
+  - @x-oasis/async-call-rpc-web@0.11.2
+
 ## 0.11.1
 
 ### Patch Changes

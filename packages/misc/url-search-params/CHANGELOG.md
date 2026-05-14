@@ -1,5 +1,11 @@
 # @x-oasis/url-search-params
 
+## 0.13.2
+
+### Patch Changes
+
+- f819527: feat: trace
+
 ## 0.13.1
 
 ### Patch Changes

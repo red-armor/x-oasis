@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/deep-clone",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "description": "deep clone plain objects and arrays (preserves RegExp by reference)",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/async-call-rpc-web",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "description": "Web transport adapters (MessagePort, Worker, WebSocket) for @x-oasis/async-call-rpc",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

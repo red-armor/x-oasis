@@ -1,5 +1,20 @@
 # @x-oasis/async-call-rpc
 
+## 0.13.2
+
+### Patch Changes
+
+- f819527: feat: trace
+- Updated dependencies [f819527]
+  - @x-oasis/is-ascii@0.13.2
+  - @x-oasis/is-function@0.13.2
+  - @x-oasis/is-object@0.13.2
+  - @x-oasis/is-promise@0.13.2
+  - @x-oasis/disposable@0.13.2
+  - @x-oasis/emitter@0.13.2
+  - @x-oasis/id@0.13.2
+  - @x-oasis/deferred@0.13.2
+
 ## 0.13.1
 
 ### Patch Changes
