@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.13.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+- Updated dependencies [566278f]
+  - @x-oasis/is-clamped@0.13.1
+  - @x-oasis/invariant@0.13.1
+  - @x-oasis/return-hook@0.13.1
+  - @x-oasis/heap@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes

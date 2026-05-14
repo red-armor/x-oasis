@@ -1,5 +1,11 @@
 # @x-oasis/node-fetch-json
 
+## 0.11.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+
 ## 0.11.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @x-oasis/event-stream
 
+## 0.12.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+
 ## 0.12.0
 
 ### Minor Changes

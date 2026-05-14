@@ -1,5 +1,14 @@
 # @x-oasis/throttle
 
+## 0.13.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+- Updated dependencies [566278f]
+  - @x-oasis/default-boolean-value@0.13.1
+  - @x-oasis/debounce@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes

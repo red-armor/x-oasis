@@ -1,5 +1,13 @@
 # @x-oasis/is-ref
 
+## 0.13.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+- Updated dependencies [566278f]
+  - @x-oasis/is-object@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes
