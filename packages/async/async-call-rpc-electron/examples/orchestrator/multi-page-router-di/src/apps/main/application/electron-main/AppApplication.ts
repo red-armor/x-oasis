@@ -60,10 +60,16 @@ function queryPsForPids(
   pids: number[]
 ): Map<number, { cpu: number; mem: number }> {
   const result = new Map<number, { cpu: number; mem: number }>();
-  if (pids.length === 0) return result;
+  // Drop nullish / non-positive pids — pidNameRegistry occasionally
+  // hands us entries whose pid is still undefined (registered before
+  // the OS pid was known) and `ps -p undefined` floods stderr.
+  const validPids = pids.filter(
+    (p): p is number => typeof p === 'number' && p > 0
+  );
+  if (validPids.length === 0) return result;
   try {
     const cp = require('child_process');
-    const pidArgs = pids.map((p) => `-p ${p}`).join(' ');
+    const pidArgs = validPids.map((p) => `-p ${p}`).join(' ');
     const out = cp.execSync(`ps ${pidArgs} -o pid=,pcpu=,pmem=`, {
       encoding: 'utf-8',
       timeout: 3000,
