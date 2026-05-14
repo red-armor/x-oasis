@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/id",
-  "version": "0.13.3",
+  "version": "0.14.0",
   "description": "id function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

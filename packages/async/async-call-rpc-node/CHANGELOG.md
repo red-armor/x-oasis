@@ -1,5 +1,16 @@
 # @x-oasis/async-call-rpc-node
 
+## 0.12.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
+### Patch Changes
+
+- Updated dependencies [84e6aa6]
+  - @x-oasis/async-call-rpc@0.15.0
+
 ## 0.11.3
 
 ### Patch Changes

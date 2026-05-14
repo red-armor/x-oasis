@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.15.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
 ## 0.14.3
 
 ### Patch Changes

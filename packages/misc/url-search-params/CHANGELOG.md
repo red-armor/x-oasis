@@ -1,5 +1,11 @@
 # @x-oasis/url-search-params
 
+## 0.14.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
 ## 0.13.3
 
 ### Patch Changes

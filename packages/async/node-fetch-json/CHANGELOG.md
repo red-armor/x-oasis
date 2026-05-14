@@ -1,5 +1,11 @@
 # @x-oasis/node-fetch-json
 
+## 0.12.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
 ## 0.11.3
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @x-oasis/is-empty
 
+## 0.14.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
+### Patch Changes
+
+- Updated dependencies [84e6aa6]
+  - @x-oasis/to-string@0.14.0
+
 ## 0.13.3
 
 ### Patch Changes
