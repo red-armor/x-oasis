@@ -1,5 +1,16 @@
 # @x-oasis/di
 
+## 0.14.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
+### Patch Changes
+
+- Updated dependencies [84e6aa6]
+  - @x-oasis/is-function@0.14.0
+
 ## 0.13.3
 
 ### Patch Changes

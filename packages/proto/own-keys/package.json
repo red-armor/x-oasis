@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/own-keys",
-  "version": "0.13.3",
+  "version": "0.14.0",
   "description": "own-keys function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

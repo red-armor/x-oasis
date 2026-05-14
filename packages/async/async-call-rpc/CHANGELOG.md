@@ -1,5 +1,23 @@
 # @x-oasis/async-call-rpc
 
+## 0.15.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
+### Patch Changes
+
+- Updated dependencies [84e6aa6]
+  - @x-oasis/is-ascii@0.14.0
+  - @x-oasis/is-function@0.14.0
+  - @x-oasis/is-object@0.14.0
+  - @x-oasis/is-promise@0.14.0
+  - @x-oasis/disposable@0.14.0
+  - @x-oasis/emitter@0.14.0
+  - @x-oasis/id@0.14.0
+  - @x-oasis/deferred@0.14.0
+
 ## 0.14.0
 
 ### Minor Changes

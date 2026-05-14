@@ -1,5 +1,11 @@
 # @x-oasis/event-stream
 
+## 0.13.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
 ## 0.12.3
 
 ### Patch Changes

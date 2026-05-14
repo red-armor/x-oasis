@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/null-throw",
-  "version": "0.13.3",
+  "version": "0.14.0",
   "description": "null-throw function",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

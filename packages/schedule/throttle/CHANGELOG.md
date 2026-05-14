@@ -1,5 +1,17 @@
 # @x-oasis/throttle
 
+## 0.14.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
+### Patch Changes
+
+- Updated dependencies [84e6aa6]
+  - @x-oasis/default-boolean-value@0.14.0
+  - @x-oasis/debounce@0.14.0
+
 ## 0.13.3
 
 ### Patch Changes

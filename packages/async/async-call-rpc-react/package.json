@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/async-call-rpc-react",
-  "version": "0.12.3",
+  "version": "0.13.0",
   "description": "React Query integration for @x-oasis/async-call-rpc",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

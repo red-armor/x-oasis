@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.11.0
+
+### Minor Changes
+
+- 84e6aa6: feat: kill -> restart
+
 ## 0.10.3
 
 ### Patch Changes
