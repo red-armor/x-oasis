@@ -209,6 +209,53 @@ describe('ElectronConnectionOrchestrator', () => {
     expect(info2.state).toBe(ConnectionState.READY);
   });
 
+  // ─── Pagelet ↔ pagelet (D-006 Gap 1, telegraph A-008 §4.1) ────────────────
+  //
+  // The same connect() entry point should accept any two registered
+  // participants — neither side has to be `'main'`. Two utility-process
+  // pagelets calling each other is the canonical use case for the A-008
+  // hub topology where main only allocates the entangled MessagePort pair
+  // and never relays RPC traffic on the resulting direct channel.
+  it('should connect two pagelet participants directly (P↔P)', async () => {
+    const channelA = makeStubChannel();
+    const channelB = makeStubChannel();
+
+    orchestrator.registerParticipant('pagelet-a', channelA, 'utility');
+    orchestrator.registerParticipant('pagelet-b', channelB, 'utility');
+
+    const info = await orchestrator.connect('pagelet-a', 'pagelet-b');
+
+    expect(info.state).toBe(ConnectionState.READY);
+    expect(info.fromId).toBe('pagelet-a');
+    expect(info.toId).toBe('pagelet-b');
+    // Both pagelets must be activated — main process is not in the pair,
+    // so each side receives its own port over its own control channel.
+    expect(channelA.makeRequest).toHaveBeenCalledWith(
+      expect.any(String),
+      'activateConnectionContext',
+      expect.objectContaining({ role: 'initiator' })
+    );
+    expect(channelB.makeRequest).toHaveBeenCalledWith(
+      expect.any(String),
+      'activateConnectionContext',
+      expect.objectContaining({ role: 'receiver' })
+    );
+  });
+
+  it('should be idempotent for the same pagelet pair regardless of arg order', async () => {
+    const channelA = makeStubChannel();
+    const channelB = makeStubChannel();
+
+    orchestrator.registerParticipant('pagelet-a', channelA, 'utility');
+    orchestrator.registerParticipant('pagelet-b', channelB, 'utility');
+
+    const info1 = await orchestrator.connect('pagelet-a', 'pagelet-b');
+    const info2 = await orchestrator.connect('pagelet-b', 'pagelet-a');
+
+    // Canonical connectionId is order-independent (alphabetically sorted)
+    expect(info1.connectionId).toBe(info2.connectionId);
+  });
+
   it('should dispose cleanly', async () => {
     const channelA = makeStubChannel();
     const channelB = makeStubChannel();
