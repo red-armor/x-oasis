@@ -1,4 +1,8 @@
-import { MonitorSnapshot, ProcessRow } from '../common/types';
+import {
+  MonitorSnapshot,
+  ProcessRow,
+  SupervisorInspectorSnapshot,
+} from '../common/types';
 import { AppMetric, IMainMetricsService } from '@/services/main-metrics/common';
 
 export class Diagnostics {
@@ -7,9 +11,15 @@ export class Diagnostics {
   private metricsProvider: IMainMetricsService | null = null;
   private lastCpuUsage: NodeJS.CpuUsage | null = null;
   private lastCpuTime: number | null = null;
+  /** Latest supervisor snapshots pushed by main (G3 inspector). */
+  private supervisorSnapshots: SupervisorInspectorSnapshot[] = [];
 
   setMetricsProvider(provider: IMainMetricsService): void {
     this.metricsProvider = provider;
+  }
+
+  setSupervisorSnapshots(snaps: SupervisorInspectorSnapshot[]): void {
+    this.supervisorSnapshots = snaps;
   }
 
   private async collectSnapshot(): Promise<MonitorSnapshot> {
@@ -75,6 +85,7 @@ export class Diagnostics {
       },
       processes,
       pidTree: null,
+      supervisorSnapshots: this.supervisorSnapshots,
     };
   }
 

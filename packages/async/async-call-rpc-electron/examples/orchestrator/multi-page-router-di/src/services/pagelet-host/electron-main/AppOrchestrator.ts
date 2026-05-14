@@ -115,6 +115,14 @@ export class AppOrchestrator implements IAppOrchestrator {
                   failedCalls: stats.failedCalls,
                   avgLatencyMs: stats.avgLatencyMs,
                   totalReconnects: stats.totalReconnects,
+                  stateTransitions: stats.stateTransitions
+                    ? stats.stateTransitions.map((t) => ({
+                        at: t.at,
+                        prev: t.prev,
+                        curr: t.curr,
+                        reason: t.reason,
+                      }))
+                    : [],
                 }
               : null,
           };

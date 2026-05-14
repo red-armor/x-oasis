@@ -2,8 +2,10 @@ import { createId, inject, injectable } from '@x-oasis/di';
 import {
   ElectronUtilityProcessChannel,
   UtilityProcessSupervisor,
-  type SpawnInfo,
   type ChannelReadyInfo,
+  type InspectorSnapshot,
+  type SpawnInfo,
+  type StateChangeEvent,
 } from '@x-oasis/async-call-rpc-electron';
 import { serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
@@ -18,6 +20,8 @@ export interface IPageletProcess {
   spawn(pageletId: string, workerFileName: string): Promise<void>;
   kill(pageletId: string): void;
   getChannel(pageletId: string): ElectronUtilityProcessChannel | undefined;
+  /** Snapshot per pagelet supervisor (G3 inspector). */
+  getInspectorSnapshots(): InspectorSnapshot[];
 }
 
 export const PageletProcessId = createId('PageletProcess');
@@ -73,6 +77,13 @@ export class PageletProcess implements IPageletProcess {
         channel.setServiceHost(serviceHost);
         this.channels.set(pageletId, channel);
       },
+      onStateChange: (event: StateChangeEvent) => {
+        console.log(
+          `[PageletProcess:${pageletId}:state] ${event.prev} → ${event.curr}${
+            event.reason ? ` (${event.reason})` : ''
+          }`
+        );
+      },
       logger: (level: string, msg: string) =>
         console.log(`[PageletProcess:${pageletId}:${level}] ${msg}`),
     });
@@ -97,5 +108,13 @@ export class PageletProcess implements IPageletProcess {
 
   getChannel(pageletId: string): ElectronUtilityProcessChannel | undefined {
     return this.channels.get(pageletId);
+  }
+
+  getInspectorSnapshots(): InspectorSnapshot[] {
+    const out: InspectorSnapshot[] = [];
+    for (const sup of this.supervisors.values()) {
+      out.push(sup.getInspectorSnapshot());
+    }
+    return out;
   }
 }

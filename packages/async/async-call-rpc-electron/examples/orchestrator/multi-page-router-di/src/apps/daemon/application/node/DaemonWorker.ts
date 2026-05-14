@@ -82,6 +82,9 @@ export class DaemonWorker implements IDaemonWorker {
       getPerformanceSnapshot: () => diagnostics.getPerformanceSnapshot(),
       onPerformanceUpdate: (callback: (snapshot: any) => void) =>
         diagnostics.onPerformanceUpdate(callback),
+      setSupervisorSnapshots: (snaps: any[]): void => {
+        diagnostics.setSupervisorSnapshots(snaps);
+      },
     };
 
     const proxy = createParticipantProxy({

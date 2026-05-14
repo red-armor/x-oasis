@@ -2,6 +2,7 @@ export type {
   ProcessRow,
   PerformanceTotals,
   MonitorSnapshot,
+  SupervisorInspectorSnapshot,
   IDiagnosticsService,
 } from '@/apps/daemon/diagnostics/common';
 

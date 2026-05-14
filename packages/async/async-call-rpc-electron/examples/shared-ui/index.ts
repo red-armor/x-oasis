@@ -5,3 +5,11 @@ export type {
   UseOrchestratorDashboardOptions,
   UseOrchestratorDashboardReturn,
 } from './useOrchestratorDashboard';
+export type {
+  ConnectionState,
+  ConnectionStatus,
+  StatsInfo,
+  StateTransitionEntry,
+  ParticipantInfo,
+  LogEntry,
+} from './OrchestratorDashboard';

@@ -26,12 +26,26 @@ export interface ConnectionStatus {
   error?: string;
 }
 
+export interface StateTransitionEntry {
+  /** epoch ms */
+  at: number;
+  prev: ConnectionState;
+  curr: ConnectionState;
+  reason?: string;
+}
+
 export interface StatsInfo {
   totalRpcCalls: number;
   successfulCalls: number;
   failedCalls: number;
   avgLatencyMs: number;
   totalReconnects: number;
+  /**
+   * Ring buffer of recent connection-state transitions, populated when
+   * the orchestrator is constructed with `enableStats: true`. Optional
+   * for back-compat with examples that don't expose it yet.
+   */
+  stateTransitions?: StateTransitionEntry[];
 }
 
 export interface ParticipantInfo {

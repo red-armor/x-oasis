@@ -460,6 +460,8 @@ function PageView({ page }: PageViewProps): JSX.Element {
         </div>
       </div>
 
+      <StateTransitionsCard transitions={stats?.stateTransitions ?? []} />
+
       <div
         style={{
           display: 'flex',
@@ -672,6 +674,118 @@ function PageView({ page }: PageViewProps): JSX.Element {
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * Renders the orchestrator's `ConnectionStats.stateTransitions` ring
+ * buffer (G3 from the x-oasis capability gaps doc). The data comes
+ * straight from `BaseConnectionOrchestrator.getConnectionStats()` —
+ * see `AppOrchestrator.getStatus()` for the serialization.
+ */
+function StateTransitionsCard({
+  transitions,
+}: {
+  transitions: NonNullable<
+    NonNullable<
+      ReturnType<typeof useOrchestratorDashboard>['stats']
+    >['stateTransitions']
+  >;
+}): JSX.Element {
+  const recent = transitions.slice(-12).reverse();
+  return (
+    <div
+      style={{
+        margin: '0 16px',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        border: '1px solid #e2e8f0',
+        padding: 14,
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: '#94a3b8',
+          textTransform: 'uppercase',
+          marginBottom: 8,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <span>State Transitions</span>
+        <span style={{ fontWeight: 400, color: '#cbd5e1', fontSize: 10 }}>
+          {transitions.length} total · showing last {recent.length}
+        </span>
+      </div>
+      {recent.length === 0 ? (
+        <div style={{ fontSize: 11, color: '#94a3b8' }}>
+          No transitions recorded yet.
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 6,
+          }}
+        >
+          {recent.map((t, idx) => {
+            const dt = new Date(t.at);
+            const stamp = `${String(dt.getHours()).padStart(2, '0')}:${String(
+              dt.getMinutes()
+            ).padStart(2, '0')}:${String(dt.getSeconds()).padStart(2, '0')}`;
+            const tone =
+              t.curr === 'READY'
+                ? '#10b981'
+                : t.curr === 'TRANSIENT_FAILURE' || t.curr === 'CLOSED'
+                ? '#ef4444'
+                : t.curr === 'CONNECTING' || t.curr === 'DISCONNECTING'
+                ? '#f59e0b'
+                : '#6b7280';
+            return (
+              <div
+                key={`${t.at}-${idx}`}
+                title={t.reason ?? ''}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '4px 8px',
+                  borderRadius: 6,
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  fontSize: 11,
+                  fontFamily: 'monospace',
+                }}
+              >
+                <span style={{ color: '#94a3b8' }}>{stamp}</span>
+                <span style={{ color: '#64748b' }}>{t.prev}</span>
+                <span style={{ color: '#94a3b8' }}>→</span>
+                <span style={{ color: tone, fontWeight: 600 }}>{t.curr}</span>
+                {t.reason && (
+                  <span
+                    style={{
+                      maxWidth: 160,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      color: '#94a3b8',
+                      fontSize: 10,
+                    }}
+                  >
+                    {t.reason}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
