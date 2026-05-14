@@ -1,5 +1,13 @@
 # @x-oasis/is-empty
 
+## 0.13.2
+
+### Patch Changes
+
+- f819527: feat: trace
+- Updated dependencies [f819527]
+  - @x-oasis/to-string@0.13.2
+
 ## 0.13.1
 
 ### Patch Changes

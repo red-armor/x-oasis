@@ -1,5 +1,13 @@
 # @x-oasis/async-call-rpc-node
 
+## 0.11.2
+
+### Patch Changes
+
+- f819527: feat: trace
+- Updated dependencies [f819527]
+  - @x-oasis/async-call-rpc@0.13.2
+
 ## 0.11.1
 
 ### Patch Changes

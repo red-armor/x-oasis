@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.13.2
+
+### Patch Changes
+
+- f819527: feat: trace
+- Updated dependencies [f819527]
+  - @x-oasis/is-clamped@0.13.2
+  - @x-oasis/invariant@0.13.2
+  - @x-oasis/return-hook@0.13.2
+  - @x-oasis/heap@0.13.2
+
 ## 0.13.1
 
 ### Patch Changes

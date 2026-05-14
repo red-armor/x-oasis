@@ -1,5 +1,14 @@
 # @x-oasis/emitter
 
+## 0.13.2
+
+### Patch Changes
+
+- f819527: feat: trace
+- Updated dependencies [f819527]
+  - @x-oasis/is-object@0.13.2
+  - @x-oasis/disposable@0.13.2
+
 ## 0.13.1
 
 ### Patch Changes

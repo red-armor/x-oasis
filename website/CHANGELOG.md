@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.10.2
+
+### Patch Changes
+
+- f819527: feat: trace
+
 ## 0.10.1
 
 ### Patch Changes

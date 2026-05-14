@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.14.2
+
+### Patch Changes
+
+- f819527: feat: trace
+
 ## 0.14.1
 
 ### Patch Changes
