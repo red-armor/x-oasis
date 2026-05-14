@@ -33,6 +33,13 @@ export type {
   MainOrchestratorSetupOptions,
   MainOrchestratorSetupResult,
 } from './MainOrchestratorSetup';
+export { UtilityProcessSupervisor } from './UtilityProcessSupervisor';
+export type {
+  UtilityProcessSupervisorOptions,
+  SupervisorState,
+  ForkFn,
+  ForkOptions,
+} from './UtilityProcessSupervisor';
 
 // Utility processes (node runtime) participating in the orchestrator topology
 // also need `registerOrchestratorHandler` to receive `MessagePortMain`s on
