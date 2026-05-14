@@ -139,10 +139,22 @@ export const handleRequest =
       return message;
     }
 
-    // Multi-service routing: prefer host lookup (by requestPath + methodName)
-    // when a serviceHost is bound to this channel. If the host doesn't know
-    // this requestPath, silently no-op — multiple channels may share one
-    // transport, and this avoids cross-talk "Method not found" replies.
+    // -------------------------------------------------------------------
+    // Routing priority contract (do not change without coordinating callers):
+    //
+    //   1. If `serviceHost` is bound, look up via host(requestPath, methodName).
+    //      Unknown requestPath → silently drop (no error response, no
+    //      fallback to `service`). This avoids cross-talk "Method not found"
+    //      replies when one transport is shared by many channels.
+    //   2. Otherwise, look up via service.getHandler(methodName) — single
+    //      service mode, requestPath is ignored.
+    //
+    // Asymmetry is intentional: setting a serviceHost on a channel that
+    // also has a channel-bound service makes the service unreachable.
+    // See AbstractChannelProtocol.setService / setServiceHost JSDoc for
+    // the developer-facing trap (orchestrator handshake hang, fixed in
+    // commit 2d8648c by using a dedicated control channel).
+    // -------------------------------------------------------------------
     let handler: ((...a: any[]) => any) | undefined;
     if (serviceHost) {
       handler = serviceHost.getHandler(requestPath, methodName);

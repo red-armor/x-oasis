@@ -19,6 +19,20 @@ class RPCService {
     if (handlers) this.registerHandlers(handlers);
   }
 
+  /**
+   * Bind this service to a channel. Internally calls `channel.setService(this)`,
+   * which puts the channel in single-service routing mode (handlers are
+   * resolved by `methodName` only, `requestPath` is ignored).
+   *
+   * ⚠️ Mutually exclusive with `channel.setServiceHost()`:
+   * if anyone later calls `channel.setServiceHost(host)` on the same
+   * channel, this service becomes silently unreachable — `handleRequest`
+   * prefers `serviceHost` and has no fallback to `service`. See
+   * `AbstractChannelProtocol.setService` and `handleRequest.ts:142-163`
+   * for the priority contract. Bind a service-host on a separate channel
+   * (e.g. a dedicated control channel) instead of multiplexing modes on
+   * one transport.
+   */
   setChannel(channel: AbstractChannelProtocol) {
     this.channel = channel;
     this.channel.setService(this);

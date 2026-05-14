@@ -276,6 +276,28 @@ abstract class AbstractChannelProtocol
     return this._service;
   }
 
+  /**
+   * Bind a single `RPCService` to this channel for single-service routing.
+   * The `handleRequest` middleware will resolve incoming method calls via
+   * `service.getHandler(methodName)` — the request's `requestPath` is
+   * ignored in this mode.
+   *
+   * ⚠️ Priority caveat (see `handleRequest.ts:142-163`):
+   * `serviceHost` ALWAYS wins over `service`. If you call `setServiceHost()`
+   * on a channel that already has a `service` bound (e.g. via
+   * `RPCService.setChannel(this)`), the `service` becomes unreachable —
+   * requests targeting it will be silently dropped because the host's
+   * `getHandler(requestPath, methodName)` will return `undefined` for the
+   * unknown path. There is intentionally no fallback to `service`.
+   *
+   * Concrete trap: `ParticipantOrchestratorProxy` binds an `RPCService` for
+   * `ORCHESTRATOR_SERVICE_PATH` to the control channel via
+   * `service.setChannel(controlChannel)`. Calling
+   * `controlChannel.setServiceHost(...)` later silently breaks orchestrator
+   * handshakes. If you need both modes on the same transport, use a
+   * separate channel for the host (see `MainCpServer` in
+   * async-call-rpc-electron for the reference pattern).
+   */
   setService(service: RPCService) {
     this._service = service;
   }
@@ -294,6 +316,20 @@ abstract class AbstractChannelProtocol
    * "Method not found" cross-talk.
    *
    * Idempotent: calling twice with the same host is a no-op.
+   *
+   * ⚠️ Asymmetric priority over `setService` (see `handleRequest.ts:142-163`):
+   * once a `serviceHost` is bound, the channel-bound `service` (if any) is
+   * ignored — there is intentionally no fallback. This is by design: a
+   * host is the multi-service registry, a service is single-service
+   * convenience, and silent drops are preferred over "Method not found"
+   * cross-talk when one transport is shared by many channels.
+   *
+   * Practical implication: do NOT call `setServiceHost()` on a channel
+   * that already has a service bound via `RPCService.setChannel()` —
+   * the service will become silently unreachable. Symptom: orchestrator
+   * handshakes hang because `ORCHESTRATOR_SERVICE_PATH` requests hit a
+   * host that doesn't know the path. The fix landed in commit `2d8648c`
+   * by routing main↔daemon RPC through a dedicated control channel.
    */
   setServiceHost(host: RPCServiceHost) {
     if (this._serviceHost === host) return;
