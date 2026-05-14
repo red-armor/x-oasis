@@ -12,6 +12,9 @@ import { EventEmitter } from 'node:events';
 import {
   UtilityProcessSupervisor,
   ForkFn,
+  SUPERVISOR_READY_MESSAGE_TYPE,
+  type StateChangeEvent,
+  type RestartHistoryEntry,
 } from '../src/electron-main/UtilityProcessSupervisor';
 import type { UtilityProcess } from '../src/types';
 
@@ -571,6 +574,450 @@ describe('D-004 — UtilityProcessSupervisor MVP', () => {
       sup.stop();
       sup.stop();
       expect(sup.state).toBe('stopped');
+    });
+  });
+
+  // ── New capability tests (G1 advanced + G3 inspector) ─────────────────
+
+  describe('restart history', () => {
+    it('records one entry per auto-restart with prevPid / exitCode / reason', async () => {
+      const orch = makeFakeOrchestrator();
+      const children: FakeUtilityProcess[] = [];
+      const forkFn: ForkFn = vi.fn(() => {
+        const c = new FakeUtilityProcess(100 + children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn,
+        restartPolicy: { nextRetryDelayMs: () => 10 },
+      });
+
+      await sup.start();
+      expect(sup.restartHistory).toEqual([]); // initial start does NOT count
+
+      // First crash → restart
+      children[0].emit('exit', 137);
+      // History entry pushed synchronously before the setTimeout fires
+      expect(sup.restartHistory.length).toBe(1);
+      expect(sup.restartHistory[0]).toMatchObject({
+        prevPid: 100,
+        exitCode: 137,
+        reason: 'child exited (code=137)',
+        restartCount: 1,
+      });
+      expect(sup.restartHistory[0].succeededAt).toBeUndefined();
+
+      await vi.advanceTimersByTimeAsync(20);
+      expect(sup.state).toBe('running');
+      expect(sup.restartHistory[0].newPid).toBe(101);
+      expect(sup.restartHistory[0].succeededAt).toBeDefined();
+
+      // Second crash → second history entry
+      children[1].emit('exit', 9);
+      await vi.advanceTimersByTimeAsync(20);
+      expect(sup.restartHistory.length).toBe(2);
+      expect(sup.restartHistory[1]).toMatchObject({
+        prevPid: 101,
+        exitCode: 9,
+        restartCount: 2,
+        newPid: 102,
+      });
+    });
+
+    it('caps history at restartHistorySize, dropping oldest', async () => {
+      const orch = makeFakeOrchestrator();
+      const children: FakeUtilityProcess[] = [];
+      const forkFn: ForkFn = vi.fn(() => {
+        const c = new FakeUtilityProcess(children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn,
+        restartPolicy: { nextRetryDelayMs: () => 1 },
+        restartHistorySize: 3,
+      });
+
+      await sup.start();
+
+      // Crash + restart 5 times → only the last 3 remain
+      for (let i = 0; i < 5; i++) {
+        children[children.length - 1].emit('exit', i);
+        await vi.advanceTimersByTimeAsync(5);
+      }
+
+      expect(sup.restartHistory.length).toBe(3);
+      // After 5 restarts: restartCount=5; the surviving entries are #3, #4, #5
+      const counts = sup.restartHistory.map((e) => e.restartCount);
+      expect(counts).toEqual([3, 4, 5]);
+    });
+
+    it('marks failedAt on spawn failure during restart and re-enters policy', async () => {
+      const orch = makeFakeOrchestrator();
+      const children: FakeUtilityProcess[] = [];
+      let throwOnNext = false;
+      const forkFn: ForkFn = vi.fn(() => {
+        if (throwOnNext) {
+          throwOnNext = false;
+          throw new Error('spawn boom');
+        }
+        const c = new FakeUtilityProcess(children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn,
+        restartPolicy: { nextRetryDelayMs: () => 5 },
+      });
+
+      await sup.start();
+
+      throwOnNext = true;
+      children[0].emit('exit', 1);
+      await vi.advanceTimersByTimeAsync(10);
+
+      expect(sup.restartHistory.length).toBe(2);
+      expect(sup.restartHistory[0].failedAt).toBeDefined();
+      expect(sup.restartHistory[0].succeededAt).toBeUndefined();
+      // Second entry (re-entered policy attempt) should have succeeded.
+      expect(sup.restartHistory[1].succeededAt).toBeDefined();
+    });
+  });
+
+  describe('state-change subscription', () => {
+    it('fires onStateChange option for every transition', async () => {
+      const orch = makeFakeOrchestrator();
+      const events: StateChangeEvent[] = [];
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn: () => makeFakeProcess(1),
+        onStateChange: (e) => events.push(e),
+      });
+
+      await sup.start();
+      sup.stop();
+
+      const seq = events.map((e) => `${e.prev}→${e.curr}`);
+      expect(seq).toContain('idle→starting');
+      expect(seq).toContain('starting→running');
+      expect(seq).toContain('running→stopped');
+      // every event has an `at` timestamp
+      expect(events.every((e) => typeof e.at === 'number')).toBe(true);
+    });
+
+    it('subscribeStateChange supports multiple listeners and disposers', async () => {
+      const orch = makeFakeOrchestrator();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn: () => makeFakeProcess(1),
+      });
+
+      const a: StateChangeEvent[] = [];
+      const b: StateChangeEvent[] = [];
+      const disposeA = sup.subscribeStateChange((e) => a.push(e));
+      sup.subscribeStateChange((e) => b.push(e));
+
+      await sup.start();
+      expect(a.length).toBeGreaterThan(0);
+      expect(b.length).toBeGreaterThan(0);
+
+      const aBefore = a.length;
+      disposeA();
+      sup.stop();
+      // a got no further events; b did
+      expect(a.length).toBe(aBefore);
+      expect(b.length).toBeGreaterThan(aBefore);
+    });
+
+    it('does not let a listener throw break the state machine', async () => {
+      const orch = makeFakeOrchestrator();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn: () => makeFakeProcess(1),
+        onStateChange: () => {
+          throw new Error('listener boom');
+        },
+      });
+
+      await expect(sup.start()).resolves.toBeUndefined();
+      expect(sup.state).toBe('running');
+    });
+  });
+
+  describe('getInspectorSnapshot()', () => {
+    it('returns a JSON-friendly snapshot with defensive history copy', async () => {
+      const orch = makeFakeOrchestrator();
+      const children: FakeUtilityProcess[] = [];
+      const forkFn: ForkFn = vi.fn(() => {
+        const c = new FakeUtilityProcess(200 + children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'design',
+        entry: '/tmp/d.js',
+        forkFn,
+        restartPolicy: { nextRetryDelayMs: () => 1 },
+      });
+
+      await sup.start();
+      const snap0 = sup.getInspectorSnapshot();
+      expect(snap0).toMatchObject({
+        participantId: 'design',
+        state: 'running',
+        currentPid: 200,
+        restartCount: 0,
+        orchestratorCount: 1,
+        restartHistory: [],
+      });
+
+      children[0].emit('exit', 1);
+      await vi.advanceTimersByTimeAsync(5);
+
+      const snap1 = sup.getInspectorSnapshot();
+      expect(snap1.state).toBe('running');
+      expect(snap1.currentPid).toBe(201);
+      expect(snap1.restartCount).toBe(1);
+      expect(snap1.restartHistory.length).toBe(1);
+
+      // Defensive copy: mutating snapshot does NOT affect the supervisor.
+      (snap1.restartHistory as RestartHistoryEntry[])[0].newPid = 9999;
+      expect(sup.restartHistory[0].newPid).toBe(201);
+    });
+
+    it('reports orchestratorCount for multi-orchestrator setups', async () => {
+      const orchA = makeFakeOrchestrator();
+      const orchB = makeFakeOrchestrator();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: [orchA as any, orchB as any],
+        participantId: 'shared',
+        entry: '/tmp/s.js',
+        forkFn: () => makeFakeProcess(1),
+      });
+
+      await sup.start();
+      expect(sup.getInspectorSnapshot().orchestratorCount).toBe(2);
+    });
+  });
+
+  describe('manual restart()', () => {
+    it('rejects from non-running states', async () => {
+      const orch = makeFakeOrchestrator();
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn: () => makeFakeProcess(1),
+      });
+
+      await expect(sup.restart('test')).rejects.toThrow(
+        /only allowed from "running"/
+      );
+    });
+
+    it('replaces participant channel and records a manual history entry', async () => {
+      const orch = makeFakeOrchestrator();
+      const children: FakeUtilityProcess[] = [];
+      const forkFn: ForkFn = vi.fn(() => {
+        const c = new FakeUtilityProcess(300 + children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn,
+      });
+
+      await sup.start();
+      expect(orch.replaceParticipantChannel).not.toHaveBeenCalled();
+
+      await sup.restart('config-changed');
+
+      expect(sup.state).toBe('running');
+      expect(orch.replaceParticipantChannel).toHaveBeenCalledTimes(1);
+      expect(sup.restartCount).toBe(1);
+      expect(sup.restartHistory.length).toBe(1);
+      expect(sup.restartHistory[0]).toMatchObject({
+        prevPid: 300,
+        exitCode: null,
+        reason: 'manual: config-changed',
+        restartCount: 1,
+        newPid: 301,
+      });
+      expect(sup.restartHistory[0].succeededAt).toBeDefined();
+    });
+
+    it('does not auto-restart from manual kill (exit listener detached)', async () => {
+      const orch = makeFakeOrchestrator();
+      const children: FakeUtilityProcess[] = [];
+      const forkFn: ForkFn = vi.fn(() => {
+        const c = new FakeUtilityProcess(400 + children.length);
+        children.push(c);
+        return c as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'daemon',
+        entry: '/tmp/d.js',
+        forkFn,
+        // Sentinel: if the manual-kill ever leaks into auto-restart this
+        // policy would fire and the assertions below would fail.
+        restartPolicy: { nextRetryDelayMs: () => 1 },
+      });
+
+      await sup.start();
+      await sup.restart();
+      // Drain any stray timers — there should be none scheduled.
+      await vi.advanceTimersByTimeAsync(20);
+
+      // Exactly two children: original + manual-restart replacement.
+      expect(children.length).toBe(2);
+      expect(sup.restartCount).toBe(1);
+    });
+  });
+
+  describe("readinessProbe 'firstMessage'", () => {
+    it('start() awaits the matching ready message before transitioning to running', async () => {
+      const orch = makeFakeOrchestrator();
+      const fake = new FakeUtilityProcess(500);
+      const forkFn: ForkFn = vi.fn(() => {
+        // Schedule the ready message on the next macrotask so the
+        // supervisor's `_awaitReadiness` listener has time to attach.
+        setTimeout(() => {
+          fake.emit('message', { type: SUPERVISOR_READY_MESSAGE_TYPE });
+        }, 5);
+        return fake as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'design',
+        entry: '/tmp/d.js',
+        forkFn,
+        readinessProbe: { kind: 'firstMessage', timeoutMs: 1000 },
+      });
+
+      const startPromise = sup.start();
+      // Before the ready message fires, supervisor must NOT have registered.
+      expect(sup.state).toBe('starting');
+      expect(orch.registerParticipant).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(10);
+      await startPromise;
+
+      expect(sup.state).toBe('running');
+      expect(orch.registerParticipant).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects + transitions to failed on readiness timeout, killing the child', async () => {
+      const orch = makeFakeOrchestrator();
+      const fake = new FakeUtilityProcess(501);
+      const forkFn: ForkFn = vi.fn(() => fake as unknown as UtilityProcess);
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'design',
+        entry: '/tmp/d.js',
+        forkFn,
+        readinessProbe: { kind: 'firstMessage', timeoutMs: 50 },
+      });
+
+      const startPromise = sup.start();
+      // Attach a swallowing handler immediately so the rejection that
+      // fires when timers advance is never "unhandled".
+      const swallowed = startPromise.catch(() => {});
+      await vi.advanceTimersByTimeAsync(60);
+      await swallowed;
+
+      await expect(startPromise).rejects.toThrow(/readiness probe timed out/);
+      expect(sup.state).toBe('failed');
+      expect(fake.killed).toBe(true);
+      expect(orch.registerParticipant).not.toHaveBeenCalled();
+    });
+
+    it('honours a custom match predicate', async () => {
+      const orch = makeFakeOrchestrator();
+      const fake = new FakeUtilityProcess(502);
+      const forkFn: ForkFn = vi.fn(() => {
+        setTimeout(() => {
+          fake.emit('message', { kind: 'app-ready' });
+        }, 5);
+        return fake as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'design',
+        entry: '/tmp/d.js',
+        forkFn,
+        readinessProbe: {
+          kind: 'firstMessage',
+          match: (m) => (m as { kind?: string })?.kind === 'app-ready',
+          timeoutMs: 1000,
+        },
+      });
+
+      const startPromise = sup.start();
+      await vi.advanceTimersByTimeAsync(10);
+      await startPromise;
+
+      expect(sup.state).toBe('running');
+    });
+
+    it('ignores non-matching messages (does not falsely resolve)', async () => {
+      const orch = makeFakeOrchestrator();
+      const fake = new FakeUtilityProcess(503);
+      const forkFn: ForkFn = vi.fn(() => {
+        // Emit garbage first; only the second message matches.
+        setTimeout(() => fake.emit('message', { type: 'nope' }), 5);
+        setTimeout(
+          () => fake.emit('message', { type: SUPERVISOR_READY_MESSAGE_TYPE }),
+          15
+        );
+        return fake as unknown as UtilityProcess;
+      });
+
+      const sup = new UtilityProcessSupervisor({
+        orchestrator: orch as any,
+        participantId: 'design',
+        entry: '/tmp/d.js',
+        forkFn,
+        readinessProbe: { kind: 'firstMessage', timeoutMs: 1000 },
+      });
+
+      const startPromise = sup.start();
+      await vi.advanceTimersByTimeAsync(10);
+      // The garbage message fired but supervisor must still be starting.
+      expect(sup.state).toBe('starting');
+      await vi.advanceTimersByTimeAsync(10);
+      await startPromise;
+      expect(sup.state).toBe('running');
     });
   });
 });

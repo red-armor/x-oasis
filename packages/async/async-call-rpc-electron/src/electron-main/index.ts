@@ -33,7 +33,10 @@ export type {
   MainOrchestratorSetupOptions,
   MainOrchestratorSetupResult,
 } from './MainOrchestratorSetup';
-export { UtilityProcessSupervisor } from './UtilityProcessSupervisor';
+export {
+  UtilityProcessSupervisor,
+  SUPERVISOR_READY_MESSAGE_TYPE,
+} from './UtilityProcessSupervisor';
 export type {
   UtilityProcessSupervisorOptions,
   SupervisorState,
@@ -41,6 +44,10 @@ export type {
   ForkOptions,
   SpawnInfo,
   ChannelReadyInfo,
+  StateChangeEvent,
+  RestartHistoryEntry,
+  InspectorSnapshot,
+  ReadinessProbe,
 } from './UtilityProcessSupervisor';
 
 // Utility processes (node runtime) participating in the orchestrator topology
