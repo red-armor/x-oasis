@@ -26,6 +26,10 @@ export interface PidNodeJson {
  * Plain JSON shape mirroring `InspectorSnapshot` from
  * `@x-oasis/async-call-rpc-electron`. Duplicated here so we don't pull
  * the electron-only sub-path into the daemon (a node utility process).
+ *
+ * Health-snapshot fields (`lastChannelReadyAt`, `lastReadinessProbeAt`,
+ * `consecutiveProbeFailures`) come from the §3.D supervisor diagnostic
+ * additions — see the upstream `InspectorSnapshot` JSDoc for semantics.
  */
 export interface SupervisorInspectorSnapshot {
   participantId: string;
@@ -43,6 +47,9 @@ export interface SupervisorInspectorSnapshot {
     succeededAt?: number;
     failedAt?: number;
   }>;
+  lastChannelReadyAt: number | null;
+  lastReadinessProbeAt: number | null;
+  consecutiveProbeFailures: number;
 }
 
 export interface MonitorSnapshot {

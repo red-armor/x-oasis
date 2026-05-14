@@ -117,6 +117,38 @@ function SupervisorCard({
         />
       </div>
 
+      <div className="mt-2 grid grid-cols-3 gap-2 text-[11px]">
+        <Stat
+          label="channel ready"
+          value={formatTimeAgo(snapshot.lastChannelReadyAt)}
+          title={
+            snapshot.lastChannelReadyAt
+              ? new Date(snapshot.lastChannelReadyAt).toISOString()
+              : undefined
+          }
+        />
+        <Stat
+          label="readiness probe"
+          value={
+            snapshot.lastReadinessProbeAt === null
+              ? 'n/a'
+              : formatTimeAgo(snapshot.lastReadinessProbeAt)
+          }
+          title={
+            snapshot.lastReadinessProbeAt
+              ? new Date(snapshot.lastReadinessProbeAt).toISOString()
+              : 'spawn-mode supervisor (no readiness probe)'
+          }
+        />
+        <Stat
+          label="probe failures"
+          value={String(snapshot.consecutiveProbeFailures)}
+          tone={
+            snapshot.consecutiveProbeFailures > 0 ? 'text-rose-300' : undefined
+          }
+        />
+      </div>
+
       <div className="mt-3">
         <div className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
           Recent restarts
@@ -142,15 +174,51 @@ function SupervisorCard({
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  tone,
+  title,
+}: {
+  label: string;
+  value: string;
+  tone?: string;
+  title?: string;
+}) {
   return (
-    <div className="flex items-baseline justify-between rounded-md bg-zinc-800/40 px-2 py-1">
+    <div
+      className="flex items-baseline justify-between rounded-md bg-zinc-800/40 px-2 py-1"
+      title={title}
+    >
       <span className="text-[10px] uppercase tracking-wider text-zinc-500">
         {label}
       </span>
-      <span className="font-mono tabular-nums text-zinc-200">{value}</span>
+      <span className={cn('font-mono tabular-nums text-zinc-200', tone)}>
+        {value}
+      </span>
     </div>
   );
+}
+
+/**
+ * Renders a wall-clock timestamp as either a short relative duration
+ * (`5s ago`, `2m ago`) when within the last 60 minutes, or an absolute
+ * `HH:MM:SS` time-of-day stamp otherwise. Returns `'never'` for null —
+ * the caller is responsible for substituting `'n/a'` when the field is
+ * structurally inapplicable (e.g. spawn-mode `lastReadinessProbeAt`).
+ */
+function formatTimeAgo(ts: number | null): string {
+  if (ts === null) return 'never';
+  const deltaMs = Date.now() - ts;
+  if (deltaMs < 0) return 'just now';
+  const sec = Math.floor(deltaMs / 1000);
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const t = new Date(ts);
+  return `${String(t.getHours()).padStart(2, '0')}:${String(
+    t.getMinutes()
+  ).padStart(2, '0')}:${String(t.getSeconds()).padStart(2, '0')}`;
 }
 
 function RestartRow({
