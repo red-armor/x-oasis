@@ -17,6 +17,10 @@ references:
     rel: related-to
     file: ./20260510-orchestrator-decentralized-connect.md
     note: connect 去中心化讨论中假设 participant 已存在，本文补齐 participant 生命周期管理
+  - id: D-005
+    rel: related-to
+    file: ./20260514-circuit-breaker-dead-code.md
+    note: D-005 覆盖 connect/heartbeat 失败决策，与本文的 spawn/replace lifecycle 互补；生产应同时启用形成 spawn-rate 限流闭环
 sources:
   - title: 'telegraph D-007: x-oasis 能力差距盘点 v2'
     url: '../../../modules/ai/telegraph/codebase-wiki/discussion/20260514-x-oasis-capability-gaps-v2.md'
