@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.10.3
+
+### Patch Changes
+
+- 8145f6b: fix: p2p
+
 ## 0.10.2
 
 ### Patch Changes
