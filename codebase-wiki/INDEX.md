@@ -51,6 +51,7 @@ features:
 | D-001 | [20260510-orchestrator-decentralized-connect.md](./discussion/20260510-orchestrator-decentralized-connect.md)             | Orchestrator connect 去中心化设计讨论                | 探讨将 connect 能力从 main process 中心化调度下放到 participant 本地发起的可行性与演进路径     |
 | D-002 | [20260511-multi-page-routing-pagelet-proxy.md](./discussion/20260511-multi-page-routing-pagelet-proxy.md)                 | 多 Page 到多 Pagelet 的 RPC 路由问题                 | 多 page 共享 renderer 时 RPC 请求无法路由到对应 pagelet 的根因分析与 ActivationConfig 扩展方案 |
 | D-003 | [20260512-direct-channel-vs-ipc-channel-comparison.md](./discussion/20260512-direct-channel-vs-ipc-channel-comparison.md) | Renderer 侧 directChannel 与 ipcChannel RPC 通道对比 | 对比 MessagePort 直连与 IPC 中转两种模式的实现机制、数据路径与优缺点                           |
+| D-004 | [20260514-utility-process-supervisor-rfc.md](./discussion/20260514-utility-process-supervisor-rfc.md) | UtilityProcessSupervisor RFC — Electron utility process 生命周期 + 透明换链 | 提案 UtilityProcessSupervisor 统一封装 utilityProcess.fork → bindPort → registerParticipant → 监听 disconnect → 自动 replaceParticipantChannel 流程，解决下游（telegraph 等）三处重复 spawn 实现 + 0 处使用 replaceParticipantChannel 的真实落地缺口 |
 
 ### issue/ — Issue 记录
 
