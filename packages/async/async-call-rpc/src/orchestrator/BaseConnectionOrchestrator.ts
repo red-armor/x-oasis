@@ -518,12 +518,33 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
     // Preserve config for reconnects so that fromServices/toServices survive.
     mc.lastConfig = config;
 
+    // Circuit-breaker gate (D-005). Short-circuit when breaker is OPEN with
+    // no probe budget. CLOSED is the default, so this is a no-op unless
+    // `circuitBreaker.enabled` was set in the orchestrator config.
+    if (mc.circuitBreaker && !mc.circuitBreaker.allowRequest()) {
+      const blocked = new Error(
+        `[CircuitBreaker] connect blocked: ${connectionId} breaker is ${mc.circuitBreaker.state}`
+      );
+      if (this.config.circuitBreaker?.fallback) {
+        return mc.circuitBreaker.applyFallback({
+          connectionId,
+          fromId,
+          toId,
+        });
+      }
+      throw blocked;
+    }
+
     // Execute the first-attempt connect flow.
     // If retryOnInitialFailure is true, treat first-attempt failure like a
     // connection loss and schedule reconnect instead of throwing.
     try {
       await this._doConnect(mc, config, options);
+      // D-005: feed connect outcome into the breaker so repeated failures
+      // can trip OPEN and HALF_OPEN probes can transition back to CLOSED.
+      mc.circuitBreaker?.recordSuccess();
     } catch (err) {
+      mc.circuitBreaker?.recordFailure();
       if (options.retryOnInitialFailure) {
         this._handleConnectionLost(
           mc,
@@ -1028,7 +1049,19 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
   protected _handleHeartbeatTimeout(mc: ManagedConnection): void {
     if (mc.state !== ConnectionState.READY) return;
     this._log('warn', `heartbeat timeout: ${mc.connectionId}`);
+    // D-005: heartbeat timeout is a connection-level health failure signal.
+    mc.circuitBreaker?.recordFailure();
     this._handleConnectionLost(mc, new Error('heartbeat timeout'));
+  }
+
+  /**
+   * Called by subclasses when a heartbeat ack arrives in time. Default
+   * implementation only feeds the circuit breaker (D-005); subclasses may
+   * override for richer bookkeeping, but should call `super` to keep the
+   * breaker in sync.
+   */
+  protected _handleHeartbeatAck(mc: ManagedConnection): void {
+    mc.circuitBreaker?.recordSuccess();
   }
 
   // ── Internal: state machine ───────────────────────────────────────────────
