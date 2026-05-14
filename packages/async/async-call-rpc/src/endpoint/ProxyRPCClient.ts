@@ -52,25 +52,62 @@ class ProxyRPCClient {
       (...args: any[]) => Promise<any>
     >
   >(): T {
-    const getTrap =
-      (_: any, methodName: string) =>
-      (...args: any[]) => {
+    const getTrap = (_: any, methodName: string | symbol) => {
+      // -----------------------------------------------------------------
+      // Thenable / inspector probes — return undefined instead of
+      // synthesizing an RPC method.
+      //
+      // Without this, `await client` (legitimate when a factory returns
+      // the proxy through an async function) makes the JS engine read
+      // `client.then`, the proxy synthesizes a `then` method, the call
+      // is dispatched as `requestPath.then(resolve, reject)` to the
+      // remote service which obviously has no `then` handler, and the
+      // remote replies with `-32601 Method not found` — surfacing as a
+      // confusing UnhandledPromiseRejection at the await site.
+      //
+      // Symbols (Symbol.toPrimitive, Symbol.iterator,
+      // Symbol.asyncIterator, Symbol.toStringTag, …) are similarly read
+      // by string coercion, console inspection, and iteration protocols
+      // and must never be turned into RPC calls.
+      //
+      // Concrete cases that hit this in v0.13.x:
+      //  - `await clientHost.registerClient(...).createProxy()` returned
+      //    from an async helper (P↔P demo in
+      //    examples/orchestrator/multi-page-router-di)
+      //  - `console.log(client)` in dev tools
+      //  - `Array.from(client)` / `for…of client`
+      // -----------------------------------------------------------------
+      if (typeof methodName === 'symbol') return undefined;
+      if (
+        methodName === 'then' ||
+        methodName === 'catch' ||
+        methodName === 'finally' ||
+        methodName === 'constructor' ||
+        methodName === 'toJSON'
+      ) {
+        return undefined;
+      }
+      // After the symbol/thenable filter above, methodName is guaranteed
+      // to be a string; alias it so the rest of the trap body can keep
+      // its existing string-typed call sites unchanged.
+      const name: string = methodName;
+      return (...args: any[]) => {
         if (!this.channel) {
           throw new Error(
-            `[ProxyRPCClient] Channel is not set when invoking "${methodName}". ` +
+            `[ProxyRPCClient] Channel is not set when invoking "${name}". ` +
               `Call setChannel() before making RPC calls.`
           );
         }
 
         // Handle ping-pong event methods (on*).
         // These methods take a callback and return an unsubscriber function.
-        if (isEventMethod(methodName)) {
+        if (isEventMethod(name)) {
           const callback = args[0];
 
           // Send request without args (callback cannot be serialized)
           const result = this.channel.makeRequest({
             requestPath: this.requestPath,
-            methodName,
+            methodName: name,
             args: [], // Event method args are not serialized
           });
 
@@ -94,7 +131,7 @@ class ProxyRPCClient {
               // Send EventMethodStop to server
               channel.makeRequest({
                 requestPath: this.requestPath,
-                methodName,
+                methodName: name,
                 args: [],
                 requestType: RequestType.EventMethodStop,
               } as any);
@@ -105,11 +142,12 @@ class ProxyRPCClient {
         // Regular method: return promise
         const result = this.channel.makeRequest({
           requestPath: this.requestPath,
-          methodName,
+          methodName: name,
           args,
         });
         return (result as Deferred).promise;
       };
+    };
 
     return new Proxy({} as T, { get: getTrap });
   }
