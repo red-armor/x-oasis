@@ -42,6 +42,17 @@ export class PageletWorker implements IPageletWorker {
    * `proxy.connect(peerId)` round-trip on every call after the first.
    */
   protected peerClients = new Map<string, Record<string, any>>();
+  /**
+   * Set of peer participant ids whose inbound clients are wired up
+   * synchronously by `boot()` (or by subclasses overriding it). When a
+   * connection event arrives for one of these peers we skip
+   * `onPeerConnection`, because the subclass has already taken
+   * responsibility for the channel through its own client wiring.
+   *
+   * Subclasses that pre-wire additional peers should `add()` their
+   * peerId here so the same suppression applies.
+   */
+  protected manuallyWiredPeers = new Set<string>();
 
   constructor(
     @inject(PageletWorkerConfigId)
@@ -73,7 +84,7 @@ export class PageletWorker implements IPageletWorker {
           console.log(
             `[${this.config.selfId}-worker] service registered on ${conn.peerId} channel`
           );
-        } else if (conn.peerId !== 'shared' && conn.peerId !== 'daemon') {
+        } else if (!this.manuallyWiredPeers.has(conn.peerId)) {
           // Pagelet ↔ pagelet (P↔P) inbound — A-008 §4.1.
           // Subclasses can override `onPeerConnection` to register a
           // peer-facing service on this direct channel. The role is
@@ -81,8 +92,11 @@ export class PageletWorker implements IPageletWorker {
           // for the side that called `proxy.connect(peerId)` — both
           // sides see this hook fire so each can register handlers.
           //
-          // Excludes shared/daemon because their inbound clients are
-          // wired in boot() above and don't need a per-connection hook.
+          // Peers whose inbound clients are wired explicitly by boot()
+          // (e.g. shared/daemon in this example) are tracked in
+          // `manuallyWiredPeers` and skipped here so we don't try to
+          // attach a duplicate service to a channel the subclass has
+          // already taken ownership of.
           this.onPeerConnection(conn.peerId, ch);
         }
       },
@@ -93,6 +107,13 @@ export class PageletWorker implements IPageletWorker {
       .registerClient(MAIN_RPC_SERVICE_PATH, { channel: mainChannel })
       .createProxy() as unknown as IMainRpcService;
 
+    // Mark shared/daemon as manually wired BEFORE awaiting the
+    // connections — otherwise the onConnection callback above would
+    // still see them as P↔P peers and try to invoke
+    // `onPeerConnection` on a channel that boot() is about to bind to
+    // its own client.
+    this.manuallyWiredPeers.add('shared');
+    this.manuallyWiredPeers.add('daemon');
     const sharedConn = await proxy.connect('shared');
     const daemonConn = await proxy.connect('daemon');
 
