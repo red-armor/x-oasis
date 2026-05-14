@@ -7,10 +7,13 @@ import {
   connectionPageletClient,
 } from '@/apps/main/application/browser/rpc-clients';
 import { PageConfig } from '@/apps/main/application/common/cp-config';
-import { CONNECTION_PARTICIPANT_ID } from '@/services/pagelet-host/common';
+import {
+  CONNECTION_PARTICIPANT_ID,
+  SETTING_PARTICIPANT_ID,
+} from '@/services/pagelet-host/common';
 import { Button } from '@/ui/components/ui/button';
 
-type TabId = 'pagelet' | 'shared' | 'daemon' | 'main';
+type TabId = 'pagelet' | 'shared' | 'daemon' | 'main' | 'peer';
 
 interface MethodDef {
   name: string;
@@ -139,6 +142,19 @@ function PageView({ page }: PageViewProps): JSX.Element {
         },
       ],
     },
+    {
+      id: 'peer',
+      label: 'Peer (Setting)',
+      color: '#ec4899',
+      methods: [
+        {
+          name: 'callSettingPeerInfo',
+          description:
+            'P↔P direct RPC: connection → setting via entangled MessageChannelMain (main is NOT on the RPC path)',
+          invoke: () => connectionPageletClient.callSettingPeerInfo(),
+        },
+      ],
+    },
   ];
 
   const currentTab = TABS.find((t) => t.id === activeTab)!;
@@ -149,6 +165,9 @@ function PageView({ page }: PageViewProps): JSX.Element {
       { id: pageletId, type: 'utility' },
       { id: 'shared', type: 'utility' },
       { id: 'daemon', type: 'utility' },
+      // P↔P peer: only appears in inspector after the first
+      // callSettingPeerInfo() triggers ParticipantOrchestratorProxy.connect.
+      { id: SETTING_PARTICIPANT_ID, type: 'utility' },
     ],
     api: pageApi,
     sendRpc: async (message: string) =>
