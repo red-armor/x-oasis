@@ -7,7 +7,7 @@ import {
   type SpawnInfo,
   type StateChangeEvent,
 } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { ExponentialBackoffPolicy, serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
 import {
@@ -62,6 +62,16 @@ export class PageletProcess implements IPageletProcess {
       participantId: pageletId,
       entry: join(__dirname, `../preload/${workerFileName}`),
       role: 'utility',
+      // Demo-friendly restart policy — without this the supervisor
+      // transitions straight to `failed` on first crash (see
+      // UtilityProcessSupervisor.ts:762-764), which makes
+      // `kill -9 <pagelet-pid>` look like a permanent error in the
+      // SupervisorsPanel instead of a recovery cycle.
+      restartPolicy: new ExponentialBackoffPolicy({
+        initialDelayMs: 500,
+        maxDelayMs: 5_000,
+        maxRetries: 10,
+      }),
       onSpawn: ({ pid, isRestart }: SpawnInfo) => {
         const lastPid = this.lastPids.get(pageletId);
         if (isRestart && lastPid !== undefined) {

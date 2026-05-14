@@ -6,7 +6,7 @@ import {
   type SpawnInfo,
   type StateChangeEvent,
 } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { ExponentialBackoffPolicy, serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
 import {
@@ -39,6 +39,15 @@ export class DaemonProcess implements IDaemonProcess {
       participantId: DAEMON_PARTICIPANT_ID,
       entry: join(__dirname, '../preload/daemon-worker.js'),
       role: 'utility',
+      // Demo-friendly restart policy: short initial delay so the
+      // `restarting → running` transition is observable in the
+      // SupervisorsPanel, capped retries so a hard-broken entry
+      // doesn't loop forever during demos.
+      restartPolicy: new ExponentialBackoffPolicy({
+        initialDelayMs: 500,
+        maxDelayMs: 5_000,
+        maxRetries: 10,
+      }),
       onSpawn: ({ pid, isRestart }: SpawnInfo) => {
         if (isRestart && lastPid !== null) {
           pidNameRegistry.unregisterPid(lastPid);

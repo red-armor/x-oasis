@@ -6,7 +6,7 @@ import {
   type SpawnInfo,
   type StateChangeEvent,
 } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { ExponentialBackoffPolicy, serviceHost } from '@x-oasis/async-call-rpc';
 import { join } from 'path';
 
 import {
@@ -39,6 +39,13 @@ export class SharedProcess implements ISharedProcess {
       participantId: SHARED_PARTICIPANT_ID,
       entry: join(__dirname, '../preload/shared-worker.js'),
       role: 'utility',
+      // Demo-friendly restart policy — see DaemonProcess for the
+      // rationale behind these values.
+      restartPolicy: new ExponentialBackoffPolicy({
+        initialDelayMs: 500,
+        maxDelayMs: 5_000,
+        maxRetries: 10,
+      }),
       onSpawn: ({ pid, isRestart }: SpawnInfo) => {
         if (isRestart && lastPid !== null) {
           pidNameRegistry.unregisterPid(lastPid);
