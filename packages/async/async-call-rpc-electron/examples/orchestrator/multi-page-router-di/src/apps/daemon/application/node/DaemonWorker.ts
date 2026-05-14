@@ -40,14 +40,6 @@ export class DaemonWorker implements IDaemonWorker {
 
     this.diagnostics.setMetricsProvider(mainMetricsClient);
 
-    // Allow main → daemon RPC requests over the same control channel
-    // (it carries createParticipantProxy's orchestrator protocol *and*
-    // direct DAEMON_SERVICE_PATH calls from the AppApplication push
-    // loop). We register handlers on this channel's own RPCServiceHost
-    // so the routing is bounded to the main↔daemon connection.
-    const mainServiceHost = new RPCServiceHost();
-    mainChannel.setServiceHost(mainServiceHost);
-
     const diagnostics = this.diagnostics;
 
     const daemonHandlers = {
@@ -90,17 +82,7 @@ export class DaemonWorker implements IDaemonWorker {
       getPerformanceSnapshot: () => diagnostics.getPerformanceSnapshot(),
       onPerformanceUpdate: (callback: (snapshot: any) => void) =>
         diagnostics.onPerformanceUpdate(callback),
-      setSupervisorSnapshots: (snaps: any[]): void => {
-        diagnostics.setSupervisorSnapshots(snaps);
-      },
     };
-
-    // Register the daemon service on the main↔daemon channel so the
-    // AppApplication push loop's setSupervisorSnapshots() lands here.
-    mainServiceHost.registerServiceHandler(DAEMON_SERVICE_PATH, daemonHandlers);
-    console.log(
-      `[daemon-worker] ${DAEMON_SERVICE_PATH} registered on main channel`
-    );
 
     const proxy = createParticipantProxy({
       selfId: SELF_ID,

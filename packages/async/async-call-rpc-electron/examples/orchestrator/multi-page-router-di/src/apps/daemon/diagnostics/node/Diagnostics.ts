@@ -11,15 +11,9 @@ export class Diagnostics {
   private metricsProvider: IMainMetricsService | null = null;
   private lastCpuUsage: NodeJS.CpuUsage | null = null;
   private lastCpuTime: number | null = null;
-  /** Latest supervisor snapshots pushed by main (G3 inspector). */
-  private supervisorSnapshots: SupervisorInspectorSnapshot[] = [];
 
   setMetricsProvider(provider: IMainMetricsService): void {
     this.metricsProvider = provider;
-  }
-
-  setSupervisorSnapshots(snaps: SupervisorInspectorSnapshot[]): void {
-    this.supervisorSnapshots = snaps;
   }
 
   private async collectSnapshot(): Promise<MonitorSnapshot> {
@@ -48,9 +42,14 @@ export class Diagnostics {
     };
 
     let appMetrics: AppMetric[] = [];
+    let supervisorSnapshots: SupervisorInspectorSnapshot[] = [];
     if (this.metricsProvider) {
       try {
         appMetrics = await this.metricsProvider.getAppMetrics();
+      } catch {}
+      try {
+        supervisorSnapshots =
+          await this.metricsProvider.getSupervisorSnapshots();
       } catch {}
     }
 
@@ -85,7 +84,7 @@ export class Diagnostics {
       },
       processes,
       pidTree: null,
-      supervisorSnapshots: this.supervisorSnapshots,
+      supervisorSnapshots,
     };
   }
 

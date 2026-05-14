@@ -125,6 +125,14 @@ export class AppApplication implements IAppApplication {
     });
 
     serviceHost.registerServiceHandler(MAIN_METRICS_SERVICE_PATH, {
+      getSupervisorSnapshots: () => {
+        const snaps = [
+          this.daemonProcess.getInspectorSnapshot(),
+          this.sharedProcess.getInspectorSnapshot(),
+          ...this.pageletProcess.getInspectorSnapshots(),
+        ].filter((s) => s !== null);
+        return snaps;
+      },
       getAppMetrics: () => {
         const electronMetrics = app.getAppMetrics();
         const knownPids = new Set(electronMetrics.map((m) => m.pid));
@@ -190,23 +198,6 @@ export class AppApplication implements IAppApplication {
       this.mainCpServer.registerSettingWindow(win);
       this.appOrchestrator.registerSettingOrchestratorService();
     });
-
-    // ── G3 supervisor inspector push loop ────────────────────────────────
-    // Every 2 s, collect all supervisor snapshots from main and push
-    // them into the daemon. The daemon caches them and folds them into
-    // the next MonitorSnapshot consumed by the Monitor pagelet UI.
-    setInterval(() => {
-      const client = this.daemonProcess.getDaemonClient();
-      if (!client) return;
-      const snapshots = [
-        this.daemonProcess.getInspectorSnapshot(),
-        this.sharedProcess.getInspectorSnapshot(),
-        ...this.pageletProcess.getInspectorSnapshots(),
-      ].filter((s) => s !== null);
-      // Fire-and-forget; if the channel is mid-restart this rejects
-      // and the next tick will retry with fresh state.
-      void client.setSupervisorSnapshots(snapshots as any).catch(() => {});
-    }, 2000);
 
     console.log('[AppApplication] start() done');
   }
