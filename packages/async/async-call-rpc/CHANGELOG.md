@@ -1,5 +1,20 @@
 # @x-oasis/async-call-rpc
 
+## 0.13.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+- Updated dependencies [566278f]
+  - @x-oasis/is-ascii@0.13.1
+  - @x-oasis/is-function@0.13.1
+  - @x-oasis/is-object@0.13.1
+  - @x-oasis/is-promise@0.13.1
+  - @x-oasis/disposable@0.13.1
+  - @x-oasis/emitter@0.13.1
+  - @x-oasis/id@0.13.1
+  - @x-oasis/deferred@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes

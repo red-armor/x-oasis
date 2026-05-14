@@ -1,5 +1,11 @@
 # @x-oasis/env
 
+## 0.13.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+
 ## 0.13.0
 
 ### Minor Changes

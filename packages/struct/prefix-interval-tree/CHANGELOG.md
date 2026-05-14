@@ -1,5 +1,11 @@
 # @x-oasis/prefix-interval-tree
 
+## 0.14.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+
 ## 0.14.0
 
 ### Minor Changes

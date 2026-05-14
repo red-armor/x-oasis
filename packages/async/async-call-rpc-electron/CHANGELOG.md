@@ -1,5 +1,14 @@
 # @x-oasis/async-call-rpc-electron
 
+## 0.11.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+- Updated dependencies [566278f]
+  - @x-oasis/async-call-rpc@0.13.1
+  - @x-oasis/async-call-rpc-web@0.11.1
+
 ## 0.11.0
 
 ### Minor Changes

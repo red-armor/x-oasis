@@ -1,5 +1,11 @@
 # @x-oasis/website
 
+## 0.10.1
+
+### Patch Changes
+
+- 566278f: feat: add supervisor in utility process
+
 ## 0.10.0
 
 ### Minor Changes
