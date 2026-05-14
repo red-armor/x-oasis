@@ -122,6 +122,51 @@ export interface InspectorSnapshot {
   restartCount: number;
   orchestratorCount: number;
   restartHistory: ReadonlyArray<RestartHistoryEntry>;
+  /**
+   * Epoch ms (`Date.now()`) the most recent {@link onChannelReady}
+   * callback fired — i.e. when the supervisor's
+   * `ElectronUtilityProcessChannel` was constructed and pre-registration
+   * setup completed for the current child. Reset on each spawn /
+   * restart so always reflects the live channel.
+   *
+   * `null` until the first successful spawn finishes; after that it is
+   * monotonically increasing for the lifetime of the supervisor (each
+   * restart bumps it).
+   *
+   * Useful for diagnosing zombie utility processes — if `state` is
+   * `'running'` but `lastChannelReadyAt` is hours stale relative to
+   * `Date.now()`, the supervisor itself is healthy but the channel may
+   * be stuck (typically because the worker is blocked).
+   */
+  lastChannelReadyAt: number | null;
+  /**
+   * Epoch ms (`Date.now()`) of the most recent readiness-probe outcome,
+   * either success or timeout. ONLY populated when
+   * `readinessProbe.kind === 'firstMessage'`; in `'spawn'` mode there
+   * is no probe to time, so this stays `null` for the supervisor's
+   * lifetime.
+   *
+   * Inspector dashboards should display "n/a" rather than "never" for
+   * `'spawn'`-mode supervisors to avoid misleading the operator.
+   */
+  lastReadinessProbeAt: number | null;
+  /**
+   * Number of consecutive readiness-probe timeouts since the last
+   * successful probe. Resets to `0` the moment a probe resolves
+   * successfully and on every successful `start()`/`restart()` (because
+   * those paths only complete after the probe resolves).
+   *
+   * ONLY meaningful when `readinessProbe.kind === 'firstMessage'`. In
+   * `'spawn'` mode this is permanently `0`.
+   *
+   * High values combined with a `'restarting'` or `'failed'` state
+   * indicate the worker entry script is reaching `forkFn` but never
+   * sending the ready message (likely a worker-side bug or a missing
+   * `process.parentPort.postMessage` call), as opposed to crashing
+   * outright (which would surface via the `exit` listener and bump
+   * `restartCount` instead).
+   */
+  consecutiveProbeFailures: number;
 }
 
 /**
@@ -291,6 +336,14 @@ export class UtilityProcessSupervisor {
   private _firstFailureAt: number | null = null;
   private _restartHistory: RestartHistoryEntry[] = [];
   private _stateChangeListeners = new Set<(e: StateChangeEvent) => void>();
+  /**
+   * Health-snapshot bookkeeping (see {@link InspectorSnapshot} for the
+   * external contract). Updated from `_fireChannelReady` and
+   * `_awaitReadiness` only — getters reflect them verbatim.
+   */
+  private _lastChannelReadyAt: number | null = null;
+  private _lastReadinessProbeAt: number | null = null;
+  private _consecutiveProbeFailures = 0;
 
   /**
    * When `_currentChild` exits we close over this listener so we can
@@ -365,6 +418,9 @@ export class UtilityProcessSupervisor {
       orchestratorCount: this.orchestrators.length,
       // Defensive copy so the caller cannot mutate internals.
       restartHistory: this._restartHistory.map((e) => ({ ...e })),
+      lastChannelReadyAt: this._lastChannelReadyAt,
+      lastReadinessProbeAt: this._lastReadinessProbeAt,
+      consecutiveProbeFailures: this._consecutiveProbeFailures,
     };
   }
 
@@ -631,6 +687,10 @@ export class UtilityProcessSupervisor {
         if (settled) return;
         settled = true;
         cleanup();
+        // Health snapshot: probe succeeded — stamp time + reset the
+        // consecutive-failure run.
+        this._lastReadinessProbeAt = Date.now();
+        this._consecutiveProbeFailures = 0;
         resolve();
       };
 
@@ -638,6 +698,11 @@ export class UtilityProcessSupervisor {
         if (settled) return;
         settled = true;
         cleanup();
+        // Health snapshot: probe timed out — stamp time + bump the
+        // consecutive-failure counter (caller will then transition to
+        // 'failed' or schedule a restart, depending on policy).
+        this._lastReadinessProbeAt = Date.now();
+        this._consecutiveProbeFailures += 1;
         reject(
           new Error(
             `[UtilityProcessSupervisor] readiness probe timed out after ${timeoutMs}ms (participant="${this.opts.participantId}", pid=${child.pid})`
@@ -654,6 +719,10 @@ export class UtilityProcessSupervisor {
     pid: number,
     isRestart: boolean
   ): void {
+    // Always stamp the health snapshot, even if the user did not
+    // register an onChannelReady callback — Inspector consumers should
+    // still see when the channel last came up.
+    this._lastChannelReadyAt = Date.now();
     if (!this.opts.onChannelReady) return;
     try {
       this.opts.onChannelReady({
