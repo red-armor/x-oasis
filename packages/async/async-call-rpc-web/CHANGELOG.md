@@ -1,5 +1,14 @@
 # @x-oasis/async-call-rpc-web
 
+## 0.11.3
+
+### Patch Changes
+
+- 8145f6b: fix: p2p
+- Updated dependencies [25c7918]
+- Updated dependencies [8145f6b]
+  - @x-oasis/async-call-rpc@0.14.0
+
 ## 0.11.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@x-oasis/async-call-rpc-electron",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "type": "module",
   "description": "Electron transport adapters (ipcMain, ipcRenderer, MessagePortMain, UtilityProcess) for @x-oasis/async-call-rpc",
   "main": "dist/index.js",

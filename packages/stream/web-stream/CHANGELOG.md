@@ -1,5 +1,11 @@
 # @x-oasis/web-stream
 
+## 0.12.3
+
+### Patch Changes
+
+- 8145f6b: fix: p2p
+
 ## 0.12.2
 
 ### Patch Changes

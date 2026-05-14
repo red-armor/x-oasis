@@ -1,5 +1,16 @@
 # @x-oasis/integer-buffer-set
 
+## 0.13.3
+
+### Patch Changes
+
+- 8145f6b: fix: p2p
+- Updated dependencies [8145f6b]
+  - @x-oasis/is-clamped@0.13.3
+  - @x-oasis/invariant@0.13.3
+  - @x-oasis/return-hook@0.13.3
+  - @x-oasis/heap@0.13.3
+
 ## 0.13.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @x-oasis/node-fetch-json
 
+## 0.11.3
+
+### Patch Changes
+
+- 8145f6b: fix: p2p
+
 ## 0.11.2
 
 ### Patch Changes

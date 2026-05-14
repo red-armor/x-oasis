@@ -1,5 +1,13 @@
 # @x-oasis/debounce
 
+## 0.13.3
+
+### Patch Changes
+
+- 8145f6b: fix: p2p
+- Updated dependencies [8145f6b]
+  - @x-oasis/default-boolean-value@0.13.3
+
 ## 0.13.2
 
 ### Patch Changes
