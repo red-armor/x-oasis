@@ -136,8 +136,14 @@ export class PageletWorker implements IPageletWorker {
     }
 
     const conn = await this.proxy.connect(peerId);
+    // The peerServicePath is the SERVER-side service path; clients send
+    // requests with that as the requestPath header so the remote
+    // service host (or single service) can route them. Reusing it here
+    // as the client's requestPath keeps server- and client-side path
+    // namespaces aligned and avoids silent drops on serviceHost-routed
+    // peers.
     const client = clientHost
-      .registerClient(`${this.config.selfId}→${peerId}:${peerServicePath}`, {
+      .registerClient(peerServicePath, {
         channel: conn.getChannel(),
       })
       .createProxy() as T;
