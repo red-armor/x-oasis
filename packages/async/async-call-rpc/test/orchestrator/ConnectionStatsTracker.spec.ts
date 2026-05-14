@@ -135,4 +135,91 @@ describe('ConnectionStatsTracker', () => {
     expect(snap.totalReconnects).toBe(0);
     expect(snap.recentFailureRate).toBe(0);
   });
+
+  // ── G3 stateTransitions ring buffer ──────────────────────────────────────
+
+  describe('stateTransitions ring buffer', () => {
+    it('starts empty', () => {
+      const snap = tracker.snapshot(ConnectionState.IDLE);
+      expect(snap.stateTransitions).toEqual([]);
+    });
+
+    it('appends each recordStateTransition() call (oldest first)', () => {
+      tracker.recordStateTransition(
+        ConnectionState.IDLE,
+        ConnectionState.CONNECTING,
+        undefined,
+        100
+      );
+      tracker.recordStateTransition(
+        ConnectionState.CONNECTING,
+        ConnectionState.READY,
+        'connected',
+        200
+      );
+
+      const snap = tracker.snapshot(ConnectionState.READY);
+      expect(snap.stateTransitions).toHaveLength(2);
+      expect(snap.stateTransitions[0]).toEqual({
+        at: 100,
+        prev: ConnectionState.IDLE,
+        curr: ConnectionState.CONNECTING,
+        reason: undefined,
+      });
+      expect(snap.stateTransitions[1]).toEqual({
+        at: 200,
+        prev: ConnectionState.CONNECTING,
+        curr: ConnectionState.READY,
+        reason: 'connected',
+      });
+    });
+
+    it('caps at configured size, dropping oldest', () => {
+      const small = new ConnectionStatsTracker(CONN_ID, 10_000, 3);
+      for (let i = 0; i < 5; i++) {
+        small.recordStateTransition(
+          ConnectionState.IDLE,
+          ConnectionState.CONNECTING,
+          `r${i}`,
+          1000 + i
+        );
+      }
+      const snap = small.snapshot(ConnectionState.CONNECTING);
+      expect(snap.stateTransitions).toHaveLength(3);
+      expect(snap.stateTransitions.map((t) => t.reason)).toEqual([
+        'r2',
+        'r3',
+        'r4',
+      ]);
+    });
+
+    it('snapshot returns a defensive copy', () => {
+      tracker.recordStateTransition(
+        ConnectionState.IDLE,
+        ConnectionState.CONNECTING,
+        'first',
+        100
+      );
+
+      const snap = tracker.snapshot(ConnectionState.CONNECTING);
+      // mutate the snapshot — internal state must be untouched
+      (snap.stateTransitions as Array<{ reason?: string }>)[0].reason =
+        'mutated';
+      const snap2 = tracker.snapshot(ConnectionState.CONNECTING);
+      expect(snap2.stateTransitions[0].reason).toBe('first');
+    });
+
+    it('reset() clears the ring buffer', () => {
+      tracker.recordStateTransition(
+        ConnectionState.IDLE,
+        ConnectionState.CONNECTING,
+        undefined,
+        100
+      );
+      tracker.reset();
+      expect(tracker.snapshot(ConnectionState.IDLE).stateTransitions).toEqual(
+        []
+      );
+    });
+  });
 });

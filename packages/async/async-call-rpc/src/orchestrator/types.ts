@@ -238,6 +238,28 @@ export interface ConnectionStats {
   // windowed (recent N seconds)
   readonly recentFailureRate: number;
   readonly recentAvgLatencyMs: number;
+
+  /**
+   * Recent state transitions for this connection (oldest → newest, ring
+   * buffer capped at the tracker's configured size, default 50). Useful
+   * for Inspector / health-debug surfaces that want a "what just
+   * happened" view without subscribing to the live `onStateChange`
+   * stream.
+   */
+  readonly stateTransitions: ReadonlyArray<StateTransitionRecord>;
+}
+
+/**
+ * One entry in {@link ConnectionStats.stateTransitions}. Plain JSON
+ * shape so it can travel over RPC without further serialization.
+ */
+export interface StateTransitionRecord {
+  /** epoch ms */
+  readonly at: number;
+  readonly prev: ConnectionState;
+  readonly curr: ConnectionState;
+  /** Optional reason string passed to `_transitionState`. */
+  readonly reason?: string;
 }
 
 // ─── Heartbeat ────────────────────────────────────────────────────────────────

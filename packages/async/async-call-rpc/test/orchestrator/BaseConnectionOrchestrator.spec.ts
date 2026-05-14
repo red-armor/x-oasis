@@ -432,6 +432,44 @@ describe('BaseConnectionOrchestrator', () => {
       expect(stats!.state).toBe(ConnectionState.READY);
       orchWithStats.dispose();
     });
+
+    // ── G3 stateTransitions ring buffer (driven by _transitionState) ─────
+
+    it('records state transitions into stats.stateTransitions', async () => {
+      const orchWithStats = new TestOrchestrator({ enableStats: true });
+      const ch1 = new StubChannel();
+      const ch2 = new StubChannel();
+      orchWithStats.registerParticipant('x', ch1);
+      orchWithStats.registerParticipant('y', ch2);
+
+      await orchWithStats.connect('x', 'y');
+
+      const stats = orchWithStats.getConnectionStats('x--y');
+      expect(stats).toBeDefined();
+      const transitions = stats!.stateTransitions.map(
+        (t) => `${t.prev}→${t.curr}`
+      );
+      // connect path: IDLE → CONNECTING → READY
+      expect(transitions).toContain(
+        `${ConnectionState.IDLE}→${ConnectionState.CONNECTING}`
+      );
+      expect(transitions).toContain(
+        `${ConnectionState.CONNECTING}→${ConnectionState.READY}`
+      );
+      // every entry has a timestamp
+      expect(
+        stats!.stateTransitions.every((t) => typeof t.at === 'number')
+      ).toBe(true);
+      orchWithStats.dispose();
+    });
+
+    it('does not record stateTransitions when enableStats is false', async () => {
+      // Default orch has enableStats: false; getConnectionStats returns
+      // undefined so there is no buffer to inspect — just confirming
+      // the no-stats path stays cheap (no tracker created).
+      await orch.connect('a', 'b');
+      expect(orch.getConnectionStats('a--b')).toBeUndefined();
+    });
   });
 
   // ─── Gap 1: replaceParticipantChannel ─────────────────────────────────────

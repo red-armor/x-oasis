@@ -36,6 +36,7 @@ export type {
   ReconnectFailedEvent,
   ClosedEvent,
   ConnectionStats,
+  StateTransitionRecord,
   HeartbeatConfig,
   RequestTimeoutConfig,
   RetryContext,

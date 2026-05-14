@@ -1088,6 +1088,17 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
       // only clear error on READY to avoid clobbering diagnostics
     }
 
+    // Record into the per-connection stats ring buffer (G3 Inspector).
+    // Only present when `enableStats` is on; harmless no-op otherwise.
+    if (mc.statsTracker) {
+      mc.statsTracker.recordStateTransition(
+        previousState,
+        newState,
+        reason,
+        mc.lastStateChangedAt
+      );
+    }
+
     // Notify state-change event.
     const event: StateChangeEvent = {
       connectionId: mc.connectionId,

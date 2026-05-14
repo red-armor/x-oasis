@@ -1,11 +1,14 @@
 import { ConnectionState } from './ConnectionState';
-import { ConnectionStats } from './types';
+import { ConnectionStats, StateTransitionRecord } from './types';
 
 interface CallRecord {
   timestamp: number;
   latencyMs: number;
   success: boolean;
 }
+
+/** Default ring-buffer capacity for `stateTransitions`. */
+const DEFAULT_STATE_TRANSITIONS_SIZE = 50;
 
 /**
  * Tracks per-connection health metrics.
@@ -31,8 +34,17 @@ export class ConnectionStatsTracker {
   private _windowedRecords: CallRecord[] = [];
   private readonly _windowMs: number;
 
-  constructor(private readonly connectionId: string, windowMs = 60_000) {
+  /** Ring buffer of recent state transitions (oldest first). */
+  private _stateTransitions: StateTransitionRecord[] = [];
+  private readonly _stateTransitionsSize: number;
+
+  constructor(
+    private readonly connectionId: string,
+    windowMs = 60_000,
+    stateTransitionsSize = DEFAULT_STATE_TRANSITIONS_SIZE
+  ) {
     this._windowMs = windowMs;
+    this._stateTransitionsSize = stateTransitionsSize;
     this._lastConnectedAt = Date.now();
   }
 
@@ -72,6 +84,27 @@ export class ConnectionStatsTracker {
     this._lastDisconnectedAt = now;
   }
 
+  /**
+   * Append a state transition to the ring buffer. Oldest entry is
+   * dropped when the buffer exceeds its configured size. `splice` keeps
+   * the array reference stable so external `Readonly` views remain
+   * valid.
+   */
+  recordStateTransition(
+    prev: ConnectionState,
+    curr: ConnectionState,
+    reason: string | undefined,
+    now = Date.now()
+  ): void {
+    this._stateTransitions.push({ at: now, prev, curr, reason });
+    if (this._stateTransitions.length > this._stateTransitionsSize) {
+      this._stateTransitions.splice(
+        0,
+        this._stateTransitions.length - this._stateTransitionsSize
+      );
+    }
+  }
+
   // ── Snapshot ───────────────────────────────────────────────────────────────
 
   snapshot(state: ConnectionState, now = Date.now()): ConnectionStats {
@@ -99,6 +132,9 @@ export class ConnectionStatsTracker {
 
       recentFailureRate: this._recentFailureRate(),
       recentAvgLatencyMs: this._recentAvgLatency(),
+
+      // Defensive copy so callers cannot mutate the live ring buffer.
+      stateTransitions: this._stateTransitions.map((t) => ({ ...t })),
     };
   }
 
@@ -112,6 +148,7 @@ export class ConnectionStatsTracker {
     this._lastDisconnectedAt = undefined;
     this._latencySamples = [];
     this._windowedRecords = [];
+    this._stateTransitions = [];
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
