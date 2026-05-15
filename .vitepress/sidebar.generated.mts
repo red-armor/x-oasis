@@ -25,6 +25,14 @@ export const wikiSidebar = {
         {
           "text": "D-003 Renderer 侧 directChannel 与 ipcChannel RPC 通道对比",
           "link": "/discussion/20260512-direct-channel-vs-ipc-channel-comparison"
+        },
+        {
+          "text": "D-004 UtilityProcessSupervisor RFC — Electron utility process 生命周期 + 透明换链",
+          "link": "/discussion/20260514-utility-process-supervisor-rfc"
+        },
+        {
+          "text": "D-005 ConnectionOrchestrator CircuitBreaker 是空壳 — 只创建未消费的 dead code",
+          "link": "/discussion/20260514-circuit-breaker-dead-code"
         }
       ]
     }
@@ -40,6 +48,14 @@ export const wikiSidebar = {
         {
           "text": "I-002 createPageBridge 多 port 路由导致 monitor / connection 服务互斥",
           "link": "/issue/20260512-create-page-bridge-multi-port-routing"
+        },
+        {
+          "text": "I-003 Setting 独立窗口 RPC 三连故障：preload chunks、service 路由、reconnect port 映射",
+          "link": "/issue/20260513-setting-window-rpc-three-bugs"
+        },
+        {
+          "text": "I-004 createPageBridge reconnect 后 firstPort 不更新导致 RPC 无响应",
+          "link": "/issue/20260513-create-page-bridge-reconnect-firstport-stale"
         }
       ]
     }
@@ -53,7 +69,12 @@ export const wikiSidebar = {
   "/roadmap/": [
     {
       "text": "规划路线",
-      "items": []
+      "items": [
+        {
+          "text": "P-001 Orchestrator Sub-path Exports 分离实施计划",
+          "link": "/roadmap/20260515-orchestrator-sub-path-exports-plan"
+        }
+      ]
     }
   ]
 };
@@ -70,5 +91,9 @@ export const wikiNav = [
   {
     "text": "Issue 记录",
     "link": "/issue/20260510-async-call-rpc-electron-heartbeat-ping-bug"
+  },
+  {
+    "text": "开发规划",
+    "link": "/roadmap/20260515-orchestrator-sub-path-exports-plan"
   }
 ];

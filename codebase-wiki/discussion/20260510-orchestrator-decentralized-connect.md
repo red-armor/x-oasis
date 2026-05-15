@@ -6,7 +6,7 @@ description: >
   下放到 participant 本地发起的可行性，对比两种架构的优劣与演进路径。
 category: discussion
 created: 2026-05-10
-updated: 2026-05-11
+updated: 2026-05-15
 tags: [orchestrator, connect, decentralized, architecture, pagelet]
 references:
   - id: I-001
@@ -15,6 +15,9 @@ references:
   - id: D-002
     rel: derives
     file: ./20260511-multi-page-routing-pagelet-proxy.md
+  - id: P-001
+    rel: derives
+    file: ../roadmap/20260515-orchestrator-sub-path-exports-plan.md
 ---
 
 # Orchestrator connect 去中心化设计讨论
