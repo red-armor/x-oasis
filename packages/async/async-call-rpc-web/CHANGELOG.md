@@ -1,5 +1,12 @@
 # @x-oasis/async-call-rpc-web
 
+## 0.12.1
+
+### Patch Changes
+
+- Updated dependencies [58dde19]
+  - @x-oasis/async-call-rpc@0.16.0
+
 ## 0.12.0
 
 ### Minor Changes
