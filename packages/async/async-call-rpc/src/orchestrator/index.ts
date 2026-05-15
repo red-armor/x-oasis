@@ -7,6 +7,8 @@ export {
   ExponentialBackoffPolicy,
   FixedDelayPolicy,
   NeverReconnectPolicy,
+  instantiateReconnectPolicy,
+  isReconnectPolicySpec,
 } from './policies';
 export type { ExponentialBackoffOptions } from './policies';
 export { CircuitBreaker } from './CircuitBreaker';
@@ -20,6 +22,7 @@ export type {
   ParticipantType,
   ParticipantInfo,
   ConnectionConfig,
+  ConnectionConfigSpec,
   ConnectOptions,
   ReplaceChannelOptions,
   ListParticipantEntry,
@@ -41,6 +44,8 @@ export type {
   RequestTimeoutConfig,
   RetryContext,
   ReconnectPolicy,
+  ReconnectPolicySpec,
+  ExponentialBackoffOptionsLike,
   PendingRequestBehavior,
   DegradationConfig,
   CircuitBreakerConfig,

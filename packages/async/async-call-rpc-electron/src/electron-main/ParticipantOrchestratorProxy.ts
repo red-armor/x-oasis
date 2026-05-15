@@ -4,6 +4,8 @@ import {
   ORCHESTRATOR_SERVICE_PATH,
   ORCHESTRATOR_PROXY_SERVICE_PATH,
   AbstractChannelProtocol,
+  ConnectionConfigSpec,
+  ConnectOptions,
   ListParticipantEntry,
   ListConnectionEntry,
 } from '@x-oasis/async-call-rpc';
@@ -142,10 +144,25 @@ export class ParticipantOrchestratorProxy {
     service.setChannel(this._controlChannel);
   }
 
+  /**
+   * Open a control-plane request for a direct port to `toId`.
+   *
+   * `config` is the cross-process-safe subset of the orchestrator's
+   * `ConnectionConfig` — `fromServices` / `toServices` are intentionally
+   * not accepted here because RPC handlers are functions that can't survive
+   * serialisation; workers wanting to expose handlers must register them on
+   * their local `RPCServiceHost` directly. `reconnectPolicy` is a
+   * `ReconnectPolicySpec` (declarative descriptor) that the main-process
+   * orchestrator unmarshals back into a class instance via
+   * `instantiateReconnectPolicy()`.
+   *
+   * `options` shapes only the first-attempt activation handshake
+   * (`activateTimeoutMs`, `retryOnInitialFailure`).
+   */
   async connect(
     toId: string,
-    config?: Record<string, unknown>,
-    options?: Record<string, unknown>
+    config?: ConnectionConfigSpec,
+    options?: ConnectOptions
   ): Promise<ParticipantConnection> {
     const connectionId = this._canonicalConnectionId(this._selfId, toId);
 

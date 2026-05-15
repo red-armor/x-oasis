@@ -7,6 +7,10 @@ import { CircuitBreaker } from './CircuitBreaker';
 import { ConnectionStatsTracker } from './ConnectionStatsTracker';
 import { ExponentialBackoffPolicy } from './policies/ExponentialBackoffPolicy';
 import {
+  instantiateReconnectPolicy,
+  isReconnectPolicySpec,
+} from './policies/instantiate';
+import {
   ParticipantInfo,
   ParticipantType,
   ConnectionConfig,
@@ -1132,6 +1136,30 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
   // ── Proxy service (participant-facing RPC) ──────────────────────────────
 
   /**
+   * Internal: rebuild a ConnectionConfig that arrived from a different
+   * process so its class-typed fields (today: `reconnectPolicy`) become
+   * live instances again.
+   *
+   * `fromServices` / `toServices` are intentionally not touched — RPC
+   * handlers are functions and have no meaningful cross-process form.
+   * Worker callers that need to expose handlers must register them on
+   * their local `RPCServiceHost` directly.
+   */
+  private _unmarshalConnectionConfig(
+    config: ConnectionConfig | null | undefined
+  ): ConnectionConfig | undefined {
+    if (config == null) return undefined;
+    const policy = config.reconnectPolicy;
+    if (isReconnectPolicySpec(policy)) {
+      return {
+        ...config,
+        reconnectPolicy: instantiateReconnectPolicy(policy),
+      };
+    }
+    return config;
+  }
+
+  /**
    * Register proxy RPC handlers on a `serviceHost` so that participants
    * can call `requestConnect`, `requestDisconnect`, `listParticipants`, and
    * `listConnections` over their control-plane channel.
@@ -1155,10 +1183,17 @@ export abstract class BaseConnectionOrchestrator extends Disposable {
         config?: ConnectionConfig | null,
         options?: ConnectOptions | null
       ): Promise<any> {
+        // Cross-process callers (e.g. ParticipantOrchestratorProxy in a
+        // utility worker) cannot ship live ReconnectPolicy class instances
+        // through the RPC channel — class methods don't survive
+        // serialization. They send a `ReconnectPolicySpec` instead, which
+        // we unmarshal back into a class here. Same-process callers that
+        // pass real instances are passed through untouched.
+        const normalisedConfig = self._unmarshalConnectionConfig(config);
         const info = await self.connect(
           fromId,
           toId,
-          config ?? undefined,
+          normalisedConfig ?? undefined,
           options ?? undefined
         );
         return {

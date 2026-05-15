@@ -306,6 +306,65 @@ export interface ReconnectPolicy {
   nextRetryDelayMs(context: RetryContext): number | null;
 }
 
+// ─── ReconnectPolicy declarative descriptor (cross-process safe) ─────────────
+
+/**
+ * JSON-serialisable description of a {@link ReconnectPolicy} implementation.
+ *
+ * `ConnectionConfig.reconnectPolicy` accepts either a live class instance
+ * (same-process callers) or a `ReconnectPolicySpec` (cross-process callers,
+ * e.g. a utility worker shipping the config to the main-process orchestrator
+ * via `ParticipantOrchestratorProxy.connect`). The orchestrator unmarshals
+ * specs back into class instances on receipt — see
+ * `instantiateReconnectPolicy()`.
+ *
+ * Adding a new policy requires:
+ *   1. exporting its `*Options` interface from the policy file
+ *   2. adding a discriminant to the union below
+ *   3. extending `instantiateReconnectPolicy()` with the matching case
+ */
+export type ReconnectPolicySpec =
+  | { kind: 'exponential-backoff'; options?: ExponentialBackoffOptionsLike }
+  | { kind: 'fixed-delay'; delays?: number[] }
+  | { kind: 'never' };
+
+/**
+ * Mirror of `ExponentialBackoffOptions` declared as a plain interface here so
+ * `types.ts` can describe specs without circularly importing the policy file.
+ * The fields are kept identical and verified by a structural-assignability
+ * test in `policies-spec.spec.ts`.
+ */
+export interface ExponentialBackoffOptionsLike {
+  initialDelayMs?: number;
+  maxDelayMs?: number;
+  multiplier?: number;
+  jitterFactor?: number;
+  maxRetries?: number;
+  maxElapsedMs?: number;
+}
+
+/**
+ * Cross-process-safe subset of {@link ConnectionConfig}.
+ *
+ * Workers in a separate process (utility / renderer / node) cannot ship
+ * `fromServices` / `toServices` to the main-process orchestrator — RPC
+ * handlers are functions and have no meaningful serialised form. They also
+ * cannot ship a live {@link ReconnectPolicy} class instance, because class
+ * methods don't survive `structuredClone` or JSON serialisation.
+ *
+ * `ConnectionConfigSpec` is the safe shape: only fields whose values can
+ * cross a process boundary intact (heartbeat is plain numbers; reconnect
+ * policy uses the declarative {@link ReconnectPolicySpec} descriptor).
+ *
+ * `ParticipantOrchestratorProxy.connect()` accepts this shape; the
+ * orchestrator's `requestConnect` proxy handler unmarshals it into a real
+ * {@link ConnectionConfig} via `instantiateReconnectPolicy()`.
+ */
+export interface ConnectionConfigSpec {
+  heartbeat?: HeartbeatConfig;
+  reconnectPolicy?: ReconnectPolicySpec;
+}
+
 // ─── Pending request behaviour during reconnect ───────────────────────────────
 
 export interface PendingRequestBehavior {

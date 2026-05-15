@@ -2,3 +2,7 @@ export { ExponentialBackoffPolicy } from './ExponentialBackoffPolicy';
 export type { ExponentialBackoffOptions } from './ExponentialBackoffPolicy';
 export { FixedDelayPolicy } from './FixedDelayPolicy';
 export { NeverReconnectPolicy } from './NeverReconnectPolicy';
+export {
+  instantiateReconnectPolicy,
+  isReconnectPolicySpec,
+} from './instantiate';
