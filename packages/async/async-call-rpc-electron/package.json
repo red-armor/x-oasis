@@ -68,6 +68,7 @@
     "@rollup/plugin-typescript": "^12.3.0",
     "rollup": "^4.60.3",
     "tsdx": "^0.14.1",
+    "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   },
   "dependencies": {
