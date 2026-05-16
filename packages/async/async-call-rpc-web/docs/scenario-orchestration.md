@@ -34,8 +34,8 @@ Main Page                         Web Worker
 ### Main Page
 
 ```typescript
-import { WorkerChannel } from '@x-oasis/async-call-rpc-web';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web/core';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const worker = new Worker(new URL('./worker.ts', import.meta.url), {
   type: 'module',
@@ -57,8 +57,8 @@ serviceHost.registerService('worker-api', {
 ### Worker
 
 ```typescript
-import { WorkerChannel } from '@x-oasis/async-call-rpc-web';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web/core';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 const channel = new WorkerChannel(self, { name: 'worker-self' });
 
@@ -93,10 +93,8 @@ Main Page (Broker)        Worker A              Worker B
 ### Main Page
 
 ```typescript
-import {
-  WorkerChannel,
-  WebConnectionOrchestrator,
-} from '@x-oasis/async-call-rpc-web';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web/core';
+import { WebConnectionOrchestrator } from '@x-oasis/async-call-rpc-web/orchestrator';
 
 const workerA = new Worker(new URL('./worker-a.ts', import.meta.url), {
   type: 'module',
@@ -124,9 +122,9 @@ await orchestrator.connect('worker-a', 'worker-b');
 import {
   WorkerChannel,
   RPCMessageChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-web';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-web/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-web/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const controlChannel = new WorkerChannel(self, { name: 'worker-a-control' });
 
@@ -155,9 +153,9 @@ registerOrchestratorHandler(controlChannel, (ctx) => {
 import {
   WorkerChannel,
   RPCMessageChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-web';
-import { clientHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-web/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-web/orchestrator';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 const controlChannel = new WorkerChannel(self, { name: 'worker-b-control' });
 
@@ -208,11 +206,9 @@ Main page ↔ pagelet: via control plane WorkerChannel (RPC)
 ### Main Page: Orchestrator Setup
 
 ```typescript
-import {
-  WorkerChannel,
-  WebConnectionOrchestrator,
-} from '@x-oasis/async-call-rpc-web';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web/core';
+import { WebConnectionOrchestrator } from '@x-oasis/async-call-rpc-web/orchestrator';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const pageletWorker = new Worker(
   new URL('../workers/pagelet-worker.ts', import.meta.url),
@@ -270,13 +266,15 @@ await orchestrator.connect('pagelet', 'daemon');
 The pagelet uses `ParticipantOrchestratorProxy` pattern to self-connect to all peers, then exposes proxy handlers that forward main page calls to shared/daemon:
 
 ```typescript
-import { WorkerChannel, RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
 import {
-  clientHost,
-  serviceHost,
+  WorkerChannel,
+  RPCMessageChannel,
+} from '@x-oasis/async-call-rpc-web/core';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
+import {
   ORCHESTRATOR_PROXY_SERVICE_PATH,
   ORCHESTRATOR_SERVICE_PATH,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 
 const controlChannel = new WorkerChannel(self, { name: 'pagelet-control' });
 
@@ -344,9 +342,9 @@ Workers that only need to expose services use `registerOrchestratorHandler`:
 import {
   WorkerChannel,
   RPCMessageChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-web';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-web/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-web/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const controlChannel = new WorkerChannel(self, { name: 'shared-control' });
 
@@ -564,8 +562,8 @@ Browser                            Server
 ### Browser
 
 ```typescript
-import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web/core';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 const ws = new WebSocket('ws://localhost:3460');
 const channel = new WebSocketChannel(ws, { name: 'server-rpc' });
@@ -581,8 +579,8 @@ const serverClient = clientHost
 ### Server (Node.js)
 
 ```typescript
-import { WebSocketChannel } from '@x-oasis/async-call-rpc-node';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-node/core';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const wss = new WebSocket.Server({ port: 3460 });
 

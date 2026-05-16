@@ -8,6 +8,14 @@ RPC channel implementations and Connection Orchestrator for Node.js.
 npm install @x-oasis/async-call-rpc-node
 ```
 
+## Sub-path Exports
+
+| Import Path                                 | Contents                                                                                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `@x-oasis/async-call-rpc-node`              | Re-exports everything (backward compatible)                                                                                     |
+| `@x-oasis/async-call-rpc-node/core`         | Channel classes (`NodeProcessChannel`, `NodeMessagePortChannel`)                                                                |
+| `@x-oasis/async-call-rpc-node/orchestrator` | Orchestrator (`NodeConnectionOrchestrator`, `registerOrchestratorHandler`, `createParticipantProxy`, `createWorkerParticipant`) |
+
 ## Features
 
 - **Process Channels**: Pre-built channels for `child_process.fork` and `worker_threads`
@@ -26,7 +34,7 @@ npm install @x-oasis/async-call-rpc-node
 ### Process Channel
 
 ```typescript
-import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node';
+import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node/core';
 import { fork } from 'child_process';
 
 const child = fork('./worker.js');
@@ -36,7 +44,7 @@ const channel = new NodeProcessChannel({ process: child });
 ### Worker Thread Channel
 
 ```typescript
-import { NodeMessagePortChannel } from '@x-oasis/async-call-rpc-node';
+import { NodeMessagePortChannel } from '@x-oasis/async-call-rpc-node/core';
 import { Worker } from 'worker_threads';
 
 const worker = new Worker('./worker.js');
@@ -46,7 +54,7 @@ const channel = new NodeMessagePortChannel({ bindPort: worker });
 ### Connection Orchestrator
 
 ```typescript
-import { NodeConnectionOrchestrator } from '@x-oasis/async-call-rpc-node';
+import { NodeConnectionOrchestrator } from '@x-oasis/async-call-rpc-node/orchestrator';
 
 const orchestrator = new NodeConnectionOrchestrator();
 orchestrator.registerParticipant('worker-a', channelA, 'worker');

@@ -344,7 +344,7 @@ import {
   ActivationConfig,
   ParticipantInfo,
   ORCHESTRATOR_SERVICE_PATH,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 
 export class CustomConnectionOrchestrator extends BaseConnectionOrchestrator {
   protected createPortPair(): PortPair {

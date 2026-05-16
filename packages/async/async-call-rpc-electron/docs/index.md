@@ -30,12 +30,18 @@ src/
 └── index.ts            → Root barrel, re-exports all sub-paths
 ```
 
-| Import Path            | Runtime           | Dependencies                                     | Typical Use                                        |
-| ---------------------- | ----------------- | ------------------------------------------------ | -------------------------------------------------- |
-| `.../browser`          | Renderer          | No Electron APIs                                 | `createPageChannel`, `ContextBridgeChannel`        |
-| `.../electron-browser` | Preload           | `ipcRenderer`, `contextBridge` (type-level only) | `createPageBridge`, `IPCRendererChannel`           |
-| `.../electron-main`    | Main / Utility    | `ipcMain`, `utilityProcess` runtime APIs         | `IPCMainChannel`, `ElectronConnectionOrchestrator` |
-| `...` (root)           | Any (back-compat) | All                                              | Re-exports everything                              |
+| Import Path                         | Runtime           | Dependencies                                     | Typical Use                                       |
+| ----------------------------------- | ----------------- | ------------------------------------------------ | ------------------------------------------------- |
+| `.../browser/core`                  | Renderer          | No Electron APIs                                 | `createPageChannel`, `ContextBridgeChannel`       |
+| `.../browser/orchestrator`          | Renderer          | No Electron APIs                                 | `OrchestratorClient`                              |
+| `.../browser`                       | Renderer          | No Electron APIs                                 | Re-exports `core` + `orchestrator`                |
+| `.../electron-browser/core`         | Preload           | `ipcRenderer`, `contextBridge` (type-level only) | `createPageBridge`, `IPCRendererChannel`          |
+| `.../electron-browser/orchestrator` | Preload           | `ipcRenderer`, `contextBridge` (type-level only) | `registerOrchestratorHandler`                     |
+| `.../electron-browser`              | Preload           | `ipcRenderer`, `contextBridge` (type-level only) | Re-exports `core` + `orchestrator`                |
+| `.../electron-main/core`            | Main / Utility    | `ipcMain`, `utilityProcess` runtime APIs         | `IPCMainChannel`, `ElectronUtilityProcessChannel` |
+| `.../electron-main/orchestrator`    | Main / Utility    | `ipcMain`, `utilityProcess` runtime APIs         | `ElectronConnectionOrchestrator`                  |
+| `.../electron-main`                 | Main / Utility    | `ipcMain`, `utilityProcess` runtime APIs         | Re-exports `core` + `orchestrator`                |
+| `...` (root)                        | Any (back-compat) | All                                              | Re-exports everything                             |
 
 ## Quick Links
 
@@ -50,10 +56,8 @@ src/
 ### Basic IPC Channel
 
 ```typescript
-import {
-  IPCMainChannel,
-  IPCRendererChannel,
-} from '@x-oasis/async-call-rpc-electron';
+import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron/electron-browser/core';
 
 // Main process
 const channel = new IPCMainChannel({
@@ -71,10 +75,8 @@ const channel = new IPCRendererChannel({
 ### Connection Orchestrator
 
 ```typescript
-import {
-  ElectronConnectionOrchestrator,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-electron';
+// Main process
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 const orchestrator = new ElectronConnectionOrchestrator();
 orchestrator.registerParticipant('renderer', ipcChannel, 'renderer');
@@ -82,6 +84,8 @@ orchestrator.registerParticipant('utility', utilityChannel, 'utility');
 
 await orchestrator.connect('renderer', 'utility');
 ```
+
+> **Tip:** Use sub-path imports for optimal tree-shaking. The root import (`@x-oasis/async-call-rpc-electron`) still works for backward compatibility.
 
 See the [Orchestrator Documentation](/packages/async/async-call-rpc-electron/orchestrator) for complete details.
 

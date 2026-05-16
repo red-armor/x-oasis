@@ -5,8 +5,8 @@ Practical examples of using async-call-rpc with different transports and pattern
 ## Basic MessagePort Example
 
 ```typescript
-import { RPCService } from '@x-oasis/async-call-rpc';
-import { MessageChannel } from '@x-oasis/async-call-rpc-web';
+import { RPCService } from '@x-oasis/async-call-rpc/core';
+import { MessageChannel } from '@x-oasis/async-call-rpc-web/core';
 
 // Define your service
 class MathService {
@@ -34,8 +34,8 @@ console.log(result); // 8
 ```typescript
 // parent.ts
 import { fork } from 'child_process';
-import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node';
-import { RPCService } from '@x-oasis/async-call-rpc';
+import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node/core';
+import { RPCService } from '@x-oasis/async-call-rpc/core';
 
 class DataService {
   async fetchData(id: number) {
@@ -63,13 +63,13 @@ child.kill();
 
 ```typescript
 // worker.js (child process)
-import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node';
-import { RPCService } from '@x-oasis/async-call-rpc';
+import { NodeProcessChannel } from '@x-oasis/async-call-rpc-node/core';
+import { RPCService } from '@x-oasis/async-call-rpc/core';
 
 class DataService {
   async fetchData(id: number) {
     // Some async work
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     return { id, data: `result for ${id}` };
   }
 }
@@ -87,8 +87,8 @@ const rpc = new RPCService(service, { channel });
 ## WebSocket Example
 
 ```typescript
-import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
-import { RPCService } from '@x-oasis/async-call-rpc';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web/core';
+import { RPCService } from '@x-oasis/async-call-rpc/core';
 
 class ChatService {
   async sendMessage(message: string) {
@@ -127,8 +127,8 @@ wss.on('connection', (ws) => {
 ```typescript
 // Main process
 import { app, BrowserWindow, ipcMain } from 'electron';
-import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron';
-import { RPCService } from '@x-oasis/async-call-rpc';
+import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { RPCService } from '@x-oasis/async-call-rpc/core';
 
 class FileService {
   async readFile(path: string) {
@@ -161,8 +161,8 @@ app.on('ready', () => {
 
 ```typescript
 // Renderer process (preload.js)
-import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron';
-import { RPCService } from '@x-oasis/async-call-rpc';
+import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron/electron-browser/core';
+import { RPCService } from '@x-oasis/async-call-rpc/core';
 
 class FileService {
   async readFile(path: string): Promise<string> {
@@ -190,7 +190,7 @@ await fileRpc.writeFile('/path/to/file.txt', 'new content');
 
 ```typescript
 import { Event } from '@x-oasis/emitter';
-import { RequestType } from '@x-oasis/async-call-rpc';
+import { RequestType } from '@x-oasis/async-call-rpc/core';
 
 class DataStreamService {
   subscribeToUpdates() {
@@ -226,7 +226,7 @@ stream.unsubscribe();
 ## Context Injection Example
 
 ```typescript
-import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
+import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc/core';
 
 class UserService {
   // Handler receives context as 'this'
@@ -276,14 +276,13 @@ try {
 ## Custom Middleware Example
 
 ```typescript
-import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
+import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc/core';
 
 // Custom logging middleware
-const loggingMiddleware = (channel: AbstractChannelProtocol) =>
-  (data: any) => {
-    console.log(`[${channel.identifier}]`, data);
-    return data;
-  };
+const loggingMiddleware = (channel: AbstractChannelProtocol) => (data: any) => {
+  console.log(`[${channel.identifier}]`, data);
+  return data;
+};
 
 class MyChannel extends MessageChannel {
   decorateOnMessageMiddleware(middlewares) {
