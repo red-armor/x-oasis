@@ -1,5 +1,17 @@
 # @x-oasis/async-call-rpc-react
 
+## 0.14.0
+
+### Minor Changes
+
+- 1e0d6fd: fix: build issue
+- 59b5375: feat: export orchestrator
+- c852f4b: feat: update lock
+
+### Patch Changes
+
+- 42e6ab3: feat: update dep
+
 ## 0.13.0
 
 ### Minor Changes
