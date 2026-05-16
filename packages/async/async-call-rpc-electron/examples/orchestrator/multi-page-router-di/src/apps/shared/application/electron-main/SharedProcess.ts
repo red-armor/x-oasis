@@ -21,6 +21,11 @@ export interface ISharedProcess {
   spawn(): Promise<void>;
   /** Latest supervisor snapshot (G3 inspector). Null until spawned. */
   getInspectorSnapshot(): InspectorSnapshot | null;
+  /**
+   * Subscribe to the underlying supervisor's state transitions.
+   * Returns a disposer that removes the listener.
+   */
+  subscribeStateChange(listener: (event: StateChangeEvent) => void): () => void;
 }
 
 export const SharedProcessId = createId('SharedProcess');
@@ -73,5 +78,11 @@ export class SharedProcess implements ISharedProcess {
 
   getInspectorSnapshot(): InspectorSnapshot | null {
     return this.supervisor?.getInspectorSnapshot() ?? null;
+  }
+
+  subscribeStateChange(
+    listener: (event: StateChangeEvent) => void
+  ): () => void {
+    return this.supervisor?.subscribeStateChange(listener) ?? (() => {});
   }
 }
