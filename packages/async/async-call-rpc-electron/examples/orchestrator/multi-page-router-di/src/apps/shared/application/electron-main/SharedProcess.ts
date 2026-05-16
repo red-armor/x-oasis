@@ -1,12 +1,13 @@
 import { createId, inject, injectable } from '@x-oasis/di';
 import {
-  UtilityProcessSupervisor,
   type ChannelReadyInfo,
   type InspectorSnapshot,
   type SpawnInfo,
   type StateChangeEvent,
-} from '@x-oasis/async-call-rpc-electron';
-import { ExponentialBackoffPolicy, serviceHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { UtilityProcessSupervisor } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
+import { ExponentialBackoffPolicy } from '@x-oasis/async-call-rpc/orchestrator';
 import { join } from 'path';
 
 import {
@@ -20,6 +21,11 @@ export interface ISharedProcess {
   spawn(): Promise<void>;
   /** Latest supervisor snapshot (G3 inspector). Null until spawned. */
   getInspectorSnapshot(): InspectorSnapshot | null;
+  /**
+   * Subscribe to the underlying supervisor's state transitions.
+   * Returns a disposer that removes the listener.
+   */
+  subscribeStateChange(listener: (event: StateChangeEvent) => void): () => void;
 }
 
 export const SharedProcessId = createId('SharedProcess');
@@ -72,5 +78,11 @@ export class SharedProcess implements ISharedProcess {
 
   getInspectorSnapshot(): InspectorSnapshot | null {
     return this.supervisor?.getInspectorSnapshot() ?? null;
+  }
+
+  subscribeStateChange(
+    listener: (event: StateChangeEvent) => void
+  ): () => void {
+    return this.supervisor?.subscribeStateChange(listener) ?? (() => {});
   }
 }

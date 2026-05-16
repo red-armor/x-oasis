@@ -1,10 +1,10 @@
 import { createId, inject, injectable } from '@x-oasis/di';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
 import {
-  ElectronUtilityProcessChannel,
   createParticipantProxy,
   ParticipantOrchestratorProxy,
-} from '@x-oasis/async-call-rpc-electron';
-import { clientHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 import {
   IMainRpcService,
@@ -29,6 +29,20 @@ export class PageletWorker implements IPageletWorker {
   protected sharedClient: any = null;
   protected daemonClient: any = null;
   protected mainClient: IMainRpcService | null = null;
+  /**
+   * The main IPC channel (parentPort). Exposed so subclasses (e.g.
+   * MonitorPageletWorker) can subscribe to `onDidConnected` for
+   * re-subscribing RPC listeners after a channel reconnect.
+   */
+  protected mainChannel: ElectronUtilityProcessChannel | null = null;
+  /**
+   * The daemon direct channel. Exposed so subclasses can detect
+   * daemon reconnect (kill -9 → supervisor respawn) and re-register
+   * subscriptions against the new daemon process.
+   */
+  protected daemonChannel: ReturnType<
+    ReturnType<typeof createParticipantProxy>['getChannelFor']
+  > | null = null;
   /**
    * Held as a field so subclasses can reach pagelet ↔ pagelet (P↔P)
    * connections lazily via `connectToPeer(peerId)` after boot completes.
@@ -68,6 +82,7 @@ export class PageletWorker implements IPageletWorker {
       parentPort: process.parentPort as any,
       description: `${this.config.selfId}→main IPC channel`,
     });
+    this.mainChannel = mainChannel;
 
     const proxy = createParticipantProxy({
       selfId: this.config.selfId,
@@ -124,6 +139,7 @@ export class PageletWorker implements IPageletWorker {
     this.daemonClient = clientHost
       .registerClient('daemon-rpc', { channel: daemonConn.getChannel() })
       .createProxy();
+    this.daemonChannel = daemonConn.getChannel();
 
     console.log(
       `[${this.config.selfId}-worker] connected to shared & daemon, waiting for ${this.config.rendererParticipantId} to connect`

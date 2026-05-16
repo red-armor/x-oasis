@@ -3,7 +3,7 @@ import {
   processClientRawMessage,
   normalizeMessageChannelRawMessage,
   ClientMiddleware,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 
 import { ContextBridgeAPI, ContextBridgeChannelProps } from '../types';
 

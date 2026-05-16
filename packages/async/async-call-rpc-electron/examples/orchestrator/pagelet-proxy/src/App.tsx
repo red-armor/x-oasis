@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser/orchestrator';
 import useOrchestratorDashboard, {
   OrchestratorAPI,
 } from '@shared-ui/useOrchestratorDashboard';

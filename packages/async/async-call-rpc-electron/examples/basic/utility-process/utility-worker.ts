@@ -10,7 +10,7 @@
  */
 
 import { ElectronUtilityProcessChannel } from '../../../src/electron-main/index.js';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 
 import crypto from 'crypto';
 import fs from 'fs';

@@ -4,7 +4,7 @@ import {
   AbstractChannelProtocolProps,
   SenderMiddleware,
   ClientMiddleware,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 
 export default class RPCMessageChannel
   extends AbstractChannelProtocol

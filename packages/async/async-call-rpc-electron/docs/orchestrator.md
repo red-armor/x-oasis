@@ -42,12 +42,10 @@ npm install @x-oasis/async-call-rpc-electron
 
 ```typescript
 import { app, BrowserWindow } from 'electron';
-import {
-  IPCMainChannel,
-  ElectronConnectionOrchestrator,
-  ElectronMessagePortMainChannel,
-} from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { ElectronMessagePortMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 
 app.whenReady().then(async () => {
   const mainWindow = new BrowserWindow({
@@ -102,12 +100,10 @@ app.whenReady().then(async () => {
 
 ```typescript
 import { ipcRenderer } from 'electron';
-import {
-  IPCRendererChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-electron';
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron/electron-browser/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-electron/electron-browser/orchestrator';
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web/core';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 // Control-plane channel
 const ipcChannel = new IPCRendererChannel({
@@ -161,10 +157,8 @@ await orchestrator.connect('renderer', 'utility');
 
 ```typescript
 import { parentPort } from 'electron';
-import {
-  ElectronUtilityProcessChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-electron';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 const channel = new ElectronUtilityProcessChannel({ parentPort });
 const directChannel = new RPCMessageChannel({});
@@ -633,7 +627,7 @@ While the `ElectronConnectionOrchestrator` runs in the main process, participant
 Enables a utility process to autonomously request connections to other participants through the orchestrator, and obtain the resulting data-plane channel directly.
 
 ```typescript
-import { createParticipantProxy } from '@x-oasis/async-call-rpc-electron';
+import { createParticipantProxy } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 const proxy = createParticipantProxy({
   selfId: 'pagelet',
@@ -696,7 +690,7 @@ Retrieve the cached data-plane channel for a previously connected peer.
 A convenience wrapper for utility processes that need both control-plane and data-plane channel management. It auto-handles `activateConnection` by binding received ports to an internal `ElectronMessagePortMainChannel`.
 
 ```typescript
-import { createUtilityParticipant } from '@x-oasis/async-call-rpc-electron';
+import { createUtilityParticipant } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 const participant = createUtilityParticipant({
   parentPort: process.parentPort!,

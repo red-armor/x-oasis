@@ -8,8 +8,8 @@
  */
 
 import { WebSocketServer } from 'ws';
-import { serviceHost } from '@x-oasis/async-call-rpc';
-import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web/core';
 
 const PORT = 3456;
 

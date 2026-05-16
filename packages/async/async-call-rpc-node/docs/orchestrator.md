@@ -41,11 +41,9 @@ npm install @x-oasis/async-call-rpc-node
 
 ```typescript
 import { Worker } from 'worker_threads';
-import {
-  NodeConnectionOrchestrator,
-  NodeMessagePortChannel,
-} from '@x-oasis/async-call-rpc-node';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { NodeMessagePortChannel } from '@x-oasis/async-call-rpc-node/core';
+import { NodeConnectionOrchestrator } from '@x-oasis/async-call-rpc-node/orchestrator';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 
 // Create workers
 const workerA = new Worker('./worker-a.js');
@@ -79,12 +77,10 @@ await orchestrator.connect('worker-a', 'worker-b');
 
 ```typescript
 import { parentPort } from 'worker_threads';
-import {
-  NodeMessagePortChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-node';
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { NodeMessagePortChannel } from '@x-oasis/async-call-rpc-node/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-node/orchestrator';
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web/core';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 
 // Control-plane channel to main
 const mainChannel = new NodeMessagePortChannel({
@@ -118,12 +114,10 @@ registerOrchestratorHandler(mainChannel, (port: MessagePort) => {
 
 ```typescript
 import { parentPort } from 'worker_threads';
-import {
-  NodeMessagePortChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-node';
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { NodeMessagePortChannel } from '@x-oasis/async-call-rpc-node/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-node/orchestrator';
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web/core';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 // Control-plane channel to main
 const mainChannel = new NodeMessagePortChannel({

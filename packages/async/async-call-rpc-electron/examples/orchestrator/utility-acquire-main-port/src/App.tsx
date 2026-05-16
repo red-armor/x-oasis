@@ -1,5 +1,5 @@
-import { createIpcPageChannel } from '@x-oasis/async-call-rpc-electron/browser';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { createIpcPageChannel } from '@x-oasis/async-call-rpc-electron/browser/core';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 import OrchestratorDashboard from '@shared-ui/OrchestratorDashboard';
 import useOrchestratorDashboard from '@shared-ui/useOrchestratorDashboard';
 

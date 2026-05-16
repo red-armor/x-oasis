@@ -1,4 +1,4 @@
-import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser/orchestrator';
 import OrchestratorDashboard from '@shared-ui/OrchestratorDashboard';
 import useOrchestratorDashboard, {
   OrchestratorAPI,

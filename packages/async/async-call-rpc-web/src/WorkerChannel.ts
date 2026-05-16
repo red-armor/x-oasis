@@ -1,7 +1,7 @@
 import {
   AbstractChannelProtocol,
   AbstractChannelProtocolProps,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 
 /**
  * RPC channel protocol for Web Workers.

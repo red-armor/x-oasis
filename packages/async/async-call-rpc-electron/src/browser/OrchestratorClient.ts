@@ -1,6 +1,5 @@
-import {
-  clientHost,
-  serviceHost,
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
+import type {
   StateChangeEvent,
   ReadyEvent,
   DisconnectedEvent,
@@ -8,7 +7,7 @@ import {
   ReconnectedEvent,
   ReconnectFailedEvent,
   ClosedEvent,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 import ContextBridgeChannel from './ContextBridgeChannel';
 import { createPageChannel, createIpcPageChannel } from './createPageChannel';
 

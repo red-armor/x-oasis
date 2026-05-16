@@ -1,9 +1,7 @@
 import { app, BrowserWindow } from 'electron';
-import {
-  IPCMainChannel,
-  setupMainOrchestrator,
-} from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { setupMainOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;

@@ -5,9 +5,11 @@ import {
   ORCHESTRATOR_SERVICE_PATH,
   ORCHESTRATOR_PROXY_SERVICE_PATH,
   AbstractChannelProtocol,
+} from '@x-oasis/async-call-rpc/core';
+import type {
   ListParticipantEntry,
   ListConnectionEntry,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 import { NodeMessagePortChannel } from './NodeMessagePortChannel';
 import { MessagePort } from 'worker_threads';
 

@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  WorkerChannel,
-  WebConnectionOrchestrator,
-} from '@x-oasis/async-call-rpc-web';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web/core';
+import { WebConnectionOrchestrator } from '@x-oasis/async-call-rpc-web/orchestrator';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 import './App.css';
 
 type PageletApi = {

@@ -8,6 +8,14 @@ React integration for @x-oasis/async-call-rpc with Connection Orchestrator suppo
 npm install @x-oasis/async-call-rpc-react
 ```
 
+## Sub-path Exports
+
+| Import Path                                  | Contents                                                                                                                                                |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@x-oasis/async-call-rpc-react`              | Re-exports everything (backward compatible)                                                                                                             |
+| `@x-oasis/async-call-rpc-react/core`         | React Query hooks (`createRPCReact`, `RPCReactHooks`)                                                                                                   |
+| `@x-oasis/async-call-rpc-react/orchestrator` | Orchestrator hooks (`OrchestratorProvider`, `useOrchestrator`, `useConnectionState`, `useConnectionStats`, `useAllConnections`, `useConnectionMethods`) |
+
 ## Features
 
 - **React Query Integration**: Type-safe hooks (`useQuery`, `useMutation`, `useSubscription`) for RPC
@@ -26,7 +34,7 @@ npm install @x-oasis/async-call-rpc-react
 ### React Query Hooks
 
 ```tsx
-import { createRPCReact } from '@x-oasis/async-call-rpc-react';
+import { createRPCReact } from '@x-oasis/async-call-rpc-react/core';
 
 const fileRPC = createRPCReact<FileService>(client);
 
@@ -44,8 +52,8 @@ function FileViewer({ path }: { path: string }) {
 import {
   OrchestratorProvider,
   useConnectionState,
-} from '@x-oasis/async-call-rpc-react';
-import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron';
+} from '@x-oasis/async-call-rpc-react/orchestrator';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 const orchestrator = new ElectronConnectionOrchestrator();
 

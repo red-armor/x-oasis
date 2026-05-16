@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
-import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { createPageBridge } from '@x-oasis/async-call-rpc-electron/electron-browser/core';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const bridge = createPageBridge({
   ipcRenderer,

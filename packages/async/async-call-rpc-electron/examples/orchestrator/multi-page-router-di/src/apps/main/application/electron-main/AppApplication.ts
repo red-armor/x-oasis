@@ -1,6 +1,6 @@
 import { createId, inject, injectable } from '@x-oasis/di';
 import { app } from 'electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 import {
   IWindowManager,
@@ -49,6 +49,7 @@ import {
 import { MAIN_RPC_SERVICE_PATH } from '@/services/pagelet-host/common';
 import { MAIN_METRICS_SERVICE_PATH } from '@/services/main-metrics/common';
 import { pidNameRegistry } from '@/services/main-metrics/electron-main/pidNameRegistry';
+import { MainMetricsService } from '@/services/main-metrics/electron-main/MainMetricsService';
 
 export interface IAppApplication {
   start(): Promise<void>;
@@ -91,6 +92,8 @@ function queryPsForPids(
 
 @injectable()
 export class AppApplication implements IAppApplication {
+  private readonly mainMetricsService = new MainMetricsService();
+
   constructor(
     @inject(WindowManagerId) private readonly windowManager: IWindowManager,
     @inject(MainCpServerId) private readonly mainCpServer: IMainCpServer,
@@ -124,14 +127,21 @@ export class AppApplication implements IAppApplication {
       },
     });
 
+    this.mainMetricsService.setSupervisorProvider(() => {
+      const snaps = [
+        this.daemonProcess.getInspectorSnapshot(),
+        this.sharedProcess.getInspectorSnapshot(),
+        ...this.pageletProcess.getInspectorSnapshots(),
+      ].filter((s) => s !== null);
+      return snaps;
+    });
+
     serviceHost.registerServiceHandler(MAIN_METRICS_SERVICE_PATH, {
       getSupervisorSnapshots: () => {
-        const snaps = [
-          this.daemonProcess.getInspectorSnapshot(),
-          this.sharedProcess.getInspectorSnapshot(),
-          ...this.pageletProcess.getInspectorSnapshots(),
-        ].filter((s) => s !== null);
-        return snaps;
+        return this.mainMetricsService.getSupervisorSnapshots();
+      },
+      onSupervisorSnapshotsChanged: (callback: (snapshots: any[]) => void) => {
+        return this.mainMetricsService.onSupervisorSnapshotsChanged(callback);
       },
       getAppMetrics: () => {
         const electronMetrics = app.getAppMetrics();
@@ -189,6 +199,16 @@ export class AppApplication implements IAppApplication {
     });
 
     await Promise.all([this.sharedApp.start(), this.daemonApp.start()]);
+
+    this.daemonProcess.subscribeStateChange(() =>
+      this.mainMetricsService.triggerSupervisorSnapshotsChanged()
+    );
+    this.sharedProcess.subscribeStateChange(() =>
+      this.mainMetricsService.triggerSupervisorSnapshotsChanged()
+    );
+    this.pageletProcess.subscribeStateChange(() =>
+      this.mainMetricsService.triggerSupervisorSnapshotsChanged()
+    );
 
     await this.connectionApp.start();
     await this.monitorApp.start();

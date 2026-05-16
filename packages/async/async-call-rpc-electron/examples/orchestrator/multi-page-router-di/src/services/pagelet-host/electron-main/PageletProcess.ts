@@ -1,13 +1,14 @@
 import { createId, inject, injectable } from '@x-oasis/di';
 import {
   ElectronUtilityProcessChannel,
-  UtilityProcessSupervisor,
   type ChannelReadyInfo,
   type InspectorSnapshot,
   type SpawnInfo,
   type StateChangeEvent,
-} from '@x-oasis/async-call-rpc-electron';
-import { ExponentialBackoffPolicy, serviceHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { UtilityProcessSupervisor } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
+import { ExponentialBackoffPolicy } from '@x-oasis/async-call-rpc/orchestrator';
 import { join } from 'path';
 
 import {
@@ -22,6 +23,13 @@ export interface IPageletProcess {
   getChannel(pageletId: string): ElectronUtilityProcessChannel | undefined;
   /** Snapshot per pagelet supervisor (G3 inspector). */
   getInspectorSnapshots(): InspectorSnapshot[];
+  /**
+   * Subscribe to state changes across ALL managed supervisors.
+   * Fires on every individual supervisor stateChange AND when
+   * the supervisor set itself changes (spawn/kill).
+   * Returns a disposer that removes the listener.
+   */
+  subscribeStateChange(listener: (event: StateChangeEvent) => void): () => void;
 }
 
 export const PageletProcessId = createId('PageletProcess');
@@ -37,6 +45,9 @@ export class PageletProcess implements IPageletProcess {
   private supervisors = new Map<string, UtilityProcessSupervisor>();
   private channels = new Map<string, ElectronUtilityProcessChannel>();
   private lastPids = new Map<string, number>();
+  private readonly stateChangeListeners = new Set<
+    (event: StateChangeEvent) => void
+  >();
 
   constructor(
     @inject(MainCpServerId) private readonly cpServer: IMainCpServer
@@ -99,6 +110,13 @@ export class PageletProcess implements IPageletProcess {
     });
 
     this.supervisors.set(pageletId, supervisor);
+    supervisor.subscribeStateChange((event) => {
+      for (const cb of this.stateChangeListeners) {
+        try {
+          cb(event);
+        } catch {}
+      }
+    });
     await supervisor.start();
     console.log(`[PageletProcess] spawned ${pageletId}`);
   }
@@ -126,5 +144,14 @@ export class PageletProcess implements IPageletProcess {
       out.push(sup.getInspectorSnapshot());
     }
     return out;
+  }
+
+  subscribeStateChange(
+    listener: (event: StateChangeEvent) => void
+  ): () => void {
+    this.stateChangeListeners.add(listener);
+    return () => {
+      this.stateChangeListeners.delete(listener);
+    };
   }
 }

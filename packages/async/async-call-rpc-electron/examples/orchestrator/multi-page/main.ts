@@ -2,9 +2,9 @@ import { app, BrowserWindow, utilityProcess } from 'electron';
 import {
   IPCMainChannel,
   ElectronUtilityProcessChannel,
-  ElectronConnectionOrchestrator,
-} from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, RPCServiceHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { serviceHost, RPCServiceHost } from '@x-oasis/async-call-rpc/core';
 import { join } from 'path';
 
 const PAGES = [

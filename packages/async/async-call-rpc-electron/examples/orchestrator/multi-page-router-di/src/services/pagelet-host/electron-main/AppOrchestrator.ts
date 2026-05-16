@@ -1,5 +1,5 @@
 import { createId, inject, injectable } from '@x-oasis/di';
-import { RPCServiceHost } from '@x-oasis/async-call-rpc';
+import { RPCServiceHost } from '@x-oasis/async-call-rpc/core';
 
 import {
   IMainCpServer,

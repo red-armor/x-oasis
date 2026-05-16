@@ -30,8 +30,8 @@ npm install @x-oasis/async-call-rpc-react @x-oasis/async-call-rpc
 Wrap your app with the provider:
 
 ```tsx
-import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron';
-import { OrchestratorProvider } from '@x-oasis/async-call-rpc-react';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { OrchestratorProvider } from '@x-oasis/async-call-rpc-react/orchestrator';
 
 const orchestrator = new ElectronConnectionOrchestrator({
   enableStats: true,
@@ -59,7 +59,7 @@ Use hooks to display connection status:
 import {
   useConnectionState,
   useOrchestrator,
-} from '@x-oasis/async-call-rpc-react';
+} from '@x-oasis/async-call-rpc-react/orchestrator';
 
 function ConnectionStatus({ connectionId }: { connectionId: string }) {
   const { orchestrator } = useOrchestrator();
@@ -89,7 +89,7 @@ function ConnectionStatus({ connectionId }: { connectionId: string }) {
 Use the connection methods hook:
 
 ```tsx
-import { useConnectionMethods } from '@x-oasis/async-call-rpc-react';
+import { useConnectionMethods } from '@x-oasis/async-call-rpc-react/orchestrator';
 
 function ConnectionManager() {
   const { connect, disconnect, getInfo } = useConnectionMethods();
@@ -342,7 +342,7 @@ function useConnectionMethods(): {
 
 ```tsx
 import React, { useState } from 'react';
-import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 import {
   OrchestratorProvider,
   useOrchestrator,
@@ -350,8 +350,8 @@ import {
   useConnectionStats,
   useConnectionMethods,
   useIsConnectionReady,
-} from '@x-oasis/async-call-rpc-react';
-import { createRPCReact } from '@x-oasis/async-call-rpc-react';
+} from '@x-oasis/async-call-rpc-react/orchestrator';
+import { createRPCReact } from '@x-oasis/async-call-rpc-react/core';
 
 // Setup orchestrator
 const orchestrator = new ElectronConnectionOrchestrator({
@@ -470,7 +470,7 @@ export default App;
 Full TypeScript support with generic orchestrator types:
 
 ```tsx
-import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 function App() {
   const orchestrator = new ElectronConnectionOrchestrator();

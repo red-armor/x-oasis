@@ -20,13 +20,23 @@ Bidirectional RPC protocol framework with pluggable middleware support for vario
 npm install @x-oasis/async-call-rpc
 ```
 
+## Sub-path Exports
+
+| Import Path                            | Contents                                                                                                                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@x-oasis/async-call-rpc`              | Re-exports everything (backward compatible)                                                                                                                              |
+| `@x-oasis/async-call-rpc/core`         | Core RPC classes (`ProxyRPCClient`, `RPCService`, `RPCServiceHost`, `AbstractChannelProtocol`, middlewares, utils)                                                       |
+| `@x-oasis/async-call-rpc/orchestrator` | Orchestrator types and constants (`ORCHESTRATOR_SERVICE_PATH`, `ORCHESTRATOR_PROXY_SERVICE_PATH`, `ActivationContext`, reconnect policies, `BaseConnectionOrchestrator`) |
+
+For optimal tree-shaking, prefer the specific sub-path over the root import.
+
 ## Quick Start
 
 ### Basic Example
 
 ```typescript
-import { RPCService } from '@x-oasis/async-call-rpc';
-import { MessageChannel } from '@x-oasis/async-call-rpc-web';
+import { RPCService } from '@x-oasis/async-call-rpc/core';
+import { MessageChannel } from '@x-oasis/async-call-rpc-web/core';
 
 // Define your RPC service
 class Calculator {
@@ -85,28 +95,30 @@ Support for multiple communication patterns:
 
 ## Built-in Transports
 
-| Class | Transport | Environment |
-|-------|-----------|-------------|
-| `RPCMessageChannel` | MessagePort | Browser / Worker |
-| `WebSocketChannel` | WebSocket | Browser / Node.js |
-| `WorkerChannel` | Worker.postMessage | Browser |
-| `NodeProcessChannel` | child_process.fork | Node.js |
-| `ElectronUtilityProcessChannel` | Electron UtilityProcess | Electron (main) |
-| `IPCMainChannel` | Electron ipcMain | Electron (main) |
-| `IPCRendererChannel` | Electron ipcRenderer | Electron (renderer) |
-| `ElectronMessagePortMainChannel` | Electron MessagePortMain | Electron (main) |
+| Class                            | Transport                | Environment         |
+| -------------------------------- | ------------------------ | ------------------- |
+| `RPCMessageChannel`              | MessagePort              | Browser / Worker    |
+| `WebSocketChannel`               | WebSocket                | Browser / Node.js   |
+| `WorkerChannel`                  | Worker.postMessage       | Browser             |
+| `NodeProcessChannel`             | child_process.fork       | Node.js             |
+| `ElectronUtilityProcessChannel`  | Electron UtilityProcess  | Electron (main)     |
+| `IPCMainChannel`                 | Electron ipcMain         | Electron (main)     |
+| `IPCRendererChannel`             | Electron ipcRenderer     | Electron (renderer) |
+| `ElectronMessagePortMainChannel` | Electron MessagePortMain | Electron (main)     |
 
 ## Architecture
 
 The framework uses a two-stage pipeline:
 
 **Sender Pipeline** (Client → Server)
+
 1. `prepareNormalData` - Build request envelope
 2. `updateSeqInfo` - Assign sequence ID
 3. `serialize` - Encode data
 4. `sendRequest` - Transmit via transport
 
 **Receiver Pipeline** (Server → Client)
+
 1. `normalizeRawMessage` - Extract raw message
 2. `deserialize` - Decode data
 3. `handleRequest` - Dispatch to service handler
@@ -173,6 +185,7 @@ const channel = new MessageChannel({
 ## Best Practices
 
 ✅ **Do:**
+
 - Validate input on both sides
 - Handle errors gracefully
 - Clean up subscriptions
@@ -180,6 +193,7 @@ const channel = new MessageChannel({
 - Monitor response times
 
 ❌ **Don't:**
+
 - Send non-serializable data
 - Ignore promise rejections
 - Leave subscriptions active

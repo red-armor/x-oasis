@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser/orchestrator';
 
 const client = createOrchestratorClient({
   directChannelDescription: 'setting-page↔preload',
@@ -122,8 +122,15 @@ function SettingApp() {
   const handleConnect = useCallback(async () => {
     setConnectionState('CONNECTING');
     try {
-      await client.connect();
-      setConnectionState('READY');
+      const result: any = await client.connect();
+      if (result?.error) {
+        setConnectionState('IDLE');
+        addLog('connect', null, 0, result.error);
+      } else if (result?.state === 'READY') {
+        setConnectionState('READY');
+      }
+      // Otherwise, rely on the event-based state updates
+      // (onReady, onStateChange, etc.) to set the correct state.
     } catch (err: any) {
       setConnectionState('IDLE');
       addLog('connect', null, 0, err.message);

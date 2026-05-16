@@ -3,7 +3,7 @@ import {
   ORCHESTRATOR_SERVICE_PATH,
   RPCService,
   ActivationContext,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 import { ActivationConnectionContext } from '../types';
 
 /**

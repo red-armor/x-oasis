@@ -38,8 +38,8 @@ Main Process                     Renderer Process
 
 ```typescript
 import { BrowserWindow } from 'electron';
-import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const win = new BrowserWindow({
   webPreferences: {
@@ -73,8 +73,8 @@ serviceHost.registerService('api', {
 
 ```typescript
 import { ipcRenderer } from 'electron';
-import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron/electron-browser/core';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 const channel = new IPCRendererChannel({
   channelName: 'app-rpc',
@@ -116,8 +116,8 @@ Main Process                     Utility Process
 
 ```typescript
 import { utilityProcess } from 'electron';
-import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const child = utilityProcess.fork('./utility-worker.js');
 
@@ -143,8 +143,8 @@ serviceHost.registerService('main-callbacks', {
 ### Utility Process
 
 ```typescript
-import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 
 const channel = new ElectronUtilityProcessChannel({
   parentPort: process.parentPort!,
@@ -341,10 +341,8 @@ Manual (5–10 steps):              Orchestrator (3 lines):
 ### Two-Party: Renderer ↔ Main
 
 ```typescript
-import {
-  ElectronConnectionOrchestrator,
-  ElectronMessagePortMainChannel,
-} from '@x-oasis/async-call-rpc-electron';
+import { ElectronMessagePortMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 const mainDirectChannel = new ElectronMessagePortMainChannel({
   description: 'main↔renderer direct port',
@@ -384,8 +382,8 @@ await orchestrator.connect('main', 'renderer');
 **Renderer (Preload):**
 
 ```typescript
-import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-electron';
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-electron/electron-browser/orchestrator';
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web/core';
 
 const directChannel = new RPCMessageChannel({
   description: 'renderer↔main direct port',
@@ -422,10 +420,8 @@ await orchestrator.connect('renderer', 'utility');
 **Utility Worker:**
 
 ```typescript
-import {
-  registerOrchestratorHandler,
-  ElectronMessagePortMainChannel,
-} from '@x-oasis/async-call-rpc-electron';
+import { ElectronMessagePortMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 const directChannel = new ElectronMessagePortMainChannel({
   description: 'utility↔renderer direct port',
@@ -491,9 +487,9 @@ import { app, BrowserWindow, utilityProcess } from 'electron';
 import {
   IPCMainChannel,
   ElectronUtilityProcessChannel,
-  ElectronConnectionOrchestrator,
-} from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 app.whenReady().then(async () => {
   const mainWindow = new BrowserWindow({
@@ -544,11 +540,9 @@ app.whenReady().then(async () => {
 The pagelet uses `createParticipantProxy` to self-connect to all peers, then exposes proxy handlers that forward renderer calls to shared/daemon:
 
 ```typescript
-import {
-  ElectronUtilityProcessChannel,
-  createParticipantProxy,
-} from '@x-oasis/async-call-rpc-electron';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { createParticipantProxy } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const mainChannel = new ElectronUtilityProcessChannel({
   parentPort: process.parentPort as any,
@@ -608,7 +602,7 @@ boot().catch(console.error);
 Workers that only need to expose services (not initiate connections) use the simpler `createUtilityParticipant`:
 
 ```typescript
-import { createUtilityParticipant } from '@x-oasis/async-call-rpc-electron';
+import { createUtilityParticipant } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
 
 const participant = createUtilityParticipant({
   parentPort: process.parentPort as any,
@@ -637,7 +631,7 @@ participant.registerService('daemon-rpc', handlers);
 The renderer only knows about `pagelet-api`. It doesn't need to know about shared/daemon:
 
 ```typescript
-import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser/orchestrator';
 
 const client = createOrchestratorClient({
   directChannelDescription: 'page↔preload',
@@ -889,7 +883,7 @@ When a utility process crashes and is respawned, its PID and underlying transpor
 ### Example
 
 ```typescript
-import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
 
 // Initial setup
 let utilityProc = utilityProcess.fork(workerPath);
@@ -1445,7 +1439,7 @@ registerOrchestratorHandler(channel, (port) => {
 The renderer receives a standard Web `MessagePort`, not Electron's `MessagePortMain`:
 
 ```typescript
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web/core';
 
 registerOrchestratorHandler(ipcChannel, (port: MessagePort) => {
   const directChannel = new RPCMessageChannel({

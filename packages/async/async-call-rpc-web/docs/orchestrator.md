@@ -41,11 +41,9 @@ npm install @x-oasis/async-call-rpc-web
 **Main Page:**
 
 ```typescript
-import {
-  WebConnectionOrchestrator,
-  WorkerChannel,
-} from '@x-oasis/async-call-rpc-web';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web/core';
+import { WebConnectionOrchestrator } from '@x-oasis/async-call-rpc-web/orchestrator';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 
 // Create workers
 const workerA = new Worker('./worker-a.js');
@@ -73,10 +71,10 @@ await orchestrator.connect('worker-a', 'worker-b');
 ```typescript
 import {
   WorkerChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-web';
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+  RPCMessageChannel,
+} from '@x-oasis/async-call-rpc-web/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-web/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 // Control-plane channel to main
 const mainChannel = new WorkerChannel({});
@@ -108,10 +106,10 @@ registerOrchestratorHandler(mainChannel, (port: MessagePort) => {
 ```typescript
 import {
   WorkerChannel,
-  registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-web';
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
-import { clientHost } from '@x-oasis/async-call-rpc';
+  RPCMessageChannel,
+} from '@x-oasis/async-call-rpc-web/core';
+import { registerOrchestratorHandler } from '@x-oasis/async-call-rpc-web/orchestrator';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 // Control-plane channel to main
 const mainChannel = new WorkerChannel({});

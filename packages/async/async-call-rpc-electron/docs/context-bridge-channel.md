@@ -42,8 +42,8 @@ Renderer Page                     Preload                          Main / Utilit
 ### Preload
 
 ```typescript
-import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { createPageBridge } from '@x-oasis/async-call-rpc-electron/electron-browser/orchestrator';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const bridge = createPageBridge({
   ipcRenderer,
@@ -68,8 +68,8 @@ serviceHost.registerService('renderer-events', {
 ### Page
 
 ```typescript
-import { createPageChannel } from '@x-oasis/async-call-rpc-electron';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { createPageChannel } from '@x-oasis/async-call-rpc-electron/browser/core';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const channel = createPageChannel();
 
@@ -198,7 +198,7 @@ export function createPageChannel(description?: string): ContextBridgeChannel {
 ### ContextBridgeChannel
 
 ```typescript
-import AbstractChannelProtocol from '@x-oasis/async-call-rpc';
+import AbstractChannelProtocol from '@x-oasis/async-call-rpc/core';
 
 export class ContextBridgeChannel extends AbstractChannelProtocol {
   private bridge = (window as any).__rpc_bridge__;

@@ -4,8 +4,8 @@ import {
   MessageChannelMain,
   utilityProcess,
 } from 'electron';
-import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 import { join } from 'path';
 
 let utilityAClient: any = null;

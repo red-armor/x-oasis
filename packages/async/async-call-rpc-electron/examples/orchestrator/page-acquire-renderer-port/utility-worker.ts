@@ -3,7 +3,7 @@ import {
   ElectronMessagePortMainChannel,
   registerOrchestratorHandler,
 } from '../../../src/index.js';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 
 if (!process.parentPort) {
   throw new Error('parentPort is not available');

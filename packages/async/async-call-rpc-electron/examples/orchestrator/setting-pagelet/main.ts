@@ -2,9 +2,9 @@ import { app, BrowserWindow, ipcMain, utilityProcess } from 'electron';
 import {
   IPCMainChannel,
   ElectronUtilityProcessChannel,
-  ElectronConnectionOrchestrator,
-} from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;
@@ -44,6 +44,34 @@ function createMainWindow(): IPCMainChannel {
 }
 
 let settingIpcChannel: IPCMainChannel | null = null;
+
+/**
+ * Respawn the setting-pagelet utility process after it was killed.
+ * Creates a new ElectronUtilityProcessChannel and updates the orchestrator
+ * via replaceParticipantChannel, which triggers the reconnect mechanism
+ * with the new live channel.
+ */
+function respawnPagelet(): void {
+  if (!orchestrator) return;
+
+  pageletProc = utilityProcess.fork(
+    join(__dirname, '../preload/setting-pagelet-worker.js')
+  );
+
+  const newPageletChannel = new ElectronUtilityProcessChannel({
+    process: pageletProc,
+    description: 'main→setting-pagelet IPC channel (respawned)',
+  });
+
+  newPageletChannel.setServiceHost(serviceHost);
+
+  // Replace the dead channel with the new one. This cancels any pending
+  // reconnect timer and schedules a fresh reconnect attempt using the new
+  // channel, which will succeed because the new process is alive.
+  orchestrator.replaceParticipantChannel('setting-pagelet', newPageletChannel);
+
+  console.log('[main] setting-pagelet utility process respawned');
+}
 
 function createSettingWindow(): void {
   if (settingWindow && !settingWindow.isDestroyed()) {
@@ -233,7 +261,15 @@ function setupSettingOrchestrator(settingIpc: IPCMainChannel): void {
         };
       },
       killUtility(): void {
-        if (pageletProc) pageletProc.kill();
+        if (pageletProc) {
+          pageletProc.kill();
+          pageletProc = null;
+        }
+        // Respawn the utility process after a short delay to allow the old
+        // process to fully exit. The respawn creates a new channel and calls
+        // replaceParticipantChannel, which cancels any pending reconnect and
+        // schedules a fresh reconnect with the new live channel.
+        setTimeout(respawnPagelet, 500);
       },
       onStateChange(remoteCallback: (event: any) => void) {
         orchestrator!.onStateChange((event) => remoteCallback(event));

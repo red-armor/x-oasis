@@ -3,7 +3,7 @@ import {
   serviceHost,
   RPCServiceHost,
   ORCHESTRATOR_SERVICE_PATH,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 import ElectronUtilityProcessChannel from './ElectronUtilityProcessChannel';
 import ElectronMessagePortMainChannel from './ElectronMessagePortMainChannel';
 import {

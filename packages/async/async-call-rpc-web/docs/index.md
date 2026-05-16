@@ -8,6 +8,14 @@ RPC channel implementations and Connection Orchestrator for web browsers.
 npm install @x-oasis/async-call-rpc-web
 ```
 
+## Sub-path Exports
+
+| Import Path                                | Contents                                                                   |
+| ------------------------------------------ | -------------------------------------------------------------------------- |
+| `@x-oasis/async-call-rpc-web`              | Re-exports everything (backward compatible)                                |
+| `@x-oasis/async-call-rpc-web/core`         | Channel classes (`RPCMessageChannel`, `WorkerChannel`, `WebSocketChannel`) |
+| `@x-oasis/async-call-rpc-web/orchestrator` | Orchestrator (`WebConnectionOrchestrator`, `registerOrchestratorHandler`)  |
+
 ## Features
 
 - **Web Channels**: Pre-built channels for `MessagePort`, `WebSocket`, and `Web Workers`
@@ -27,7 +35,7 @@ npm install @x-oasis/async-call-rpc-web
 ### MessagePort Channel
 
 ```typescript
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web/core';
 
 const { port1, port2 } = new MessageChannel();
 const channel = new RPCMessageChannel({ port: port1 });
@@ -36,7 +44,7 @@ const channel = new RPCMessageChannel({ port: port1 });
 ### Web Worker Channel
 
 ```typescript
-import { WorkerChannel } from '@x-oasis/async-call-rpc-web';
+import { WorkerChannel } from '@x-oasis/async-call-rpc-web/core';
 
 const worker = new Worker('./worker.js');
 const channel = new WorkerChannel({ worker });
@@ -45,7 +53,7 @@ const channel = new WorkerChannel({ worker });
 ### Connection Orchestrator
 
 ```typescript
-import { WebConnectionOrchestrator } from '@x-oasis/async-call-rpc-web';
+import { WebConnectionOrchestrator } from '@x-oasis/async-call-rpc-web/orchestrator';
 
 const orchestrator = new WebConnectionOrchestrator();
 orchestrator.registerParticipant('worker-a', channelA, 'worker');

@@ -1,6 +1,6 @@
 import { app, BrowserWindow, MessageChannelMain } from 'electron';
-import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 import { join } from 'path';
 
 let mainWindow: BrowserWindow | null = null;

@@ -133,10 +133,10 @@ export default defineConfig({
     },
     plugins: [react()],
     resolve: {
-      alias: {
+      alias: [
         ...xOasisAliases,
-        '@': resolve(__dirname, 'src'),
-      },
+        { find: '@', replacement: resolve(__dirname, 'src') },
+      ],
     },
     css: {
       postcss: './postcss.config.js',

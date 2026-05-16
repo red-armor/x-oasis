@@ -2,7 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { ProcessesTable } from './ProcessesTable';
 import { Sparkline, cpuColorClass } from './Sparkline';
 import { SupervisorsPanel } from './SupervisorsPanel';
-import { useMonitorSnapshots, useNowTick, useSnapshotHistory } from '../hooks';
+import {
+  useMonitorSnapshots,
+  useNowTick,
+  useSnapshotHistory,
+  useSupervisorSnapshots,
+} from '../hooks';
 import { MonitorSnapshot, ProcessRow } from '@/apps/monitor/application/common';
 import { cn } from '@/ui/lib/utils';
 
@@ -16,6 +21,7 @@ const TABS: { id: TabId; label: string }[] = [
 
 export function MonitorPanel() {
   const { snapshot, updatedAt } = useMonitorSnapshots();
+  const supervisorSnapshots = useSupervisorSnapshots();
   const history = useSnapshotHistory(snapshot, 60);
   useNowTick(1000);
   const [query, setQuery] = useState('');
@@ -78,7 +84,7 @@ export function MonitorPanel() {
         ) : (
           <div className="h-full overflow-auto">
             <SupervisorsPanel
-              supervisors={snapshot.supervisorSnapshots}
+              supervisors={supervisorSnapshots ?? snapshot.supervisorSnapshots}
               query={query}
             />
           </div>

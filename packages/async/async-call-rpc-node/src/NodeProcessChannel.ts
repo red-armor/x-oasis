@@ -1,7 +1,7 @@
 import {
   AbstractChannelProtocol,
   AbstractChannelProtocolProps,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 import { ChildProcess } from 'child_process';
 
 /**
