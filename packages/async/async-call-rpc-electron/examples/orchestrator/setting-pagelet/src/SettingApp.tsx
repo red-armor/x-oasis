@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser/orchestrator';
 
 const client = createOrchestratorClient({
   directChannelDescription: 'setting-page↔preload',

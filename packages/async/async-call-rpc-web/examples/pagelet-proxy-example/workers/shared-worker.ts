@@ -2,8 +2,8 @@ import {
   WorkerChannel,
   RPCMessageChannel,
   registerOrchestratorHandler,
-} from '@x-oasis/async-call-rpc-web';
-import { serviceHost, ActivationContext } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-web/core';
+import { serviceHost, ActivationContext } from '@x-oasis/async-call-rpc/core';
 
 const controlChannel = new WorkerChannel(self, {
   name: 'shared-control',

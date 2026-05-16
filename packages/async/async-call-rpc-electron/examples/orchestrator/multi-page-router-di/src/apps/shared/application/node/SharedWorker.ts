@@ -1,9 +1,7 @@
 import { createId, injectable } from '@x-oasis/di';
-import {
-  ElectronUtilityProcessChannel,
-  createParticipantProxy,
-} from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { createParticipantProxy } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 import { SHARED_SERVICE_PATH } from '@/apps/shared/application/common';
 

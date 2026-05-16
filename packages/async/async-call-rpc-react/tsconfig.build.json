@@ -2,8 +2,15 @@
   "extends": "../../../tsconfig.build.json",
   "compilerOptions": {
     "outDir": "./dist",
+    "rootDir": "./src",
     "jsx": "react",
-    "esModuleInterop": true
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationDir": "./dist",
+    "declarationMap": false,
+    "composite": false
   },
   "include": ["src/**/*"]
 }

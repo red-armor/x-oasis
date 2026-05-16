@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -16,7 +16,17 @@
     "composite": false,
     "baseUrl": ".",
     "paths": {
+      "@x-oasis/async-call-rpc/core": ["../../async-call-rpc/src/core.ts"],
+      "@x-oasis/async-call-rpc/orchestrator": [
+        "../../async-call-rpc/src/orchestrator/index.ts"
+      ],
       "@x-oasis/async-call-rpc": ["../../async-call-rpc/src/index.ts"],
+      "@x-oasis/async-call-rpc-web/core": [
+        "../../async-call-rpc-web/src/core.ts"
+      ],
+      "@x-oasis/async-call-rpc-web/orchestrator": [
+        "../../async-call-rpc-web/src/orchestrator.ts"
+      ],
       "@x-oasis/async-call-rpc-web": ["../../async-call-rpc-web/src/index.ts"]
     }
   },

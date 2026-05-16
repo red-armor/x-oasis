@@ -3,8 +3,10 @@ import ElectronMessagePortMainChannel from './ElectronMessagePortMainChannel.js'
 import IPCMainChannel from './IPCMainChannel.js';
 import {
   serviceHost,
-  ConnectionInfo,
   AbstractChannelProtocol,
+} from '@x-oasis/async-call-rpc/core';
+import type {
+  ConnectionInfo,
   StateChangeEvent,
   ReadyEvent,
   DisconnectedEvent,
@@ -12,7 +14,7 @@ import {
   ReconnectedEvent,
   ReconnectFailedEvent,
   ClosedEvent,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 import { MessagePortMain } from '../types';
 
 export interface MainOrchestratorSetupOptions {

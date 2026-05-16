@@ -1,13 +1,15 @@
 import {
+  ORCHESTRATOR_SERVICE_PATH,
+  RPCServiceHost,
+  AbstractChannelProtocol,
+} from '@x-oasis/async-call-rpc/core';
+import {
   BaseConnectionOrchestrator,
   ConnectionOrchestratorConfig,
   PortPair,
   ActivationConfig,
   ParticipantInfo,
-  ORCHESTRATOR_SERVICE_PATH,
-  RPCServiceHost,
-  AbstractChannelProtocol,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 
 /**
  * Node.js-specific Connection Orchestrator.

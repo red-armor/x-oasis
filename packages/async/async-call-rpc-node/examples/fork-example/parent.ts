@@ -10,7 +10,7 @@
 import { fork } from 'child_process';
 import { resolve } from 'path';
 import { NodeProcessChannel } from '../../src/index';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 // ---------- 1. fork 子进程 ----------
 

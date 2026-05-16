@@ -16,15 +16,35 @@
       "import": "./dist/browser/index.js",
       "require": "./dist/browser/index.js"
     },
-    "./electron-browser": {
-      "types": "./dist/electron-browser/index.d.ts",
-      "import": "./dist/electron-browser/index.js",
-      "require": "./dist/electron-browser/index.js"
+    "./browser/core": {
+      "types": "./dist/browser/core.d.ts",
+      "import": "./dist/browser/core.js",
+      "require": "./dist/browser/core.js"
     },
-    "./electron-main": {
-      "types": "./dist/electron-main/index.d.ts",
-      "import": "./dist/electron-main/index.js",
-      "require": "./dist/electron-main/index.js"
+    "./browser/orchestrator": {
+      "types": "./dist/browser/orchestrator.d.ts",
+      "import": "./dist/browser/orchestrator.js",
+      "require": "./dist/browser/orchestrator.js"
+    },
+    "./electron-browser/core": {
+      "types": "./dist/electron-browser/core.d.ts",
+      "import": "./dist/electron-browser/core.js",
+      "require": "./dist/electron-browser/core.js"
+    },
+    "./electron-browser/orchestrator": {
+      "types": "./dist/electron-browser/orchestrator.d.ts",
+      "import": "./dist/electron-browser/orchestrator.js",
+      "require": "./dist/electron-browser/orchestrator.js"
+    },
+    "./electron-main/core": {
+      "types": "./dist/electron-main/core.d.ts",
+      "import": "./dist/electron-main/core.js",
+      "require": "./dist/electron-main/core.js"
+    },
+    "./electron-main/orchestrator": {
+      "types": "./dist/electron-main/orchestrator.d.ts",
+      "import": "./dist/electron-main/orchestrator.js",
+      "require": "./dist/electron-main/orchestrator.js"
     }
   },
   "files": [
@@ -34,7 +54,7 @@
   "scripts": {
     "build": "npm run compile && rollup -c",
     "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
+    "compile": "tsc -p tsconfig.build.json --emitDeclarationOnly",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

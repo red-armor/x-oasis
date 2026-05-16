@@ -1,5 +1,5 @@
 import { createUtilityParticipant } from '../../../src/index.js';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 if (!process.parentPort) {
   throw new Error('parentPort is not available');

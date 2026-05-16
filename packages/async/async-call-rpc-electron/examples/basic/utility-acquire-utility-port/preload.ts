@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron';
+import { IPCRendererChannel } from '@x-oasis/async-call-rpc-electron/electron-browser/core';
 
 const channel = new IPCRendererChannel({
   channelName: 'app-rpc',

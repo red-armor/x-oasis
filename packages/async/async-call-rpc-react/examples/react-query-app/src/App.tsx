@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
-import { clientHost, ProxyRPCClient } from '@x-oasis/async-call-rpc';
-import { createRPCReact } from '@x-oasis/async-call-rpc-react';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web/core';
+import { clientHost, ProxyRPCClient } from '@x-oasis/async-call-rpc/core';
+import { createRPCReact } from '@x-oasis/async-call-rpc-react/core';
 
 // Service interface — must match the server handlers.
 // NOTE: The RPC framework passes only the first wire argument to each

@@ -1,7 +1,7 @@
 import {
   AbstractChannelProtocol,
   AbstractChannelProtocolProps,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 import { MessagePort } from 'worker_threads';
 
 const TRANSFERABLE_TYPES = new Set(['tar', 'taar', 'ps', 'pas']);

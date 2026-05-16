@@ -1,9 +1,7 @@
 import { createId, inject, injectable } from '@x-oasis/di';
-import {
-  IPCMainChannel,
-  ElectronConnectionOrchestrator,
-} from '@x-oasis/async-call-rpc-electron';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { IPCMainChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { ElectronConnectionOrchestrator } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 import { BrowserWindow } from 'electron';
 
 import {

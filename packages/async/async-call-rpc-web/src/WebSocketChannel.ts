@@ -4,7 +4,7 @@ import {
   SenderMiddleware,
   ClientMiddleware,
   normalizeWebSocketRawMessage,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 
 /**
  * RPC channel protocol for WebSocket connections.

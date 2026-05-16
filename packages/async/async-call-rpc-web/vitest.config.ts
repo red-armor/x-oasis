@@ -15,6 +15,14 @@ export default defineConfig({
 
   resolve: {
     alias: {
+      '@x-oasis/async-call-rpc/core': path.resolve(
+        __dirname,
+        '../async-call-rpc/src/core.ts'
+      ),
+      '@x-oasis/async-call-rpc/orchestrator': path.resolve(
+        __dirname,
+        '../async-call-rpc/src/orchestrator/index.ts'
+      ),
       '@x-oasis/async-call-rpc': path.resolve(
         __dirname,
         '../async-call-rpc/src/index.ts'

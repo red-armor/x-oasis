@@ -7,8 +7,8 @@ import {
 import {
   IPCMainChannel,
   ElectronUtilityProcessChannel,
-} from '@x-oasis/async-call-rpc-electron';
-import { serviceHost, clientHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { serviceHost, clientHost } from '@x-oasis/async-call-rpc/core';
 import { join } from 'path';
 
 let rendererClient: any = null;

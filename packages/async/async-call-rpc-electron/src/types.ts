@@ -1,4 +1,4 @@
-import { AbstractChannelProtocolProps } from '@x-oasis/async-call-rpc';
+import { AbstractChannelProtocolProps } from '@x-oasis/async-call-rpc/core';
 import {
   IpcRenderer,
   IpcMain,

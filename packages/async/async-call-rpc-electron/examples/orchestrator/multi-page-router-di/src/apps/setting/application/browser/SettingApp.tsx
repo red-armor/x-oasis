@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser/orchestrator';
 import {
   SETTING_PAGELET_SERVICE_PATH,
   ISettingPageletService,

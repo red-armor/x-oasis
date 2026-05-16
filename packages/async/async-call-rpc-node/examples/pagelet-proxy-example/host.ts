@@ -4,7 +4,7 @@ import {
   NodeMessagePortChannel,
   NodeConnectionOrchestrator,
 } from '../../src/index';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const workers: Worker[] = [];
 

@@ -2,7 +2,7 @@ import {
   ElectronUtilityProcessChannel,
   createParticipantProxy,
 } from '../../../src/index.js';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 const SELF_ID = 'pagelet-A';
 const PAGE_ID = 'renderer';

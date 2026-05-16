@@ -1,6 +1,6 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import { createPageBridge } from '@x-oasis/async-call-rpc-electron';
-import { clientHost } from '@x-oasis/async-call-rpc';
+import { createPageBridge } from '@x-oasis/async-call-rpc-electron/electron-browser/core';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 import { ORCHESTRATOR_CP_CHANNEL_NAME } from '@/apps/main/application/common/cp-config';
 import {

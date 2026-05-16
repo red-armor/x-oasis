@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { clientHost } from '@x-oasis/async-call-rpc';
-import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web/core';
 
 interface Task {
   id: number;

@@ -3,7 +3,7 @@ import {
   ConnectionInfo,
   ConnectionState,
   BaseConnectionOrchestrator,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 
 /**
  * React hook that subscribes to a connection's state changes.

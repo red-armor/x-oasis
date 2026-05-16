@@ -1,10 +1,10 @@
 import { createId, inject, injectable } from '@x-oasis/di';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
 import {
-  ElectronUtilityProcessChannel,
   createParticipantProxy,
   ParticipantOrchestratorProxy,
-} from '@x-oasis/async-call-rpc-electron';
-import { clientHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
 
 import {
   IMainRpcService,

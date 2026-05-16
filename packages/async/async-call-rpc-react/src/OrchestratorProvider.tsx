@@ -9,7 +9,7 @@ import React, {
 import {
   BaseConnectionOrchestrator,
   ConnectionInfo,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 
 /**
  * Context value type for OrchestratorContext

@@ -1,4 +1,4 @@
-import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc';
+import { AbstractChannelProtocol } from '@x-oasis/async-call-rpc/core';
 import { MessagePortMainChannelProps, MessagePortMain } from '../types';
 
 /**

@@ -4,11 +4,13 @@ import {
   ORCHESTRATOR_SERVICE_PATH,
   ORCHESTRATOR_PROXY_SERVICE_PATH,
   AbstractChannelProtocol,
+} from '@x-oasis/async-call-rpc/core';
+import type {
   ConnectionConfigSpec,
   ConnectOptions,
   ListParticipantEntry,
   ListConnectionEntry,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 import ElectronMessagePortMainChannel from './ElectronMessagePortMainChannel';
 import { MessagePortMain, ActivationConnectionContext } from '../types';
 

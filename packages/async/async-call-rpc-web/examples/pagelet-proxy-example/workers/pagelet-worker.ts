@@ -1,11 +1,14 @@
-import { WorkerChannel, RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
+import {
+  WorkerChannel,
+  RPCMessageChannel,
+} from '@x-oasis/async-call-rpc-web/core';
 import {
   clientHost,
   serviceHost,
   ORCHESTRATOR_PROXY_SERVICE_PATH,
   ORCHESTRATOR_SERVICE_PATH,
   AbstractChannelProtocol,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/core';
 
 interface ParticipantConnection {
   readonly connectionId: string;

@@ -3,7 +3,7 @@ import {
   ParticipantType,
   ReconnectPolicy,
   RetryContext,
-} from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc/orchestrator';
 import ElectronUtilityProcessChannel from './ElectronUtilityProcessChannel';
 import type { UtilityProcess } from '../types';
 

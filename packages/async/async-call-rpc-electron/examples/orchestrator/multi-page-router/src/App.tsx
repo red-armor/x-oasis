@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser';
+import { createOrchestratorClient } from '@x-oasis/async-call-rpc-electron/browser/orchestrator';
 import PageView from './PageView';
 
 const PAGES = [

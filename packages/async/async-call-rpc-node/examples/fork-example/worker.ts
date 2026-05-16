@@ -8,7 +8,7 @@
  */
 
 import { NodeProcessChannel } from '../../src/index';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 // ---------- 1. 创建 IPC Channel ----------
 

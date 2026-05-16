@@ -1,9 +1,7 @@
 import { createId, injectable } from '@x-oasis/di';
-import {
-  ElectronUtilityProcessChannel,
-  createParticipantProxy,
-} from '@x-oasis/async-call-rpc-electron';
-import { clientHost, RPCServiceHost } from '@x-oasis/async-call-rpc';
+import { ElectronUtilityProcessChannel } from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { createParticipantProxy } from '@x-oasis/async-call-rpc-electron/electron-main/orchestrator';
+import { clientHost, RPCServiceHost } from '@x-oasis/async-call-rpc/core';
 
 import { DAEMON_SERVICE_PATH } from '@/apps/daemon/application/common';
 import { Diagnostics } from '@/apps/daemon/diagnostics/node/Diagnostics';

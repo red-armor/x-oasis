@@ -1,12 +1,10 @@
 import { resolve } from 'path';
 import fs from 'fs';
 
-interface AliasMap {
-  [key: string]: string;
-}
+import type { Alias } from 'vite';
 
-export function resolveXOasisAliases(): AliasMap {
-  const aliases: AliasMap = {};
+export function resolveXOasisAliases(): Alias[] {
+  const aliases: Alias[] = [];
   const packagesRoot = resolve(__dirname, '../../../../..');
   const categoriesDir = fs.readdirSync(packagesRoot).filter((name) => {
     return (
@@ -29,26 +27,78 @@ export function resolveXOasisAliases(): AliasMap {
       const srcDir = resolve(pkgPath, 'src');
 
       if (fs.existsSync(srcDir)) {
-        const subDirs = fs
-          .readdirSync(srcDir)
-          .filter((name) => fs.statSync(resolve(srcDir, name)).isDirectory());
-        for (const sub of subDirs) {
-          const subIndexPath = resolve(srcDir, sub, 'index.ts');
-          if (fs.existsSync(subIndexPath)) {
-            aliases[`@x-oasis/${pkg}/${sub}`] = subIndexPath;
+        const entries = fs.readdirSync(srcDir);
+        for (const entry of entries) {
+          const entryPath = resolve(srcDir, entry);
+          const stat = fs.statSync(entryPath);
+          if (stat.isDirectory()) {
+            const subEntries = fs.readdirSync(entryPath);
+            for (const subEntry of subEntries) {
+              const subEntryPath = resolve(entryPath, subEntry);
+              const subStat = fs.statSync(subEntryPath);
+              if (subStat.isDirectory()) {
+                const nestedIndex = resolve(subEntryPath, 'index.ts');
+                if (fs.existsSync(nestedIndex)) {
+                  aliases.push({
+                    find: `@x-oasis/${pkg}/${entry}/${subEntry}`,
+                    replacement: nestedIndex,
+                  });
+                }
+              } else if (
+                subEntry.endsWith('.ts') &&
+                !subEntry.endsWith('.d.ts') &&
+                !subEntry.endsWith('.test.ts')
+              ) {
+                const withoutExt = subEntry.replace(/\.ts$/, '');
+                if (withoutExt !== 'index') {
+                  aliases.push({
+                    find: `@x-oasis/${pkg}/${entry}/${withoutExt}`,
+                    replacement: subEntryPath,
+                  });
+                }
+              }
+            }
+
+            const subIndexPath = resolve(entryPath, 'index.ts');
+            if (fs.existsSync(subIndexPath)) {
+              aliases.push({
+                find: `@x-oasis/${pkg}/${entry}`,
+                replacement: subIndexPath,
+              });
+            }
+          } else if (
+            entry.endsWith('.ts') &&
+            !entry.endsWith('.d.ts') &&
+            !entry.endsWith('.test.ts')
+          ) {
+            const withoutExt = entry.replace(/\.ts$/, '');
+            if (withoutExt !== 'index') {
+              aliases.push({
+                find: `@x-oasis/${pkg}/${withoutExt}`,
+                replacement: entryPath,
+              });
+            }
           }
         }
       }
 
       const srcPath = resolve(pkgPath, 'src/index.ts');
       if (fs.existsSync(srcPath)) {
-        aliases[`@x-oasis/${pkg}`] = srcPath;
+        aliases.push({
+          find: `@x-oasis/${pkg}`,
+          replacement: srcPath,
+        });
       }
     }
   }
 
-  aliases['@shared-ui'] = resolve(__dirname, '../../shared-ui');
-  aliases['@'] = resolve(__dirname, 'src');
+  aliases.push({
+    find: '@shared-ui',
+    replacement: resolve(__dirname, '../../shared-ui'),
+  });
+  aliases.push({ find: '@', replacement: resolve(__dirname, 'src') });
+
+  aliases.sort((a, b) => (b.find as string).length - (a.find as string).length);
 
   return aliases;
 }

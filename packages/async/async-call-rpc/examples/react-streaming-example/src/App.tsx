@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { clientHost } from '@x-oasis/async-call-rpc';
-import { WebSocketChannel } from '@x-oasis/async-call-rpc-web';
+import { clientHost } from '@x-oasis/async-call-rpc/core';
+import { WebSocketChannel } from '@x-oasis/async-call-rpc-web/core';
 import './App.css';
 
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3457';

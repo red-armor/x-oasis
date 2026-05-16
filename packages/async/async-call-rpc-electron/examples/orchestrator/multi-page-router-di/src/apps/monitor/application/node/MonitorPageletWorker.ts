@@ -1,5 +1,5 @@
 import { createId, inject, injectable } from '@x-oasis/di';
-import { serviceHost } from '@x-oasis/async-call-rpc';
+import { serviceHost } from '@x-oasis/async-call-rpc/core';
 import {
   PageletWorker,
   PageletWorkerConfigId,

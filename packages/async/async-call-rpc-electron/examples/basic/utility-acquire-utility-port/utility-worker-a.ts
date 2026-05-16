@@ -13,8 +13,8 @@
 import {
   ElectronUtilityProcessChannel,
   ElectronMessagePortMainChannel,
-} from '@x-oasis/async-call-rpc-electron';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+} from '@x-oasis/async-call-rpc-electron/electron-main/core';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 // --- RPC channel to main process ---
 if (!process.parentPort) {

@@ -2,8 +2,8 @@ import { contextBridge } from 'electron';
 import IPCRendererChannel from './IPCRendererChannel';
 import { registerOrchestratorHandler } from './registerOrchestratorHandler';
 import { ContextBridgeAPI, IpcRenderer, IpcLikeMessage } from '../types';
-import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web';
-import { ORCHESTRATOR_SERVICE_PATH } from '@x-oasis/async-call-rpc';
+import { RPCMessageChannel } from '@x-oasis/async-call-rpc-web/core';
+import { ORCHESTRATOR_SERVICE_PATH } from '@x-oasis/async-call-rpc/core';
 
 const BRIDGE_KEY = '__rpc_bridge__' as const;
 const IPC_BRIDGE_KEY = '__rpc_ipc_bridge__' as const;

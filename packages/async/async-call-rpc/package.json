@@ -5,16 +5,32 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "module": "dist/async-call-rpc.esm.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/async-call-rpc.esm.js",
+      "require": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.esm.js",
+      "require": "./dist/core.js"
+    },
+    "./orchestrator": {
+      "types": "./dist/orchestrator/index.d.ts",
+      "import": "./dist/orchestrator.esm.js",
+      "require": "./dist/orchestrator.js"
+    }
+  },
   "files": [
     "dist",
-    "index.ts",
     "src"
   ],
   "scripts": {
-    "build": "tsdx build --tsconfig tsconfig.build.json",
+    "build": "npm run compile && rollup -c",
     "clean": "rimraf ./dist",
     "test": "vitest",
-    "compile": "tsc -p tsconfig.build.json"
+    "compile": "tsc -p tsconfig.build.json --emitDeclarationOnly"
   },
   "publishConfig": {
     "access": "public"
@@ -22,6 +38,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@rollup/plugin-typescript": "^12.3.0",
+    "rollup": "^4.60.3",
     "tsdx": "^0.14.1",
     "ws": "^8.19.0"
   },

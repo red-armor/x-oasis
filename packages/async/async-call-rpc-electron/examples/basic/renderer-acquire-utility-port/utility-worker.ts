@@ -15,7 +15,7 @@ import {
   ElectronUtilityProcessChannel,
   ElectronMessagePortMainChannel,
 } from '../../../src/index.js';
-import { clientHost, serviceHost } from '@x-oasis/async-call-rpc';
+import { clientHost, serviceHost } from '@x-oasis/async-call-rpc/core';
 
 // --- RPC channel to main process ---
 const mainChannel = new ElectronUtilityProcessChannel({
