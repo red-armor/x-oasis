@@ -31,6 +31,7 @@ function App() {
   const [theme, setTheme] = useState<string>('light');
 
   useEffect(() => {
+    if (typeof window.electronAPI?.onThemeChange !== 'function') return;
     window.electronAPI.onThemeChange((newTheme) => {
       setTheme(newTheme);
     });
@@ -108,7 +109,7 @@ function App() {
         </div>
 
         <button
-          onClick={() => window.electronAPI.openSettingWindow()}
+          onClick={() => window.electronAPI?.openSettingWindow?.()}
           style={{
             padding: '14px 36px',
             fontSize: 16,
