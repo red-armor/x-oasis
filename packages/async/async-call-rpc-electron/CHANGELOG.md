@@ -1,5 +1,23 @@
 # @x-oasis/async-call-rpc-electron
 
+## 0.14.0
+
+### Minor Changes
+
+- 1e0d6fd: fix: build issue
+- 59b5375: feat: export orchestrator
+- c852f4b: feat: update lock
+
+### Patch Changes
+
+- 42e6ab3: feat: update dep
+- Updated dependencies [1e0d6fd]
+- Updated dependencies [59b5375]
+- Updated dependencies [c852f4b]
+- Updated dependencies [42e6ab3]
+  - @x-oasis/async-call-rpc@0.17.0
+  - @x-oasis/async-call-rpc-web@0.13.0
+
 ## 0.13.0
 
 ### Minor Changes
